@@ -17,3 +17,6 @@ wheels/
 
 # Pytest
 .pytest_cache/
+
+# Spotipy token cache
+.cache

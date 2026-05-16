@@ -19,9 +19,8 @@ def render_genre_chart(genres: list[dict]) -> dcc.Graph:
                 "font": {"color": "#b3b3b3", "size": 14},
             }],
         )
-        return dcc.Graph(figure=fig)
+        return dcc.Graph(figure=fig, className="genre-chart")
 
-    # Reverse so highest count is at top
     sorted_genres = sorted(genres, key=lambda g: g["count"])
     y = [g["genre"] for g in sorted_genres]
     x = [g["count"] for g in sorted_genres]
@@ -37,16 +36,19 @@ def render_genre_chart(genres: list[dict]) -> dcc.Graph:
         paper_bgcolor="#1e1e1e",
         plot_bgcolor="#1e1e1e",
         font_color="#ffffff",
+        height=520,
         xaxis=dict(
             title="Number of top artists",
             color="#b3b3b3",
             showgrid=False,
             tickcolor="#b3b3b3",
+            dtick=1,
         ),
         yaxis=dict(
             color="#ffffff",
             showgrid=False,
+            tickfont=dict(size=12),
         ),
-        margin=dict(l=16, r=16, t=16, b=40),
+        margin=dict(l=16, r=24, t=16, b=48),
     )
-    return dcc.Graph(figure=fig)
+    return dcc.Graph(figure=fig, className="genre-chart", config={"displayModeBar": False})

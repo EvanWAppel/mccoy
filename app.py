@@ -52,35 +52,31 @@ TIME_WINDOWS = [
     {"label": "All Time", "value": "long_term"},
 ]
 
+TAB_STYLE = {
+    "backgroundColor": "#121212",
+    "color": "#b3b3b3",
+    "border": "none",
+    "borderBottom": "2px solid transparent",
+    "padding": "10px 20px",
+    "fontWeight": "600",
+    "fontSize": "0.875rem",
+    "letterSpacing": "0.04em",
+    "textTransform": "uppercase",
+}
+
+TAB_SELECTED_STYLE = {
+    **TAB_STYLE,
+    "color": "#ffffff",
+    "borderBottom": "2px solid #1db954",
+    "backgroundColor": "#121212",
+}
+
 LOGIN_PAGE = html.Div(
-    style={
-        "display": "flex",
-        "flexDirection": "column",
-        "alignItems": "center",
-        "justifyContent": "center",
-        "height": "100vh",
-        "background": "#121212",
-    },
+    className="login-page",
     children=[
-        html.H1("mccoy", style={"color": "#ffffff", "fontSize": "3rem", "marginBottom": "8px"}),
-        html.P(
-            "Your Spotify listening habits, visualized.",
-            style={"color": "#b3b3b3", "marginBottom": "40px"},
-        ),
-        html.A(
-            "Connect with Spotify",
-            href="/login",
-            style={
-                "background": "#1db954",
-                "color": "#000000",
-                "padding": "14px 32px",
-                "borderRadius": "50px",
-                "textDecoration": "none",
-                "fontWeight": "700",
-                "fontSize": "1rem",
-                "letterSpacing": "0.05em",
-            },
-        ),
+        html.H1("mccoy", className="login-page__title"),
+        html.P("Your Spotify listening habits, visualized.", className="login-page__subtitle"),
+        html.A("Connect with Spotify", href="/login", className="login-page__btn"),
     ],
 )
 
@@ -119,29 +115,24 @@ def render_page(pathname):
                     id="time-window-tabs",
                     value="short_term",
                     children=[
-                        dcc.Tab(label=w["label"], value=w["value"])
+                        dcc.Tab(
+                            label=w["label"],
+                            value=w["value"],
+                            style=TAB_STYLE,
+                            selected_style=TAB_SELECTED_STYLE,
+                        )
                         for w in TIME_WINDOWS
                     ],
-                    colors={
-                        "border": "#333",
-                        "primary": "#1db954",
-                        "background": "#121212",
-                    },
                 ),
                 # Content tabs
                 dcc.Tabs(
                     id="content-tabs",
                     value="artists",
                     children=[
-                        dcc.Tab(label="Artists", value="artists"),
-                        dcc.Tab(label="Genres", value="genres"),
+                        dcc.Tab(label="Artists", value="artists", style=TAB_STYLE, selected_style=TAB_SELECTED_STYLE),
+                        dcc.Tab(label="Genres", value="genres", style=TAB_STYLE, selected_style=TAB_SELECTED_STYLE),
                     ],
-                    colors={
-                        "border": "#333",
-                        "primary": "#1db954",
-                        "background": "#121212",
-                    },
-                    style={"marginTop": "8px"},
+                    style={"marginTop": "4px"},
                 ),
                 dcc.Loading(
                     id="loading",
@@ -175,4 +166,4 @@ def update_content(time_range, content_tab):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8050)
+    app.run(debug=True, host="127.0.0.1", port=8050)
