@@ -1,17 +1,22 @@
+import logging
 import os
+from datetime import datetime, timezone, timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
 
-import dash
-from dash import Dash, html, dcc, Input, Output, State, callback
+from dash import Dash, html, dcc, Input, Output
 import flask
 
+import db
 from auth import get_auth_url, handle_callback, get_sp_from_session
 from spotify import get_top_artists, get_user_profile, aggregate_genres
 from components.header import render_header
 from components.artist_grid import render_grid
 from components.genre_chart import render_genre_chart
+from components.trends import render_bump_chart, render_area_chart
+
+logger = logging.getLogger(__name__)
 
 app = Dash(
     __name__,
@@ -35,6 +40,11 @@ def callback_route():
         return flask.redirect("/")
     token = handle_callback(code)
     flask.session["token"] = token
+    # Save refresh token for headless cron auth
+    try:
+        db.save_refresh_token(token["refresh_token"])
+    except Exception as e:
+        logger.warning("Could not save refresh token to DB: %s", e)
     return flask.redirect("/")
 
 
@@ -44,7 +54,7 @@ def logout():
     return flask.redirect("/login")
 
 
-# --- Dash layout ---
+# --- Layout helpers ---
 
 TIME_WINDOWS = [
     {"label": "4 Weeks", "value": "short_term"},
@@ -80,12 +90,21 @@ LOGIN_PAGE = html.Div(
     ],
 )
 
+
+def _next_sunday_utc() -> str:
+    now = datetime.now(timezone.utc)
+    days_until_sunday = (6 - now.weekday()) % 7 or 7
+    next_sunday = (now + timedelta(days=days_until_sunday)).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    return next_sunday.strftime("%B %d, %Y")
+
+
 app.layout = html.Div(
     id="app-root",
     style={"background": "#121212", "minHeight": "100vh"},
     children=[
         dcc.Location(id="url", refresh=False),
-        dcc.Store(id="artist-data"),
         html.Div(id="page-content"),
     ],
 )
@@ -103,6 +122,9 @@ def render_page(pathname):
         return LOGIN_PAGE
 
     sp = get_sp_from_session(flask.session)
+    if sp is None:
+        return LOGIN_PAGE
+
     profile = get_user_profile(sp)
 
     return html.Div([
@@ -110,7 +132,6 @@ def render_page(pathname):
         html.Div(
             style={"maxWidth": "1100px", "margin": "0 auto", "padding": "24px 16px"},
             children=[
-                # Time window tabs
                 dcc.Tabs(
                     id="time-window-tabs",
                     value="short_term",
@@ -124,13 +145,13 @@ def render_page(pathname):
                         for w in TIME_WINDOWS
                     ],
                 ),
-                # Content tabs
                 dcc.Tabs(
                     id="content-tabs",
                     value="artists",
                     children=[
                         dcc.Tab(label="Artists", value="artists", style=TAB_STYLE, selected_style=TAB_SELECTED_STYLE),
                         dcc.Tab(label="Genres", value="genres", style=TAB_STYLE, selected_style=TAB_SELECTED_STYLE),
+                        dcc.Tab(label="Trends", value="trends", style=TAB_STYLE, selected_style=TAB_SELECTED_STYLE),
                     ],
                     style={"marginTop": "4px"},
                 ),
@@ -156,6 +177,52 @@ def update_content(time_range, content_tab):
     if sp is None:
         return html.P("Not authenticated.", style={"color": "#b3b3b3"})
 
+    if content_tab == "trends":
+        try:
+            snapshots = db.get_snapshots("short_term")
+        except Exception as e:
+            logger.warning("Could not load snapshots from DB: %s", e)
+            snapshots = []
+
+        n_slider = dcc.Slider(
+            id="n-artists-slider",
+            min=5, max=50, step=5, value=10,
+            marks={i: str(i) for i in range(5, 51, 5)},
+            tooltip={"placement": "bottom"},
+        )
+
+        if len(snapshots) < 2:
+            next_date = _next_sunday_utc()
+            empty = html.Div(
+                style={"padding": "48px 0", "textAlign": "center"},
+                children=[
+                    html.P(
+                        "Snapshots are taken weekly. Come back after your first snapshot to see trends.",
+                        style={"color": "#b3b3b3", "marginBottom": "8px"},
+                    ),
+                    html.P(
+                        f"Next snapshot: {next_date}",
+                        style={"color": "#1db954", "fontWeight": "600"},
+                    ),
+                ],
+            )
+            return html.Div([empty])
+
+        return html.Div([
+            html.H3("Artist Rank Movement", style={"color": "#fff", "marginBottom": "4px", "fontWeight": "600"}),
+            html.P("Short term (4 weeks) — top artists by rank over time", style={"color": "#b3b3b3", "marginBottom": "8px", "fontSize": "0.85rem"}),
+            html.Label("Artists shown:", style={"color": "#b3b3b3", "fontSize": "0.8rem"}),
+            html.Div(n_slider, style={"marginBottom": "16px"}),
+            html.Div(id="bump-chart-container"),
+            html.Hr(style={"borderColor": "#333", "margin": "32px 0"}),
+            html.H3("Genre Drift", style={"color": "#fff", "marginBottom": "4px", "fontWeight": "600"}),
+            html.P("How your genre distribution has shifted over time", style={"color": "#b3b3b3", "marginBottom": "8px", "fontSize": "0.85rem"}),
+            render_area_chart(snapshots),
+            dcc.Store(id="trends-snapshots", data=[
+                {**s, "captured_at": s["captured_at"].isoformat()} for s in snapshots
+            ]),
+        ])
+
     artists = get_top_artists(sp, time_range)
 
     if content_tab == "artists":
@@ -163,6 +230,20 @@ def update_content(time_range, content_tab):
 
     genres = aggregate_genres(artists)
     return render_genre_chart(genres)
+
+
+@app.callback(
+    Output("bump-chart-container", "children"),
+    Input("n-artists-slider", "value"),
+    prevent_initial_call=True,
+)
+def update_bump_chart(n):
+    try:
+        snapshots = db.get_snapshots("short_term")
+    except Exception:
+        snapshots = []
+    # Re-parse datetimes if needed (already datetime objects from db)
+    return render_bump_chart(snapshots, n=n or 10)
 
 
 if __name__ == "__main__":

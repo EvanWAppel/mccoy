@@ -6,9 +6,9 @@ import spotipy
 logger = logging.getLogger(__name__)
 
 
-def get_top_artists(sp, time_range: str) -> list[dict]:
+def get_top_artists(sp, time_range: str, limit: int = 10) -> list[dict]:
     try:
-        response = sp.current_user_top_artists(limit=10, time_range=time_range)
+        response = sp.current_user_top_artists(limit=limit, time_range=time_range)
     except spotipy.SpotifyException as e:
         logger.error("Spotify API error in get_top_artists: %s", e)
         return []

@@ -175,9 +175,128 @@ mccoy/
 ## Out of Scope
 
 - Multi-user support
-- Historical data storage / long-term trend tracking beyond Spotify's native windows
 - Recently played tracks
 - Currently playing / now-playing widget
 - Playlist analysis
 - Custom domain
 - Mobile-optimized layout (desktop first)
+
+---
+
+## Feature: Listening Trends Over Time
+
+### Overview
+
+Store weekly snapshots of top artists and genres to visualize how listening habits change over time. Adds a Postgres database, a Railway cron job, and a new Trends tab to the UI.
+
+### Data Collection
+
+- **Cadence:** Weekly cron job (Railway Cron service)
+- **Time windows captured per snapshot:** All three — `short_term`, `medium_term`, `long_term`
+- **Artists per window:** Top 50 (Spotify API max)
+- **On failure:** Skip silently, wait for next scheduled run. No alerts.
+- **First snapshot:** Taken immediately when cron job is first deployed
+
+### Authentication for Cron
+
+- On user login via OAuth, the refresh token is automatically saved to Postgres
+- Cron job reads the refresh token from DB, exchanges it for a fresh access token, fetches data, stores snapshot
+- No manual steps required after first login
+
+### Database
+
+- **Host:** Railway Postgres (add-on in Railway dashboard)
+- **ORM/client:** psycopg2 or SQLAlchemy (TBD at implementation)
+
+#### Schema
+
+```sql
+-- Stores the user's refresh token for headless cron auth
+CREATE TABLE stored_token (
+    id          SERIAL PRIMARY KEY,
+    refresh_token TEXT NOT NULL,
+    updated_at  TIMESTAMPTZ DEFAULT now()
+);
+
+-- One row per weekly capture per time window
+CREATE TABLE snapshots (
+    id          SERIAL PRIMARY KEY,
+    captured_at TIMESTAMPTZ DEFAULT now(),
+    time_range  TEXT NOT NULL  -- 'short_term' | 'medium_term' | 'long_term'
+);
+
+-- One row per artist per snapshot
+CREATE TABLE artist_entries (
+    id          SERIAL PRIMARY KEY,
+    snapshot_id INTEGER REFERENCES snapshots(id) ON DELETE CASCADE,
+    rank        INTEGER NOT NULL,
+    artist_name TEXT NOT NULL,
+    artist_id   TEXT NOT NULL,  -- Spotify artist ID
+    image_url   TEXT,
+    genres      TEXT[]          -- Postgres array of genre strings
+);
+```
+
+### Cron Job
+
+- **Script:** `snapshot.py` — standalone Python script, not part of the Dash app
+- **Schedule:** Weekly (e.g. every Sunday at midnight UTC)
+- **Steps:**
+  1. Read refresh token from `stored_token` table
+  2. Exchange for access token via Spotipy
+  3. For each of 3 time windows: fetch top 50 artists, insert `snapshot` row + 50 `artist_entry` rows
+  4. On any error: log and exit cleanly (no retry)
+
+### UI — Trends Tab
+
+Added as a third content tab alongside **Artists** and **Genres**.
+
+**Controlled by:** Short term (`short_term`) window only — no time window tab interaction.
+
+#### Artist Bump Chart
+
+- **Type:** Bump chart (rank on Y axis inverted so #1 is top, time on X axis)
+- **Data:** Artist rank per weekly snapshot, short_term window
+- **Artists shown:** Configurable via slider — default 10, range 5–50
+- **History:** All available snapshots
+- **Empty state (< 2 snapshots):** Message: *"First snapshot captured. Check back next week to see your trends."* + date of next scheduled snapshot
+
+#### Genre Stacked Area Chart
+
+- **Type:** Stacked area chart
+- **Data:** Genre counts per weekly snapshot, short_term window (count = number of top 50 artists listing that genre)
+- **Genres shown:** Top 10 by total count across all snapshots
+- **History:** All available snapshots
+- **Empty state:** Same friendly message as bump chart
+
+### Updated Project Structure
+
+```
+mccoy/
+├── app.py
+├── auth.py
+├── spotify.py
+├── snapshot.py          # NEW: cron job script
+├── db.py                # NEW: database connection + queries
+├── components/
+│   ├── header.py
+│   ├── artist_grid.py
+│   ├── genre_chart.py
+│   └── trends.py        # NEW: bump chart + stacked area components
+├── assets/style.css
+├── migrations/
+│   └── 001_initial.sql  # NEW: schema
+├── pyproject.toml
+├── Procfile
+└── ...
+```
+
+### Updated Environment Variables
+
+| Variable | Description |
+|---|---|
+| `SPOTIPY_CLIENT_ID` | Spotify app client ID |
+| `SPOTIPY_CLIENT_SECRET` | Spotify app client secret |
+| `SPOTIPY_REDIRECT_URI` | OAuth callback URL |
+| `FLASK_SECRET_KEY` | Secret for signing Flask sessions |
+| `DATABASE_URL` | Injected automatically by Railway Postgres |
