@@ -7,7 +7,7 @@ EMPTY_STATE = html.Div(
     style={"padding": "48px 0", "textAlign": "center"},
     children=[
         html.P(
-            "First snapshot captured. Check back next week to see your trends.",
+            "First snapshot captured. Check back tomorrow to see your trends.",
             style={"color": "#b3b3b3", "fontSize": "1rem"},
         ),
     ],

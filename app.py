@@ -91,13 +91,12 @@ LOGIN_PAGE = html.Div(
 )
 
 
-def _next_sunday_utc() -> str:
+def _next_snapshot_utc() -> str:
     now = datetime.now(timezone.utc)
-    days_until_sunday = (6 - now.weekday()) % 7 or 7
-    next_sunday = (now + timedelta(days=days_until_sunday)).replace(
+    next_run = (now + timedelta(days=1)).replace(
         hour=0, minute=0, second=0, microsecond=0
     )
-    return next_sunday.strftime("%B %d, %Y")
+    return next_run.strftime("%B %d, %Y")
 
 
 app.layout = html.Div(
@@ -192,12 +191,12 @@ def update_content(time_range, content_tab):
         )
 
         if len(snapshots) < 2:
-            next_date = _next_sunday_utc()
+            next_date = _next_snapshot_utc()
             empty = html.Div(
                 style={"padding": "48px 0", "textAlign": "center"},
                 children=[
                     html.P(
-                        "Snapshots are taken weekly. Come back after your first snapshot to see trends.",
+                        "Snapshots are taken daily. Come back after your first snapshot to see trends.",
                         style={"color": "#b3b3b3", "marginBottom": "8px"},
                     ),
                     html.P(
