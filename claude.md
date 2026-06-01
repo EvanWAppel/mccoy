@@ -1,5 +1,6 @@
 @AGENTS.md
-Prime Directive: Do not work if you have any questions or something is not clear. Ask me for clarification.
+Prime Directive: Do not work if you have any questions or something is not
+clear. Ask me for clarification.
 Prefer Python
 Keep line length less than 80 characters
 Use uv

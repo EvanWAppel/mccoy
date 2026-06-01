@@ -88,6 +88,15 @@ class TestRenderAreaChart:
         for trace in result.figure.data:
             assert trace.stackgroup is not None
 
+    def test_returns_empty_state_when_no_genres_available(self):
+        snapshots = [
+            make_snapshot(1, 14, [make_artist("Radiohead", 1, [])]),
+            make_snapshot(2, 7, [make_artist("Portishead", 1, [])]),
+        ]
+        result = render_area_chart(snapshots)
+        assert isinstance(result, html.Div)
+        assert _contains_text(result, "genre")
+
 
 # --- Helpers ---
 

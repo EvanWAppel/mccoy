@@ -18,6 +18,7 @@ class TestGetTopArtists:
         result = get_top_artists(mock_sp, "short_term")
         for artist in result:
             assert "name" in artist
+            assert "artist_id" in artist
             assert "image_url" in artist
             assert "rank" in artist
             assert "genres" in artist
@@ -30,6 +31,10 @@ class TestGetTopArtists:
     def test_image_url_extracted_from_first_image(self, mock_sp):
         result = get_top_artists(mock_sp, "short_term")
         assert result[0]["image_url"] == "https://example.com/img1.jpg"
+
+    def test_artist_id_extracted(self, mock_sp):
+        result = get_top_artists(mock_sp, "short_term")
+        assert result[0]["artist_id"] == "spotify_artist_1"
 
     def test_artist_with_no_images_returns_none_url(self, mock_sp):
         mock_sp.current_user_top_artists.return_value = {

@@ -4,6 +4,7 @@ import pytest
 MOCK_ARTISTS_RAW = {
     "items": [
         {
+            "id": f"spotify_artist_{i}",
             "name": f"Artist {i}",
             "genres": ["indie rock", "alternative"] if i % 2 == 0 else ["pop", "dance pop"],
             "images": [{"url": f"https://example.com/img{i}.jpg"}],
@@ -20,6 +21,7 @@ MOCK_PROFILE_RAW = {
 MOCK_ARTISTS = [
     {
         "name": f"Artist {i}",
+        "artist_id": f"spotify_artist_{i}",
         "image_url": f"https://example.com/img{i}.jpg",
         "rank": i,
         "genres": ["indie rock", "alternative"] if i % 2 == 0 else ["pop", "dance pop"],

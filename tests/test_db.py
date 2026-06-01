@@ -103,6 +103,7 @@ class TestGetSnapshots:
         snap = result[0]
         assert "snapshot_id" in snap
         assert "captured_at" in snap
+        assert snap["time_range"] == "short_term"
         assert "artists" in snap
 
     def test_artists_nested_correctly(self, mock_conn, mock_cursor):

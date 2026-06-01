@@ -1,8 +1,7 @@
-import os
 import pytest
 import spotipy
 from unittest.mock import patch, MagicMock
-from auth import get_auth_url, get_sp_from_session
+from auth import get_auth_url, handle_callback, get_sp_from_session
 
 
 @pytest.fixture(autouse=True)
@@ -28,6 +27,18 @@ class TestGetAuthUrl:
     def test_url_contains_redirect_uri(self):
         url = get_auth_url()
         assert "localhost" in url or "redirect_uri" in url
+
+
+class TestHandleCallback:
+    def test_saves_refresh_token(self):
+        token = {"access_token": "access", "refresh_token": "refresh"}
+        with patch("auth._oauth_manager") as mock_oauth_manager:
+            mock_oauth_manager.return_value.get_access_token.return_value = token
+            with patch("db.save_refresh_token") as mock_save:
+                result = handle_callback("code")
+
+        assert result == token
+        mock_save.assert_called_once_with("refresh")
 
 
 class TestGetSpFromSession:
