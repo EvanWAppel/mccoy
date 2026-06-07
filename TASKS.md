@@ -246,73 +246,73 @@ the red phase.
 ## Group P — Rustling DB Layer
 > No dependencies. Start immediately.
 
-- [ ] **P-01** Write `tests/test_db.py` — test `save_recent_search(user_id, query)` inserts a row, and re-inserting the same query updates `searched_at` instead of duplicating
-- [ ] **P-02** Write `tests/test_db.py` — test `get_recent_searches(user_id)` returns up to 5 most recent distinct queries, newest first
-- [ ] **P-03** Write `tests/test_db.py` — test `get_recent_searches` returns `[]` for an unknown user
-- [ ] **P-04** Write `tests/test_db.py` — test `clear_recent_searches(user_id)` deletes all rows for that user only
-- [ ] **P-05** Create `migrations/002_recent_searches.sql` per PRD schema (`recent_searches` table + index on `(user_id, searched_at DESC)`)
-- [ ] **P-06** Implement `db.save_recent_search(user_id, query)` — upsert; bump `searched_at` if the same query already exists for that user
-- [ ] **P-07** Implement `db.get_recent_searches(user_id, limit=5)` — `SELECT DISTINCT query … ORDER BY searched_at DESC LIMIT 5`
-- [ ] **P-08** Implement `db.clear_recent_searches(user_id)` — `DELETE FROM recent_searches WHERE user_id = %s`
-- [ ] **P-09** Run `pytest tests/test_db.py` — all new tests green
+- [x] **P-01** Write `tests/test_db.py` — test `save_recent_search(user_id, query)` inserts a row, and re-inserting the same query updates `searched_at` instead of duplicating
+- [x] **P-02** Write `tests/test_db.py` — test `get_recent_searches(user_id)` returns up to 5 most recent distinct queries, newest first
+- [x] **P-03** Write `tests/test_db.py` — test `get_recent_searches` returns `[]` for an unknown user
+- [x] **P-04** Write `tests/test_db.py` — test `clear_recent_searches(user_id)` deletes all rows for that user only
+- [x] **P-05** Create `migrations/002_recent_searches.sql` per PRD schema (`recent_searches` table + index on `(user_id, searched_at DESC)`)
+- [x] **P-06** Implement `db.save_recent_search(user_id, query)` — upsert; bump `searched_at` if the same query already exists for that user
+- [x] **P-07** Implement `db.get_recent_searches(user_id, limit=5)` — `SELECT DISTINCT query … ORDER BY searched_at DESC LIMIT 5`
+- [x] **P-08** Implement `db.clear_recent_searches(user_id)` — `DELETE FROM recent_searches WHERE user_id = %s`
+- [x] **P-09** Run `pytest tests/test_db.py` — all new tests green
 
 ---
 
 ## Group Q — Spotify API Helper Tests (TDD red)
 > No dependencies. Run in parallel with P.
 
-- [ ] **Q-01** Write `tests/test_spotify.py` — `search_playlists(sp, query, limit=20, offset=0)` returns list of `{id, name, image_url}` from a mocked Spotipy response
-- [ ] **Q-02** Write `tests/test_spotify.py` — `search_playlists` returns `[]` on zero-result response
-- [ ] **Q-03** Write `tests/test_spotify.py` — `get_playlist_tracks(sp, playlist_id)` returns ordered `[{name, uri, album_id, album_name, album_image_url, preview_url}]` and filters out items with null `track` or `track.uri`
-- [ ] **Q-04** Write `tests/test_spotify.py` — `get_album_tracks(sp, album_id)` returns `[{name, uri, track_number, duration_ms, image_url, preview_url}]` in album order
-- [ ] **Q-05** Write `tests/test_spotify.py` — `get_user_playlists(sp)` returns `[{id, name}]` for the dropdown, accumulating across pagination
-- [ ] **Q-06** Write `tests/test_spotify.py` — `create_playlist(sp, user_id, name)` calls `user_playlist_create(user, name, public=False)` and returns the new playlist's `id`
-- [ ] **Q-07** Write `tests/test_spotify.py` — `add_track_to_playlist(sp, playlist_id, track_uri)` calls `playlist_add_items(playlist_id, [track_uri])`
-- [ ] **Q-08** Write `tests/test_spotify.py` — `get_playlist_track_uris(sp, playlist_id)` returns a `set[str]` of every track URI in the playlist, paginated
-- [ ] **Q-09** Write `tests/test_spotify.py` — `get_user_product(sp)` returns the string `"premium"`, `"free"`, or `"open"` from `current_user()['product']`
+- [x] **Q-01** Write `tests/test_spotify.py` — `search_playlists(sp, query, limit=20, offset=0)` returns list of `{id, name, image_url}` from a mocked Spotipy response
+- [x] **Q-02** Write `tests/test_spotify.py` — `search_playlists` returns `[]` on zero-result response
+- [x] **Q-03** Write `tests/test_spotify.py` — `get_playlist_tracks(sp, playlist_id)` returns ordered `[{name, uri, album_id, album_name, album_image_url, preview_url}]` and filters out items with null `track` or `track.uri`
+- [x] **Q-04** Write `tests/test_spotify.py` — `get_album_tracks(sp, album_id)` returns `[{name, uri, track_number, duration_ms, image_url, preview_url}]` in album order
+- [x] **Q-05** Write `tests/test_spotify.py` — `get_user_playlists(sp)` returns `[{id, name}]` for the dropdown, accumulating across pagination
+- [x] **Q-06** Write `tests/test_spotify.py` — `create_playlist(sp, user_id, name)` calls `user_playlist_create(user, name, public=False)` and returns the new playlist's `id`
+- [x] **Q-07** Write `tests/test_spotify.py` — `add_track_to_playlist(sp, playlist_id, track_uri)` calls `playlist_add_items(playlist_id, [track_uri])`
+- [x] **Q-08** Write `tests/test_spotify.py` — `get_playlist_track_uris(sp, playlist_id)` returns a `set[str]` of every track URI in the playlist, paginated
+- [x] **Q-09** Write `tests/test_spotify.py` — `get_user_product(sp)` returns the string `"premium"`, `"free"`, or `"open"` from `current_user()['product']`
 
 ---
 
 ## Group R — Spotify API Helper Implementation
 > Depends on: Q-01–Q-09 written (red).
 
-- [ ] **R-01** Implement `spotify.search_playlists(sp, query, limit=20, offset=0)`
-- [ ] **R-02** Implement `spotify.get_playlist_tracks(sp, playlist_id)` — filters out `episode` items, local files, and any item where `track is None` or `track.uri is None`
-- [ ] **R-03** Implement `spotify.get_album_tracks(sp, album_id)`
-- [ ] **R-04** Implement `spotify.get_user_playlists(sp)` — paginate via `sp.current_user_playlists(limit=50, offset=…)` until exhausted
-- [ ] **R-05** Implement `spotify.create_playlist(sp, user_id, name)` — `public=False`
-- [ ] **R-06** Implement `spotify.add_track_to_playlist(sp, playlist_id, track_uri)`
-- [ ] **R-07** Implement `spotify.get_playlist_track_uris(sp, playlist_id)` — accumulate URIs across pagination, return as `set`
-- [ ] **R-08** Implement `spotify.get_user_product(sp)`
-- [ ] **R-09** Run `pytest tests/test_spotify.py` — all new tests green
+- [x] **R-01** Implement `spotify.search_playlists(sp, query, limit=20, offset=0)`
+- [x] **R-02** Implement `spotify.get_playlist_tracks(sp, playlist_id)` — filters out `episode` items, local files, and any item where `track is None` or `track.uri is None`
+- [x] **R-03** Implement `spotify.get_album_tracks(sp, album_id)`
+- [x] **R-04** Implement `spotify.get_user_playlists(sp)` — paginate via `sp.current_user_playlists(limit=50, offset=…)` until exhausted
+- [x] **R-05** Implement `spotify.create_playlist(sp, user_id, name)` — `public=False`
+- [x] **R-06** Implement `spotify.add_track_to_playlist(sp, playlist_id, track_uri)`
+- [x] **R-07** Implement `spotify.get_playlist_track_uris(sp, playlist_id)` — accumulate URIs across pagination, return as `set`
+- [x] **R-08** Implement `spotify.get_user_product(sp)`
+- [x] **R-09** Run `pytest tests/test_spotify.py` — all new tests green
 
 ---
 
 ## Group S — Auth Scope Update
 > No dependencies. Run in parallel with P / Q / R.
 
-- [ ] **S-01** Update `auth.py` SCOPES to include `playlist-read-private`, `playlist-modify-private`, `playlist-modify-public`, `streaming`, `user-read-private` (keep `user-top-read`)
-- [ ] **S-02** Update `tests/test_auth.py` — assert `get_auth_url()` contains each new scope
-- [ ] **S-03** Run `pytest tests/test_auth.py` — green
-- [ ] **S-04** Note in README that the next login forces a Spotify re-consent prompt
+- [x] **S-01** Update `auth.py` SCOPES to include `playlist-read-private`, `playlist-modify-private`, `playlist-modify-public`, `streaming`, `user-read-private` (keep `user-top-read`)
+- [x] **S-02** Update `tests/test_auth.py` — assert `get_auth_url()` contains each new scope
+- [x] **S-03** Run `pytest tests/test_auth.py` — green
+- [x] **S-04** Note in README that the next login forces a Spotify re-consent prompt
 
 ---
 
 ## Group T — Rustling Component Tests (TDD red)
 > No dependencies. Run in parallel with P / Q / R / S.
 
-- [ ] **T-01** Write `tests/test_rustle.py` — `mode_switcher()` returns `dcc.Tabs` with values `stats` and `rustle`
-- [ ] **T-02** Write `tests/test_rustle.py` — `target_picker(playlists)` returns `html.Div` containing a dropdown of playlist names plus a "Create new…" option
-- [ ] **T-03** Write `tests/test_rustle.py` — `target_picker` with `playlists=[]` still renders the "Create new…" option
-- [ ] **T-04** Write `tests/test_rustle.py` — `search_bar()` returns a `dcc.Input` with `id="rustle-search"`
-- [ ] **T-05** Write `tests/test_rustle.py` — `recents_chips(queries)` returns a row containing up to 5 chip components, each labeled with the query string
-- [ ] **T-06** Write `tests/test_rustle.py` — `recents_chips([])` returns an empty container (no chips, no clear button)
-- [ ] **T-07** Write `tests/test_rustle.py` — `playlist_card(playlist)` returns a Div containing the cover image and the playlist name
-- [ ] **T-08** Write `tests/test_rustle.py` — `track_card(track)` returns a Div containing the album art and the track name
-- [ ] **T-09** Write `tests/test_rustle.py` — `track_card(track, already_added=True)` includes an "Already added" badge
-- [ ] **T-10** Write `tests/test_rustle.py` — `end_of_queue_card(message)` returns a Div with the message text
-- [ ] **T-11** Write `tests/test_rustle.py` — `added_stamp_overlay()` returns a Div with class `added-stamp`
-- [ ] **T-12** Write `tests/test_rustle.py` — `add_counter_chip(n)` returns a Div with text `"+N added"`
+- [x] **T-01** Write `tests/test_rustle.py` — `mode_switcher()` returns `dcc.Tabs` with values `stats` and `rustle`
+- [x] **T-02** Write `tests/test_rustle.py` — `target_picker(playlists)` returns `html.Div` containing a dropdown of playlist names plus a "Create new…" option
+- [x] **T-03** Write `tests/test_rustle.py` — `target_picker` with `playlists=[]` still renders the "Create new…" option
+- [x] **T-04** Write `tests/test_rustle.py` — `search_bar()` returns a `dcc.Input` with `id="rustle-search"`
+- [x] **T-05** Write `tests/test_rustle.py` — `recents_chips(queries)` returns a row containing up to 5 chip components, each labeled with the query string
+- [x] **T-06** Write `tests/test_rustle.py` — `recents_chips([])` returns an empty container (no chips, no clear button)
+- [x] **T-07** Write `tests/test_rustle.py` — `playlist_card(playlist)` returns a Div containing the cover image and the playlist name
+- [x] **T-08** Write `tests/test_rustle.py` — `track_card(track)` returns a Div containing the album art and the track name
+- [x] **T-09** Write `tests/test_rustle.py` — `track_card(track, already_added=True)` includes an "Already added" badge
+- [x] **T-10** Write `tests/test_rustle.py` — `end_of_queue_card(message)` returns a Div with the message text
+- [x] **T-11** Write `tests/test_rustle.py` — `added_stamp_overlay()` returns a Div with class `added-stamp`
+- [x] **T-12** Write `tests/test_rustle.py` — `add_counter_chip(n)` returns a Div with text `"+N added"`
 
 ---
 

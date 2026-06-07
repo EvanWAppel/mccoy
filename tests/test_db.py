@@ -1,6 +1,14 @@
 import pytest
 from unittest.mock import MagicMock, patch, call
-from db import save_refresh_token, get_refresh_token, save_snapshot, get_snapshots
+from db import (
+    save_refresh_token,
+    get_refresh_token,
+    save_snapshot,
+    get_snapshots,
+    save_recent_search,
+    get_recent_searches,
+    clear_recent_searches,
+)
 
 
 @pytest.fixture
@@ -119,3 +127,71 @@ class TestGetSnapshots:
         # Both rows share snapshot_id=1, so should collapse to 1 snapshot with 2 artists
         assert len(result) == 1
         assert len(result[0]["artists"]) == 2
+
+
+class TestSaveRecentSearch:
+    def test_executes_upsert(self, mock_conn, mock_cursor):
+        with patch("db.get_connection", return_value=mock_conn):
+            save_recent_search("user1", "indie")
+        mock_cursor.execute.assert_called_once()
+        sql, params = mock_cursor.execute.call_args[0]
+        assert "recent_searches" in sql
+        assert "ON CONFLICT" in sql.upper()
+        assert params == ("user1", "indie")
+
+    def test_commits(self, mock_conn):
+        with patch("db.get_connection", return_value=mock_conn):
+            save_recent_search("u1", "q1")
+        mock_conn.commit.assert_called_once()
+
+
+class TestGetRecentSearches:
+    def test_returns_list_of_query_strings(self, mock_conn, mock_cursor):
+        mock_cursor.fetchall.return_value = [("indie",), ("jazz",)]
+        with patch("db.get_connection", return_value=mock_conn):
+            result = get_recent_searches("user1")
+        assert result == ["indie", "jazz"]
+
+    def test_returns_empty_when_no_rows(self, mock_conn, mock_cursor):
+        mock_cursor.fetchall.return_value = []
+        with patch("db.get_connection", return_value=mock_conn):
+            result = get_recent_searches("ghost")
+        assert result == []
+
+    def test_default_limit_is_5(self, mock_conn, mock_cursor):
+        mock_cursor.fetchall.return_value = []
+        with patch("db.get_connection", return_value=mock_conn):
+            get_recent_searches("u1")
+        _, params = mock_cursor.execute.call_args[0]
+        assert params == ("u1", 5)
+
+    def test_custom_limit_passed_through(self, mock_conn, mock_cursor):
+        mock_cursor.fetchall.return_value = []
+        with patch("db.get_connection", return_value=mock_conn):
+            get_recent_searches("u1", limit=10)
+        _, params = mock_cursor.execute.call_args[0]
+        assert params == ("u1", 10)
+
+    def test_orders_by_searched_at_desc(self, mock_conn, mock_cursor):
+        mock_cursor.fetchall.return_value = []
+        with patch("db.get_connection", return_value=mock_conn):
+            get_recent_searches("u1")
+        sql, _ = mock_cursor.execute.call_args[0]
+        assert "ORDER BY" in sql.upper()
+        assert "DESC" in sql.upper()
+        assert "recent_searches" in sql
+
+
+class TestClearRecentSearches:
+    def test_deletes_for_user(self, mock_conn, mock_cursor):
+        with patch("db.get_connection", return_value=mock_conn):
+            clear_recent_searches("user1")
+        sql, params = mock_cursor.execute.call_args[0]
+        assert "DELETE" in sql.upper()
+        assert "recent_searches" in sql
+        assert params == ("user1",)
+
+    def test_commits(self, mock_conn):
+        with patch("db.get_connection", return_value=mock_conn):
+            clear_recent_searches("u1")
+        mock_conn.commit.assert_called_once()

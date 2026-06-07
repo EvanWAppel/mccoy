@@ -1,6 +1,18 @@
 import pytest
 from tests.conftest import MOCK_ARTISTS
-from spotify import get_top_artists, get_user_profile, aggregate_genres
+from spotify import (
+    get_top_artists,
+    get_user_profile,
+    aggregate_genres,
+    search_playlists,
+    get_playlist_tracks,
+    get_album_tracks,
+    get_user_playlists,
+    create_playlist,
+    add_track_to_playlist,
+    get_playlist_track_uris,
+    get_user_product,
+)
 
 
 class TestGetTopArtists:
@@ -104,3 +116,327 @@ class TestAggregateGenres:
     def test_empty_artist_list_returns_empty(self):
         result = aggregate_genres([])
         assert result == []
+
+
+class TestSearchPlaylists:
+    def test_calls_api_with_correct_args(self, mock_sp):
+        mock_sp.search.return_value = {
+            "playlists": {"items": [], "next": None}
+        }
+        search_playlists(mock_sp, "indie")
+        mock_sp.search.assert_called_once_with(
+            q="indie", type="playlist", limit=20, offset=0
+        )
+
+    def test_returns_dicts_with_id_name_image_url(self, mock_sp):
+        mock_sp.search.return_value = {
+            "playlists": {
+                "items": [
+                    {
+                        "id": "pl1",
+                        "name": "Indie Picks",
+                        "images": [{"url": "https://example.com/p1.jpg"}],
+                    }
+                ],
+                "next": None,
+            }
+        }
+        result = search_playlists(mock_sp, "indie")
+        assert result == [
+            {
+                "id": "pl1",
+                "name": "Indie Picks",
+                "image_url": "https://example.com/p1.jpg",
+            }
+        ]
+
+    def test_returns_empty_list_on_zero_results(self, mock_sp):
+        mock_sp.search.return_value = {
+            "playlists": {"items": [], "next": None}
+        }
+        result = search_playlists(mock_sp, "asdfasdf")
+        assert result == []
+
+    def test_offset_passed_through(self, mock_sp):
+        mock_sp.search.return_value = {
+            "playlists": {"items": [], "next": None}
+        }
+        search_playlists(mock_sp, "indie", offset=40)
+        mock_sp.search.assert_called_once_with(
+            q="indie", type="playlist", limit=20, offset=40
+        )
+
+    def test_handles_playlist_with_no_image(self, mock_sp):
+        mock_sp.search.return_value = {
+            "playlists": {
+                "items": [
+                    {"id": "pl1", "name": "No Image", "images": []}
+                ],
+                "next": None,
+            }
+        }
+        result = search_playlists(mock_sp, "x")
+        assert result[0]["image_url"] is None
+
+    def test_skips_null_items(self, mock_sp):
+        # Spotify occasionally returns null entries in the playlists list
+        mock_sp.search.return_value = {
+            "playlists": {
+                "items": [
+                    None,
+                    {
+                        "id": "pl1",
+                        "name": "Real",
+                        "images": [{"url": "u"}],
+                    },
+                ],
+                "next": None,
+            }
+        }
+        result = search_playlists(mock_sp, "x")
+        assert len(result) == 1
+        assert result[0]["id"] == "pl1"
+
+
+def _playlist_item(
+    name="Song",
+    uri="spotify:track:abc",
+    album_id="alb1",
+    album_name="Album",
+    album_img="https://example.com/cover.jpg",
+    preview="https://example.com/preview.mp3",
+):
+    return {
+        "track": {
+            "name": name,
+            "uri": uri,
+            "album": {
+                "id": album_id,
+                "name": album_name,
+                "images": [{"url": album_img}] if album_img else [],
+            },
+            "preview_url": preview,
+        }
+    }
+
+
+class TestGetPlaylistTracks:
+    def test_returns_track_dicts(self, mock_sp):
+        mock_sp.playlist_items.return_value = {
+            "items": [_playlist_item()],
+            "next": None,
+        }
+        result = get_playlist_tracks(mock_sp, "pl1")
+        assert len(result) == 1
+        assert result[0] == {
+            "name": "Song",
+            "uri": "spotify:track:abc",
+            "album_id": "alb1",
+            "album_name": "Album",
+            "album_image_url": "https://example.com/cover.jpg",
+            "preview_url": "https://example.com/preview.mp3",
+        }
+
+    def test_filters_out_null_tracks(self, mock_sp):
+        mock_sp.playlist_items.return_value = {
+            "items": [{"track": None}, _playlist_item()],
+            "next": None,
+        }
+        result = get_playlist_tracks(mock_sp, "pl1")
+        assert len(result) == 1
+
+    def test_filters_out_null_uris(self, mock_sp):
+        local_file = {
+            "track": {
+                "name": "Local",
+                "uri": None,
+                "album": {"id": "x", "name": "A", "images": []},
+                "preview_url": None,
+            }
+        }
+        mock_sp.playlist_items.return_value = {
+            "items": [local_file, _playlist_item()],
+            "next": None,
+        }
+        result = get_playlist_tracks(mock_sp, "pl1")
+        assert len(result) == 1
+        assert result[0]["uri"] == "spotify:track:abc"
+
+    def test_handles_track_without_album_image(self, mock_sp):
+        mock_sp.playlist_items.return_value = {
+            "items": [_playlist_item(album_img=None)],
+            "next": None,
+        }
+        result = get_playlist_tracks(mock_sp, "pl1")
+        assert result[0]["album_image_url"] is None
+
+    def test_paginates_when_next(self, mock_sp):
+        page1 = {
+            "items": [_playlist_item("A", "spotify:track:1")],
+            "next": "https://api.spotify.com/v1/...",
+        }
+        page2 = {
+            "items": [_playlist_item("B", "spotify:track:2")],
+            "next": None,
+        }
+        mock_sp.playlist_items.return_value = page1
+        mock_sp.next.return_value = page2
+        result = get_playlist_tracks(mock_sp, "pl1")
+        assert len(result) == 2
+        names = [t["name"] for t in result]
+        assert names == ["A", "B"]
+
+
+class TestGetAlbumTracks:
+    def test_returns_track_dicts_in_order(self, mock_sp):
+        mock_sp.album.return_value = {
+            "images": [{"url": "https://example.com/album.jpg"}],
+            "tracks": {
+                "items": [
+                    {
+                        "name": "T1",
+                        "uri": "spotify:track:1",
+                        "track_number": 1,
+                        "duration_ms": 1000,
+                        "preview_url": "p1",
+                    },
+                    {
+                        "name": "T2",
+                        "uri": "spotify:track:2",
+                        "track_number": 2,
+                        "duration_ms": 2000,
+                        "preview_url": None,
+                    },
+                ]
+            },
+        }
+        result = get_album_tracks(mock_sp, "alb1")
+        assert result == [
+            {
+                "name": "T1",
+                "uri": "spotify:track:1",
+                "track_number": 1,
+                "duration_ms": 1000,
+                "image_url": "https://example.com/album.jpg",
+                "preview_url": "p1",
+            },
+            {
+                "name": "T2",
+                "uri": "spotify:track:2",
+                "track_number": 2,
+                "duration_ms": 2000,
+                "image_url": "https://example.com/album.jpg",
+                "preview_url": None,
+            },
+        ]
+
+    def test_handles_album_with_no_image(self, mock_sp):
+        mock_sp.album.return_value = {
+            "images": [],
+            "tracks": {
+                "items": [
+                    {
+                        "name": "T",
+                        "uri": "u",
+                        "track_number": 1,
+                        "duration_ms": 1,
+                        "preview_url": None,
+                    }
+                ]
+            },
+        }
+        result = get_album_tracks(mock_sp, "x")
+        assert result[0]["image_url"] is None
+
+
+class TestGetUserPlaylists:
+    def test_returns_id_and_name(self, mock_sp):
+        mock_sp.current_user_playlists.return_value = {
+            "items": [
+                {"id": "p1", "name": "My Playlist"},
+                {"id": "p2", "name": "Other"},
+            ],
+            "next": None,
+        }
+        result = get_user_playlists(mock_sp)
+        assert result == [
+            {"id": "p1", "name": "My Playlist"},
+            {"id": "p2", "name": "Other"},
+        ]
+
+    def test_paginates(self, mock_sp):
+        page1 = {"items": [{"id": "p1", "name": "A"}], "next": "url"}
+        page2 = {"items": [{"id": "p2", "name": "B"}], "next": None}
+        mock_sp.current_user_playlists.return_value = page1
+        mock_sp.next.return_value = page2
+        result = get_user_playlists(mock_sp)
+        assert len(result) == 2
+
+
+class TestCreatePlaylist:
+    def test_calls_api_with_public_false_and_returns_id(self, mock_sp):
+        mock_sp.user_playlist_create.return_value = {"id": "new_pl"}
+        result = create_playlist(mock_sp, "user1", "My New Playlist")
+        mock_sp.user_playlist_create.assert_called_once_with(
+            user="user1", name="My New Playlist", public=False
+        )
+        assert result == "new_pl"
+
+
+class TestAddTrackToPlaylist:
+    def test_calls_api(self, mock_sp):
+        add_track_to_playlist(mock_sp, "pl1", "spotify:track:abc")
+        mock_sp.playlist_add_items.assert_called_once_with(
+            "pl1", ["spotify:track:abc"]
+        )
+
+
+class TestGetPlaylistTrackUris:
+    def test_returns_set(self, mock_sp):
+        mock_sp.playlist_items.return_value = {
+            "items": [
+                {"track": {"uri": "spotify:track:a"}},
+                {"track": {"uri": "spotify:track:b"}},
+            ],
+            "next": None,
+        }
+        result = get_playlist_track_uris(mock_sp, "pl1")
+        assert result == {"spotify:track:a", "spotify:track:b"}
+
+    def test_skips_null_tracks_and_null_uris(self, mock_sp):
+        mock_sp.playlist_items.return_value = {
+            "items": [
+                {"track": None},
+                {"track": {"uri": "spotify:track:a"}},
+                {"track": {"uri": None}},
+            ],
+            "next": None,
+        }
+        result = get_playlist_track_uris(mock_sp, "pl1")
+        assert result == {"spotify:track:a"}
+
+    def test_paginates(self, mock_sp):
+        page1 = {
+            "items": [{"track": {"uri": "spotify:track:a"}}],
+            "next": "url",
+        }
+        page2 = {
+            "items": [{"track": {"uri": "spotify:track:b"}}],
+            "next": None,
+        }
+        mock_sp.playlist_items.return_value = page1
+        mock_sp.next.return_value = page2
+        result = get_playlist_track_uris(mock_sp, "pl1")
+        assert result == {"spotify:track:a", "spotify:track:b"}
+
+
+class TestGetUserProduct:
+    @pytest.mark.parametrize("product", ["premium", "free", "open"])
+    def test_returns_product_string(self, mock_sp, product):
+        mock_sp.current_user.return_value = {
+            "product": product,
+            "display_name": "X",
+            "images": [],
+        }
+        result = get_user_product(mock_sp)
+        assert result == product

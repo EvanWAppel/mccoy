@@ -6,7 +6,16 @@ from spotipy.oauth2 import SpotifyOAuth
 
 logger = logging.getLogger(__name__)
 
-SCOPE = "user-top-read"
+SCOPE = " ".join(
+    [
+        "user-top-read",
+        "playlist-read-private",
+        "playlist-modify-private",
+        "playlist-modify-public",
+        "streaming",
+        "user-read-private",
+    ]
+)
 
 
 def _oauth_manager() -> SpotifyOAuth:
