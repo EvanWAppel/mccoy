@@ -8,7 +8,7 @@ import psycopg2.extras
 
 logger = logging.getLogger(__name__)
 
-MIGRATION_PATH = Path(__file__).parent / "migrations" / "001_initial.sql"
+MIGRATIONS_DIR = Path(__file__).parent / "migrations"
 
 
 def get_connection():
@@ -16,11 +16,11 @@ def get_connection():
 
 
 def init_db():
-    sql = MIGRATION_PATH.read_text()
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            cur.execute(sql)
+            for path in sorted(MIGRATIONS_DIR.glob("*.sql")):
+                cur.execute(path.read_text())
         conn.commit()
     finally:
         conn.close()
@@ -127,3 +127,53 @@ def get_snapshots(time_range: str) -> list[dict]:
                 "genres": genres or [],
             })
     return list(snaps.values())
+
+
+def save_recent_search(user_id: str, query: str) -> None:
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO recent_searches (user_id, query, searched_at)
+                VALUES (%s, %s, now())
+                ON CONFLICT (user_id, query)
+                DO UPDATE SET searched_at = now()
+                """,
+                (user_id, query),
+            )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def get_recent_searches(user_id: str, limit: int = 5) -> list[str]:
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT query
+                FROM recent_searches
+                WHERE user_id = %s
+                ORDER BY searched_at DESC
+                LIMIT %s
+                """,
+                (user_id, limit),
+            )
+            return [row[0] for row in cur.fetchall()]
+    finally:
+        conn.close()
+
+
+def clear_recent_searches(user_id: str) -> None:
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "DELETE FROM recent_searches WHERE user_id = %s",
+                (user_id,),
+            )
+        conn.commit()
+    finally:
+        conn.close()

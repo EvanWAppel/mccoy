@@ -24,6 +24,20 @@ class TestGetAuthUrl:
         url = get_auth_url()
         assert "user-top-read" in url
 
+    @pytest.mark.parametrize(
+        "scope",
+        [
+            "playlist-read-private",
+            "playlist-modify-private",
+            "playlist-modify-public",
+            "streaming",
+            "user-read-private",
+        ],
+    )
+    def test_url_contains_rustling_scope(self, scope):
+        url = get_auth_url()
+        assert scope in url
+
     def test_url_contains_redirect_uri(self):
         url = get_auth_url()
         assert "localhost" in url or "redirect_uri" in url
