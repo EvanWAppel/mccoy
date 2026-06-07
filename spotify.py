@@ -30,9 +30,10 @@ def get_user_profile(sp) -> dict:
         data = sp.current_user()
     except spotipy.SpotifyException as e:
         logger.error("Spotify API error in get_user_profile: %s", e)
-        return {"display_name": "", "avatar_url": None}
+        return {"user_id": "", "display_name": "", "avatar_url": None}
     images = data.get("images", [])
     return {
+        "user_id": data.get("id", ""),
         "display_name": data.get("display_name", ""),
         "avatar_url": images[0]["url"] if images else None,
     }

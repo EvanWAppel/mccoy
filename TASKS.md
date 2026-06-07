@@ -321,21 +321,21 @@ the red phase.
 
 This slice deliberately omits: crate-stack perspective (single card only), audio, recents persistence, dedupe, album drill, counter chip, end-of-queue, create-new playlist, iOS unlock, mobile-responsive polish, gesture JS (use temporary buttons instead). All of those are layered on later in V–FF.
 
-- [ ] **U-01** Implement `components/rustle.py` skeleton: `mode_switcher`, `target_picker`, `search_bar`, `playlist_card`, `track_card`
-- [ ] **U-02** Wire `mode_switcher` into `app.py` above the existing time-window tabs; hide the time-window + content tabs when mode = `rustle`
-- [ ] **U-03** Add `dcc.Store(id="rustle-target")` (target playlist id) and `dcc.Store(id="rustle-user-id")` (Spotify user id) to the layout
-- [ ] **U-04** Add a Dash callback: on Rustle mode entry, if `rustle-target` is empty, fetch `get_user_playlists(sp)` and render `target_picker`
-- [ ] **U-05** Add a Dash callback: target picker selection writes the playlist id to `rustle-target` Store and clears the picker view
-- [ ] **U-06** Render `search_bar` once a target is set
-- [ ] **U-07** Add a Dash callback (debounce=True on the Input): on search input change, call `search_playlists`, store results in `dcc.Store(id="rustle-playlist-queue")`, reset `dcc.Store(id="rustle-playlist-index")` to 0
-- [ ] **U-08** Add a Dash callback: render the playlist card at `rustle-playlist-queue[rustle-playlist-index]` (no stack, no perspective yet — single card)
-- [ ] **U-09** Add temporary `[← Prev] [Enter →] [Next]` buttons under the playlist card as a stand-in for L/R/up gestures
-- [ ] **U-10** Wire Prev/Next to decrement/increment `rustle-playlist-index`; clamp at queue bounds
-- [ ] **U-11** Wire Enter to call `get_playlist_tracks(playlist_id)`, store in `dcc.Store(id="rustle-track-queue")`, reset `rustle-track-index`, hide the playlist card view and show the track card view
-- [ ] **U-12** Add a Dash callback: render the current track card from the track queue
-- [ ] **U-13** Add temporary `[← Prev] [+ Add] [Next] [↩ Back]` buttons under the track card
-- [ ] **U-14** Wire `+ Add` to call `add_track_to_playlist(rustle-target, track_uri)`; no feedback yet beyond the existing Spotify response
-- [ ] **U-15** Wire `↩ Back` to return to the playlist card view
+- [x] **U-01** Implement `components/rustle.py` skeleton: `mode_switcher`, `target_picker`, `search_bar`, `playlist_card`, `track_card`
+- [x] **U-02** Wire `mode_switcher` into `app.py` above the existing time-window tabs; hide the time-window + content tabs when mode = `rustle`
+- [x] **U-03** Add `dcc.Store(id="rustle-target")` (target playlist id) and `dcc.Store(id="rustle-user-id")` (Spotify user id) to the layout
+- [x] **U-04** Add a Dash callback: on Rustle mode entry, if `rustle-target` is empty, fetch `get_user_playlists(sp)` and render `target_picker`
+- [x] **U-05** Add a Dash callback: target picker selection writes the playlist id to `rustle-target` Store and clears the picker view
+- [x] **U-06** Render `search_bar` once a target is set
+- [x] **U-07** Add a Dash callback (debounce=True on the Input): on search input change, call `search_playlists`, store results in `dcc.Store(id="rustle-playlist-queue")`, reset `dcc.Store(id="rustle-playlist-index")` to 0
+- [x] **U-08** Add a Dash callback: render the playlist card at `rustle-playlist-queue[rustle-playlist-index]` (no stack, no perspective yet — single card)
+- [x] **U-09** Add temporary `[← Prev] [Enter →] [Next]` buttons under the playlist card as a stand-in for L/R/up gestures
+- [x] **U-10** Wire Prev/Next to decrement/increment `rustle-playlist-index`; clamp at queue bounds
+- [x] **U-11** Wire Enter to call `get_playlist_tracks(playlist_id)`, store in `dcc.Store(id="rustle-track-queue")`, reset `rustle-track-index`, hide the playlist card view and show the track card view
+- [x] **U-12** Add a Dash callback: render the current track card from the track queue
+- [x] **U-13** Add temporary `[← Prev] [+ Add] [Next] [↩ Back]` buttons under the track card
+- [x] **U-14** Wire `+ Add` to call `add_track_to_playlist(rustle-target, track_uri)`; no feedback yet beyond the existing Spotify response
+- [x] **U-15** Wire `↩ Back` to return to the playlist card view
 - [ ] **U-16** Local smoke test: log in (re-consent triggered by Group S), switch to Rustle mode, pick a target playlist, type a search, page through results, enter a playlist, add a track, verify the track now appears in the target playlist in the real Spotify app
 
 ---
