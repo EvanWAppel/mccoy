@@ -10,11 +10,10 @@ import flask
 
 import db
 from auth import get_auth_url, handle_callback, get_sp_from_session
-from spotify import get_top_artists, get_user_profile, aggregate_genres
+from spotify import get_top_artists, get_user_profile
 from components.header import render_header
 from components.artist_grid import render_grid
-from components.genre_chart import render_genre_chart
-from components.trends import render_bump_chart, render_area_chart
+from components.trends import render_bump_chart
 
 logger = logging.getLogger(__name__)
 
@@ -144,7 +143,6 @@ def render_page(pathname):
                     value="artists",
                     children=[
                         dcc.Tab(label="Artists", value="artists", style=TAB_STYLE, selected_style=TAB_SELECTED_STYLE),
-                        dcc.Tab(label="Genres", value="genres", style=TAB_STYLE, selected_style=TAB_SELECTED_STYLE),
                         dcc.Tab(label="Trends", value="trends", style=TAB_STYLE, selected_style=TAB_SELECTED_STYLE),
                     ],
                     style={"marginTop": "4px"},
@@ -208,22 +206,10 @@ def update_content(time_range, content_tab):
             html.Label("Artists shown:", style={"color": "#b3b3b3", "fontSize": "0.8rem"}),
             html.Div(n_slider, style={"marginBottom": "16px"}),
             html.Div(id="bump-chart-container"),
-            html.Hr(style={"borderColor": "#333", "margin": "32px 0"}),
-            html.H3("Genre Drift", style={"color": "#fff", "marginBottom": "4px", "fontWeight": "600"}),
-            html.P("How your genre distribution has shifted over time", style={"color": "#b3b3b3", "marginBottom": "8px", "fontSize": "0.85rem"}),
-            render_area_chart(snapshots),
-            dcc.Store(id="trends-snapshots", data=[
-                {**s, "captured_at": s["captured_at"].isoformat()} for s in snapshots
-            ]),
         ])
 
     artists = get_top_artists(sp, time_range)
-
-    if content_tab == "artists":
-        return render_grid(artists)
-
-    genres = aggregate_genres(artists)
-    return render_genre_chart(genres)
+    return render_grid(artists)
 
 
 @app.callback(
