@@ -142,6 +142,7 @@ A (scaffold) ──┬──► B (tests) ──► C (logic) ──► E (verti
 - [x] **I-05** Implement `db.py`: `get_refresh_token() -> str | None` — read from `stored_token`
 - [x] **I-06** Implement `db.py`: `save_snapshot(time_range: str, artists: list[dict]) -> int` — insert snapshot + artist_entries, return snapshot id
 - [x] **I-07** Implement `db.py`: `get_snapshots(time_range: str) -> list[dict]` — return all snapshots with their artist entries, ordered by captured_at
+  - Note: returns `{snapshot_id, captured_at, artists}` (no `time_range` key, since it's the query param).
 
 ---
 
@@ -150,7 +151,8 @@ A (scaffold) ──┬──► B (tests) ──► C (logic) ──► E (verti
 
 - [x] **J-01** Write `tests/test_db.py` — test `save_refresh_token` + `get_refresh_token` roundtrip using mock connection
 - [x] **J-02** Write `tests/test_db.py` — test `save_snapshot` executes correct INSERT statements with right args
-- [x] **J-03** Write `tests/test_db.py` — test `get_snapshots` returns list of dicts with `captured_at`, `time_range`, `artists` keys
+- [x] **J-03** Write `tests/test_db.py` — test `get_snapshots` returns list of dicts with the documented keys
+  - Note: tests assert `snapshot_id`, `captured_at`, `artists` (matches the impl). No `time_range` key.
 - [x] **J-04** Write `tests/test_db.py` — test `get_snapshots` returns empty list when no rows exist
 - [x] **J-05** Write `tests/test_snapshot.py` — test `run_snapshot()` calls `get_top_artists` for all 3 time ranges
 - [x] **J-06** Write `tests/test_snapshot.py` — test `run_snapshot()` calls `save_snapshot` 3 times (once per time range)
@@ -162,7 +164,8 @@ A (scaffold) ──┬──► B (tests) ──► C (logic) ──► E (verti
 > Depends on: J-01–J-07 written (red). Make them green.
 
 - [x] **K-01** Implement `snapshot.py`: `run_snapshot()` — read refresh token from DB, get sp client, fetch top 50 artists for each of 3 time ranges, save each snapshot
-- [x] **K-02** Update `auth.py`: `handle_callback()` — after exchanging code, save refresh token to DB via `db.save_refresh_token()`
+- [x] **K-02** Save refresh token to DB after OAuth callback via `db.save_refresh_token()`
+  - Deviation: wiring lives in `app.py:callback_route` (after `handle_callback`), not inside `auth.handle_callback()`. Functionally equivalent.
 - [x] **K-03** Add `if __name__ == "__main__": run_snapshot()` entry point to `snapshot.py`
 - [x] **K-04** Run `pytest tests/test_db.py tests/test_snapshot.py` — all green
 
@@ -185,7 +188,7 @@ A (scaffold) ──┬──► B (tests) ──► C (logic) ──► E (verti
 
 - [x] **M-01** Implement `components/trends.py`: `render_bump_chart(snapshots: list[dict], n: int) -> dcc.Graph | html.Div`
 - [x] **M-02** Implement `components/trends.py`: `render_area_chart(snapshots: list[dict]) -> dcc.Graph | html.Div`
-- [x] **M-03** Style both charts: dark background, Spotify green accents, white labels, no gridlines
+- [x] **M-03** Style both charts: dark background, white labels, no gridlines
 - [x] **M-04** Run `pytest tests/test_trends.py` — all green
 
 ---
@@ -196,8 +199,8 @@ A (scaffold) ──┬──► B (tests) ──► C (logic) ──► E (verti
 - [x] **N-01** Add "Trends" as third content tab in `app.py` alongside Artists and Genres
 - [x] **N-02** Add Dash callback for Trends tab: fetch `get_snapshots("short_term")` from DB, render bump chart + area chart stacked vertically
 - [x] **N-03** Add N-artists slider (range 5–50, default 10) above bump chart, wire to callback
-- [x] **N-04** Compute next snapshot date (next Sunday midnight UTC) and pass to empty state message
-- [x] **N-05** Smoke test locally: confirm Trends tab shows empty state before any snapshots, then run `snapshot.py` manually and confirm charts render
+- [x] **N-04** Compute next snapshot date (next day, midnight UTC) and pass to empty state message
+- [ ] **N-05** Smoke test locally: confirm Trends tab shows empty state before any snapshots, then run `snapshot.py` manually and confirm charts render (NOT YET DONE — needs venv + local Postgres)
 
 ---
 
@@ -206,7 +209,7 @@ A (scaffold) ──┬──► B (tests) ──► C (logic) ──► E (verti
 
 - [ ] **O-01** Add Railway Postgres add-on in Railway dashboard — `DATABASE_URL` auto-injected
 - [ ] **O-02** Run `python -c "from db import init_db; init_db()"` against Railway DB to apply schema (via Railway CLI or one-off command)
-- [ ] **O-03** Add Railway Cron service: command `python snapshot.py`, schedule `0 0 * * 0` (Sundays midnight UTC)
+- [ ] **O-03** Add Railway Cron service: command `python snapshot.py`, schedule `0 0 * * *` (daily, midnight UTC)
 - [ ] **O-04** Push latest code to GitHub → Railway auto-deploys app + provisions cron
 - [ ] **O-05** Log into the deployed app to trigger refresh token save, confirm `stored_token` row exists in DB
 - [ ] **O-06** Manually trigger cron job once in Railway dashboard, verify snapshot rows appear in DB
