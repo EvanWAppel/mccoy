@@ -32,8 +32,8 @@ def save_refresh_token(token: str) -> None:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                INSERT INTO stored_token (refresh_token, updated_at)
-                VALUES (%s, now())
+                INSERT INTO stored_token (id, refresh_token, updated_at)
+                VALUES (1, %s, now())
                 ON CONFLICT (id) DO UPDATE SET refresh_token = EXCLUDED.refresh_token, updated_at = now()
                 """,
                 (token,),
@@ -112,7 +112,12 @@ def get_snapshots(time_range: str) -> list[dict]:
     for row in rows:
         sid, captured_at, tr, rank, name, artist_id, image_url, genres = row
         if sid not in snaps:
-            snaps[sid] = {"snapshot_id": sid, "captured_at": captured_at, "artists": []}
+            snaps[sid] = {
+                "snapshot_id": sid,
+                "captured_at": captured_at,
+                "time_range": tr,
+                "artists": [],
+            }
         if rank is not None:
             snaps[sid]["artists"].append({
                 "rank": rank,

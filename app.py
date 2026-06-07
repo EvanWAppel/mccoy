@@ -40,11 +40,6 @@ def callback_route():
         return flask.redirect("/")
     token = handle_callback(code)
     flask.session["token"] = token
-    # Save refresh token for headless cron auth
-    try:
-        db.save_refresh_token(token["refresh_token"])
-    except Exception as e:
-        logger.warning("Could not save refresh token to DB: %s", e)
     return flask.redirect("/")
 
 

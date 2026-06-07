@@ -17,6 +17,7 @@ def get_top_artists(sp, time_range: str, limit: int = 10) -> list[dict]:
         images = item.get("images", [])
         artists.append({
             "name": item["name"],
+            "artist_id": item.get("id", ""),
             "image_url": images[0]["url"] if images else None,  # H-02
             "rank": rank,
             "genres": item.get("genres", []),  # H-03: empty list handled safely

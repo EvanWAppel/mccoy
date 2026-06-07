@@ -13,6 +13,16 @@ EMPTY_STATE = html.Div(
     ],
 )
 
+NO_GENRE_STATE = html.Div(
+    style={"padding": "48px 0", "textAlign": "center"},
+    children=[
+        html.P(
+            "No genre data was returned for these snapshots.",
+            style={"color": "#b3b3b3", "fontSize": "1rem"},
+        ),
+    ],
+)
+
 DARK_LAYOUT = dict(
     paper_bgcolor="#1e1e1e",
     plot_bgcolor="#1e1e1e",
@@ -93,7 +103,14 @@ def render_area_chart(snapshots: list[dict]) -> dcc.Graph | html.Div:
             genre_counts[genre][i] = count
 
     # Top 10 genres by total count across all snapshots
-    top_genres = sorted(genre_counts.keys(), key=lambda g: sum(genre_counts[g]), reverse=True)[:10]
+    top_genres = sorted(
+        genre_counts.keys(),
+        key=lambda g: sum(genre_counts[g]),
+        reverse=True,
+    )[:10]
+
+    if not top_genres:
+        return NO_GENRE_STATE
 
     fig = go.Figure()
     for genre in top_genres:

@@ -23,7 +23,15 @@ def get_auth_url() -> str:
 
 
 def handle_callback(code: str) -> dict:
-    return _oauth_manager().get_access_token(code, as_dict=True)
+    token = _oauth_manager().get_access_token(code, as_dict=True)
+    refresh_token = token.get("refresh_token")
+    if refresh_token:
+        try:
+            import db
+            db.save_refresh_token(refresh_token)
+        except Exception as e:
+            logger.warning("Could not save refresh token to DB: %s", e)
+    return token
 
 
 def get_sp_from_session(session: dict):
