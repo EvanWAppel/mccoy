@@ -229,7 +229,7 @@ def update_content(time_range, content_tab):
 @app.callback(
     Output("bump-chart-container", "children"),
     Input("n-artists-slider", "value"),
-    prevent_initial_call=True,
+    prevent_initial_call=False,
 )
 def update_bump_chart(n):
     try:
