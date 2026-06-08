@@ -42,6 +42,12 @@ class TestGetAuthUrl:
         url = get_auth_url()
         assert "localhost" in url or "redirect_uri" in url
 
+    def test_url_forces_show_dialog(self):
+        # Forces Spotify to show the consent dialog on every login, so
+        # cached grants can't silently bypass a scope expansion.
+        url = get_auth_url()
+        assert "show_dialog=true" in url.lower()
+
 
 class TestHandleCallback:
     def test_saves_refresh_token(self):
