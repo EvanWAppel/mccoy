@@ -40,6 +40,22 @@ def mock_sp(mocker):
 
 @pytest.fixture
 def mock_token():
+    # Scope must cover auth.SCOPE so get_sp_from_session doesn't clear
+    # the session as insufficient. Imported lazily so importing this
+    # fixture doesn't require Spotify env vars at collection time.
+    from auth import SCOPE
+
+    return {
+        "access_token": "fake_access_token",
+        "refresh_token": "fake_refresh_token",
+        "token_type": "Bearer",
+        "expires_at": 9999999999,
+        "scope": SCOPE,
+    }
+
+
+@pytest.fixture
+def stale_scope_token():
     return {
         "access_token": "fake_access_token",
         "refresh_token": "fake_refresh_token",

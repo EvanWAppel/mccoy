@@ -47,6 +47,18 @@ def get_sp_from_session(session: dict):
     token = session.get("token")
     if not token:
         return None
+    # If the token's granted scope doesn't cover what we now require
+    # (e.g. SCOPE was expanded after the user last logged in), force a
+    # full re-auth so Spotify shows the consent dialog again.
+    granted = set((token.get("scope") or "").split())
+    required = set(SCOPE.split())
+    if not required.issubset(granted):
+        logger.info(
+            "Session token missing scopes %s; clearing session for re-auth",
+            required - granted,
+        )
+        session.clear()
+        return None
     # H-04: attempt token refresh; redirect to login if it fails
     try:
         oauth = _oauth_manager()

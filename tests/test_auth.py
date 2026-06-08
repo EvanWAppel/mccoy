@@ -69,3 +69,19 @@ class TestGetSpFromSession:
         result = get_sp_from_session(session)
         assert result is not None
         assert isinstance(result, spotipy.Spotify)
+
+    def test_clears_session_when_scope_is_insufficient(
+        self, stale_scope_token
+    ):
+        session = {"token": stale_scope_token}
+        result = get_sp_from_session(session)
+        assert result is None
+        assert "token" not in session
+
+    def test_passes_when_token_scope_is_superset(self, mock_token):
+        # Token granted strictly more scopes than we require — still valid
+        extra = dict(mock_token)
+        extra["scope"] = mock_token["scope"] + " user-read-email"
+        session = {"token": extra}
+        result = get_sp_from_session(session)
+        assert result is not None
