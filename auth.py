@@ -24,6 +24,7 @@ def _oauth_manager() -> SpotifyOAuth:
         client_secret=os.environ["SPOTIPY_CLIENT_SECRET"],
         redirect_uri=os.environ["SPOTIPY_REDIRECT_URI"],
         scope=SCOPE,
+        show_dialog=True,
     )
 
 

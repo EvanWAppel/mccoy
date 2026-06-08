@@ -362,6 +362,7 @@ def render_rustle_content(
         except Exception as e:
             logger.warning("Could not load user playlists: %s", e)
             playlists = []
+        logger.info("Rustle target picker: %d playlists", len(playlists))
         return target_picker(playlists)
     if view == "track":
         return _rustle_track_view(tr_queue, tr_idx)
