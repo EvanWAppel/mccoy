@@ -119,6 +119,19 @@ def track_card(track, already_added: bool = False):
     )
 
 
+def card_stack(cards):
+    # V-02: top card front and centered, up to three more peeking
+    # behind it. Depth styling lives on .rustle-stack__card--{i}.
+    slots = [
+        html.Div(
+            card,
+            className=f"rustle-stack__card rustle-stack__card--{i}",
+        )
+        for i, card in enumerate(cards[:4])
+    ]
+    return html.Div(slots, className="rustle-stack")
+
+
 def end_of_queue_card(message: str):
     return html.Div(
         className="rustle-end-of-queue",

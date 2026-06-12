@@ -15,6 +15,7 @@ try:
         end_of_queue_card,
         added_stamp_overlay,
         add_counter_chip,
+        card_stack,
     )
 except ImportError:
     pytest.skip(
@@ -210,3 +211,27 @@ class TestAddCounterChip:
     def test_renders_count(self):
         result = add_counter_chip(3)
         assert _contains_text(result, "+3 added")
+
+
+class TestCardStack:
+    def _cards(self, n):
+        return [playlist_card(SAMPLE_PLAYLIST) for _ in range(n)]
+
+    def test_returns_div_with_stack_class(self):
+        result = card_stack(self._cards(4))
+        assert isinstance(result, html.Div)
+        assert "rustle-stack" in (result.className or "")
+
+    def test_renders_at_most_four_cards(self):
+        result = card_stack(self._cards(6))
+        assert len(result.children) == 4
+
+    def test_single_card_renders_one_slot(self):
+        result = card_stack(self._cards(1))
+        assert len(result.children) == 1
+
+    def test_slots_have_depth_position_classes(self):
+        result = card_stack(self._cards(4))
+        classes = [c.className for c in result.children]
+        for i in range(4):
+            assert f"rustle-stack__card--{i}" in classes[i]

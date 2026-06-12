@@ -29,6 +29,7 @@ from components.rustle import (
     playlist_card,
     track_card,
     end_of_queue_card,
+    card_stack,
 )
 
 logger = logging.getLogger(__name__)
@@ -281,7 +282,9 @@ def _rustle_search_view(queue, idx):
         )
         return html.Div(children)
     idx = max(0, min(idx, len(queue) - 1))
-    children.append(playlist_card(queue[idx]))
+    children.append(
+        card_stack([playlist_card(p) for p in queue[idx : idx + 4]])
+    )
     children.append(
         html.Div(
             style={"marginTop": "12px", "display": "flex", "gap": "8px"},
@@ -317,7 +320,9 @@ def _rustle_track_view(queue, idx):
             ),
             html.Button("↩ Back", id="rustle-tr-back", n_clicks=0),
         ])
-    children = [track_card(queue[idx])]
+    children = [
+        card_stack([track_card(t) for t in queue[idx : idx + 4]])
+    ]
     children.append(
         html.Div(
             style={"marginTop": "12px", "display": "flex", "gap": "8px"},
