@@ -343,10 +343,10 @@ This slice deliberately omits: crate-stack perspective (single card only), audio
 ## Group V — Crate-of-Records Visual Polish
 > Depends on: U-16. Run in parallel with W, X, Z, AA, BB, CC, DD, EE, FF.
 
-- [ ] **V-01** Add `.rustle-stack` container styles in `assets/style.css`: `perspective: 1200px`, fixed aspect-ratio for cards
-- [ ] **V-02** Render the top 4 entries of the active queue inside `.rustle-stack`: top card centered, next three peeking behind with progressive `translateY`, `scale(0.95)…(0.85)`, and small forward tilt via `rotateX`
-- [ ] **V-03** Add a CSS class `.rustle-card--exiting` that translates the top card off-screen in the gesture direction and fades it out over ~240 ms
-- [ ] **V-04** Add a CSS class for the next-card slide-up-to-top transition (~240 ms)
+- [x] **V-01** Add `.rustle-stack` container styles in `assets/style.css`: `perspective: 1200px`, fixed aspect-ratio for cards
+- [x] **V-02** Render the top 4 entries of the active queue inside `.rustle-stack`: top card centered, next three peeking behind with progressive `translateY`, `scale(0.95)…(0.85)`, and small forward tilt via `rotateX`
+- [x] **V-03** Add a CSS class `.rustle-card--exiting` that translates the top card off-screen in the gesture direction and fades it out over ~240 ms
+- [x] **V-04** Add a CSS class for the next-card slide-up-to-top transition (~240 ms)
 - [ ] **V-05** Manual visual check on desktop Chrome
 - [ ] **V-06** Manual visual check on mobile Safari
 
@@ -355,13 +355,13 @@ This slice deliberately omits: crate-stack perspective (single card only), audio
 ## Group W — Gesture Input (touch / keyboard / drag)
 > Depends on: U-16. Run in parallel with V, X.
 
-- [ ] **W-01** Create `assets/rustle.js` — Pointer Events listener on a `data-rustle-card-area="true"` element
-- [ ] **W-02** Compute drag distance + dominant axis; ≥80 px commits a gesture (L / R / Up / Down)
-- [ ] **W-03** Communicate the resolved gesture to Dash via a clientside callback writing to `dcc.Store(id="rustle-gesture")` with shape `{direction, ts}`
-- [ ] **W-04** Bind `keydown`: ArrowLeft/Right = L/R, ArrowUp = Up, ArrowDown = Down, Enter = Up
-- [ ] **W-05** Click-and-drag on desktop mirrors touch (same Pointer Events path)
-- [ ] **W-06** Replace temporary buttons from Group U with server callbacks listening to `rustle-gesture`: L/R = index ±1, Up = commit (enter playlist / add track), Down = back one level
-- [ ] **W-07** Handle Down in track view → back to playlist queue; Down in playlist queue → clear search (returns to recents)
+- [x] **W-01** Create `assets/rustle.js` — Pointer Events listener on a `data-rustle-card-area="true"` element
+- [x] **W-02** Compute drag distance + dominant axis; ≥80 px commits a gesture (L / R / Up / Down)
+- [x] **W-03** Communicate the resolved gesture to Dash via a clientside callback writing to `dcc.Store(id="rustle-gesture")` with shape `{direction, ts}`
+- [x] **W-04** Bind `keydown`: ArrowLeft/Right = L/R, ArrowUp = Up, ArrowDown = Down, Enter = Up
+- [x] **W-05** Click-and-drag on desktop mirrors touch (same Pointer Events path)
+- [x] **W-06** Replace temporary buttons from Group U with server callbacks listening to `rustle-gesture`: L/R = index ±1, Up = commit (enter playlist / add track), Down = back one level
+- [x] **W-07** Handle Down in track view → back to playlist queue; Down in playlist queue → clear search (returns to recents)
 - [ ] **W-08** Manual smoke test: swipe on phone, arrow keys on desktop, drag on desktop — verify behaviors match Group U vertical slice
 
 ---
@@ -369,13 +369,13 @@ This slice deliberately omits: crate-stack perspective (single card only), audio
 ## Group X — Audio: Free `preview_url` Path
 > Depends on: U-16. Run in parallel with V, W.
 
-- [ ] **X-01** Add a single `<audio id="rustle-audio">` element in the layout (managed clientside)
-- [ ] **X-02** Add a clientside callback: when the current card changes, set `audio.src = preview_url` and call `audio.play()`
-- [ ] **X-03** Fade audio volume to 0 over ~200 ms before each card transition (clientside)
-- [ ] **X-04** If `preview_url` is null, show a small "No preview available" pill on the card and skip the play call
-- [ ] **X-05** Add a one-time "Tap to start" overlay on the very first card after Rustle entry; tapping it primes the `<audio>` element (iOS audio unlock)
-- [ ] **X-06** Persist "unlocked" state in a `dcc.Store(id="rustle-audio-unlocked")` for the session (so the overlay shows once per Rustle entry, not per card)
-- [ ] **X-07** Write `tests/test_rustle.py` — `track_card(track_without_preview)` includes the "No preview available" indicator
+- [x] **X-01** Add a single `<audio id="rustle-audio">` element in the layout (managed clientside)
+- [x] **X-02** Add a clientside callback: when the current card changes, set `audio.src = preview_url` and call `audio.play()`
+- [x] **X-03** Fade audio volume to 0 over ~200 ms before each card transition (clientside)
+- [x] **X-04** If `preview_url` is null, show a small "No preview available" pill on the card and skip the play call
+- [x] **X-05** Add a one-time "Tap to start" overlay on the very first card after Rustle entry; tapping it primes the `<audio>` element (iOS audio unlock)
+- [x] **X-06** Persist "unlocked" state in a `dcc.Store(id="rustle-audio-unlocked")` for the session (so the overlay shows once per Rustle entry, not per card)
+- [x] **X-07** Write `tests/test_rustle.py` — `track_card(track_without_preview)` includes the "No preview available" indicator
 - [ ] **X-08** Manual smoke test in iOS Safari (or DevTools mobile emulator with Safari iOS UA)
 
 ---
@@ -396,15 +396,15 @@ This slice deliberately omits: crate-stack perspective (single card only), audio
 ## Group Z — Selection: Dedupe, Counter, Animations
 > Depends on: U-16. Run in parallel with V, W, X.
 
-- [ ] **Z-01** Add a callback: on entering a playlist's track queue, call `get_playlist_track_uris(rustle-target)` and write to `dcc.Store(id="rustle-target-uris")`
-- [ ] **Z-02** Render the "Already added" badge on `track_card` when `track.uri ∈ rustle-target-uris` (component already supports this from Group T)
-- [ ] **Z-03** When the commit gesture fires on an already-added track, no-op and add a CSS shake class for ~200 ms
-- [ ] **Z-04** Implement the `added_stamp_overlay()` animation: scale-in + fade-out over ~600 ms via CSS keyframes
-- [ ] **Z-05** On successful add: show the stamp overlay on top of the card, wait ~400 ms, then animate the card off-screen (reuse `.rustle-card--exiting`)
-- [ ] **Z-06** Implement `add_counter_chip(n)` styling: fixed-position top-right, Spotify-green pill
-- [ ] **Z-07** Add a `dcc.Store(id="rustle-add-count")` initialized to 0; increment on each successful add via callback
-- [ ] **Z-08** Append the new URI to `rustle-target-uris` after each successful add so subsequent cards see the updated dedupe set
-- [ ] **Z-09** Write `tests/test_rustle.py` — counter chip renders `"+N added"` for `n > 0`, and is hidden for `n == 0`
+- [x] **Z-01** Add a callback: on entering a playlist's track queue, call `get_playlist_track_uris(rustle-target)` and write to `dcc.Store(id="rustle-target-uris")`
+- [x] **Z-02** Render the "Already added" badge on `track_card` when `track.uri ∈ rustle-target-uris` (component already supports this from Group T)
+- [x] **Z-03** When the commit gesture fires on an already-added track, no-op and add a CSS shake class for ~200 ms
+- [x] **Z-04** Implement the `added_stamp_overlay()` animation: scale-in + fade-out over ~600 ms via CSS keyframes
+- [x] **Z-05** On successful add: show the stamp overlay on top of the card, wait ~400 ms, then animate the card off-screen (reuse `.rustle-card--exiting`)
+- [x] **Z-06** Implement `add_counter_chip(n)` styling: fixed-position top-right, Spotify-green pill
+- [x] **Z-07** Add a `dcc.Store(id="rustle-add-count")` initialized to 0; increment on each successful add via callback
+- [x] **Z-08** Append the new URI to `rustle-target-uris` after each successful add so subsequent cards see the updated dedupe set
+- [x] **Z-09** Write `tests/test_rustle.py` — counter chip renders `"+N added"` for `n > 0`, and is hidden for `n == 0`
 
 ---
 
