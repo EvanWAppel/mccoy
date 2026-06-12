@@ -207,6 +207,18 @@ body, html {
 
 /* --- Rustling --- */
 
+/* W-01: gesture surface — stop the browser from scrolling or
+   selecting while a card is being dragged */
+[data-rustle-card-area="true"] {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+[data-rustle-card-area="true"] img {
+  -webkit-user-drag: none;
+}
+
 /* V-01: crate-of-records stack */
 .rustle-stack {
   position: relative;

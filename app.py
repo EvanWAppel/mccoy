@@ -5,7 +5,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from dash import Dash, html, dcc, Input, Output, State, ALL, ctx
+from dash import (
+    Dash, html, dcc, Input, Output, State, ALL, ctx, no_update,
+)
 from dash.exceptions import PreventUpdate
 import flask
 
@@ -184,6 +186,7 @@ def render_page(pathname):
                 dcc.Store(id="rustle-playlist-index", data=0),
                 dcc.Store(id="rustle-track-queue", data=[]),
                 dcc.Store(id="rustle-track-index", data=0),
+                dcc.Store(id="rustle-gesture", data=None),
             ],
         ),
     ])
@@ -271,6 +274,20 @@ def toggle_mode(mode):
     return {"display": "block"}, {"display": "none"}
 
 
+GESTURE_HINT = (
+    "Swipe or drag the card — or use arrow keys. "
+    "Up commits, down goes back."
+)
+
+
+def _gesture_area(children):
+    # W-01: assets/rustle.js attaches Pointer Events to this region
+    return html.Div(
+        children,
+        **{"data-rustle-card-area": "true"},
+    )
+
+
 def _rustle_search_view(queue, idx):
     children = [search_bar()]
     if not queue:
@@ -283,21 +300,13 @@ def _rustle_search_view(queue, idx):
         return html.Div(children)
     idx = max(0, min(idx, len(queue) - 1))
     children.append(
-        card_stack([playlist_card(p) for p in queue[idx : idx + 4]])
-    )
-    children.append(
-        html.Div(
-            style={"marginTop": "12px", "display": "flex", "gap": "8px"},
-            children=[
-                html.Button("← Prev", id="rustle-pl-prev", n_clicks=0),
-                html.Button("Enter →", id="rustle-pl-enter", n_clicks=0),
-                html.Button("Next", id="rustle-pl-next", n_clicks=0),
-            ],
+        _gesture_area(
+            card_stack([playlist_card(p) for p in queue[idx : idx + 4]])
         )
     )
     children.append(
         html.P(
-            f"{idx + 1} of {len(queue)}",
+            f"{idx + 1} of {len(queue)} — {GESTURE_HINT}",
             style={"color": "#b3b3b3", "fontSize": "0.8rem"},
         )
     )
@@ -306,37 +315,27 @@ def _rustle_search_view(queue, idx):
 
 def _rustle_track_view(queue, idx):
     if not queue:
-        return html.Div([
+        return _gesture_area([
             end_of_queue_card(
                 "This playlist has no playable tracks. "
-                "Press Back to pick another."
+                "Swipe down to pick another."
             ),
-            html.Button("↩ Back", id="rustle-tr-back", n_clicks=0),
         ])
     if idx >= len(queue):
-        return html.Div([
+        return _gesture_area([
             end_of_queue_card(
-                "You've flipped through every track in this playlist."
+                "You've flipped through every track in this playlist. "
+                "Swipe down to try another."
             ),
-            html.Button("↩ Back", id="rustle-tr-back", n_clicks=0),
         ])
     children = [
-        card_stack([track_card(t) for t in queue[idx : idx + 4]])
+        _gesture_area(
+            card_stack([track_card(t) for t in queue[idx : idx + 4]])
+        )
     ]
     children.append(
-        html.Div(
-            style={"marginTop": "12px", "display": "flex", "gap": "8px"},
-            children=[
-                html.Button("← Prev", id="rustle-tr-prev", n_clicks=0),
-                html.Button("+ Add", id="rustle-tr-add", n_clicks=0),
-                html.Button("Next", id="rustle-tr-next", n_clicks=0),
-                html.Button("↩ Back", id="rustle-tr-back", n_clicks=0),
-            ],
-        )
-    )
-    children.append(
         html.P(
-            f"{idx + 1} of {len(queue)}",
+            f"{idx + 1} of {len(queue)} — {GESTURE_HINT}",
             style={"color": "#b3b3b3", "fontSize": "0.8rem"},
         )
     )
@@ -412,41 +411,14 @@ def run_search(query):
     return results, 0
 
 
-@app.callback(
-    Output("rustle-playlist-index", "data", allow_duplicate=True),
-    Input("rustle-pl-prev", "n_clicks"),
-    Input("rustle-pl-next", "n_clicks"),
-    State("rustle-playlist-index", "data"),
-    State("rustle-playlist-queue", "data"),
-    prevent_initial_call=True,
-)
-def nav_playlist(prev_n, next_n, idx, queue):
-    if not queue:
-        raise PreventUpdate
-    trigger = ctx.triggered_id
-    if trigger == "rustle-pl-prev":
-        return max(0, idx - 1)
-    if trigger == "rustle-pl-next":
-        return min(len(queue) - 1, idx + 1)
-    raise PreventUpdate
+# W-06 / W-07: one dispatcher replaces the Group U temp buttons.
+# Search view: L/R = index ±1, Up = enter playlist, Down = clear
+# search. Track view: L/R = index ±1, Up = add track, Down = back
+# to the playlist queue.
 
 
-@app.callback(
-    Output("rustle-track-queue", "data"),
-    Output("rustle-track-index", "data", allow_duplicate=True),
-    Output("rustle-view", "data", allow_duplicate=True),
-    Input("rustle-pl-enter", "n_clicks"),
-    State("rustle-playlist-queue", "data"),
-    State("rustle-playlist-index", "data"),
-    prevent_initial_call=True,
-)
-def enter_playlist(n_clicks, queue, idx):
-    if not n_clicks or not queue:
-        raise PreventUpdate
+def _enter_playlist(sp, queue, idx):
     playlist = queue[idx]
-    sp = get_sp_from_session(flask.session)
-    if sp is None:
-        raise PreventUpdate
     try:
         tracks = get_playlist_tracks(sp, playlist["id"])
     except Exception as e:
@@ -455,60 +427,82 @@ def enter_playlist(n_clicks, queue, idx):
     return tracks, 0, "track"
 
 
-@app.callback(
-    Output("rustle-track-index", "data", allow_duplicate=True),
-    Input("rustle-tr-prev", "n_clicks"),
-    Input("rustle-tr-next", "n_clicks"),
-    State("rustle-track-index", "data"),
-    State("rustle-track-queue", "data"),
-    prevent_initial_call=True,
-)
-def nav_track(prev_n, next_n, idx, queue):
-    if not queue:
-        raise PreventUpdate
-    trigger = ctx.triggered_id
-    if trigger == "rustle-tr-prev":
-        return max(0, idx - 1)
-    if trigger == "rustle-tr-next":
-        return min(len(queue), idx + 1)
-    raise PreventUpdate
-
-
-@app.callback(
-    Output("rustle-track-index", "data", allow_duplicate=True),
-    Input("rustle-tr-add", "n_clicks"),
-    State("rustle-track-queue", "data"),
-    State("rustle-track-index", "data"),
-    State("rustle-target", "data"),
-    prevent_initial_call=True,
-)
-def add_track(n_clicks, queue, idx, target):
-    if not n_clicks or not queue or not target:
-        raise PreventUpdate
-    if idx >= len(queue):
-        raise PreventUpdate
+def _add_current_track(sp, queue, idx, target):
+    if idx >= len(queue) or not target:
+        return
     track = queue[idx]
-    sp = get_sp_from_session(flask.session)
-    if sp is None:
-        raise PreventUpdate
     try:
         add_track_to_playlist(sp, target, track["uri"])
         logger.info("Added %s to %s", track["uri"], target)
     except Exception as e:
         logger.warning("add_track_to_playlist failed: %s", e)
-    # Advance to next track
-    return min(len(queue), idx + 1)
 
 
 @app.callback(
+    Output("rustle-playlist-queue", "data", allow_duplicate=True),
+    Output("rustle-playlist-index", "data", allow_duplicate=True),
+    Output("rustle-track-queue", "data"),
+    Output("rustle-track-index", "data", allow_duplicate=True),
     Output("rustle-view", "data", allow_duplicate=True),
-    Input("rustle-tr-back", "n_clicks"),
+    Input("rustle-gesture", "data"),
+    State("rustle-view", "data"),
+    State("rustle-target", "data"),
+    State("rustle-playlist-queue", "data"),
+    State("rustle-playlist-index", "data"),
+    State("rustle-track-queue", "data"),
+    State("rustle-track-index", "data"),
     prevent_initial_call=True,
 )
-def back_to_search(n_clicks):
-    if not n_clicks:
+def handle_gesture(
+    gesture, view, target, pl_queue, pl_idx, tr_queue, tr_idx
+):
+    if not gesture or not gesture.get("direction"):
         raise PreventUpdate
-    return "search"
+    direction = gesture["direction"]
+    sp = get_sp_from_session(flask.session)
+    if sp is None:
+        raise PreventUpdate
+    keep = no_update
+
+    if view == "track":
+        if direction == "left":
+            return keep, keep, keep, max(0, tr_idx - 1), keep
+        if direction == "right":
+            if not tr_queue:
+                raise PreventUpdate
+            # len(queue) is the end-of-queue card position
+            return (
+                keep, keep, keep,
+                min(len(tr_queue), tr_idx + 1), keep,
+            )
+        if direction == "up":
+            if not tr_queue or tr_idx >= len(tr_queue):
+                raise PreventUpdate
+            _add_current_track(sp, tr_queue, tr_idx, target)
+            return (
+                keep, keep, keep,
+                min(len(tr_queue), tr_idx + 1), keep,
+            )
+        if direction == "down":
+            return keep, keep, keep, keep, "search"
+        raise PreventUpdate
+
+    # search (playlist queue) view
+    if direction == "left":
+        return keep, max(0, pl_idx - 1), keep, keep, keep
+    if direction == "right":
+        if not pl_queue:
+            raise PreventUpdate
+        return keep, min(len(pl_queue) - 1, pl_idx + 1), keep, keep, keep
+    if direction == "up":
+        if not pl_queue:
+            raise PreventUpdate
+        tracks, tr_idx0, view0 = _enter_playlist(sp, pl_queue, pl_idx)
+        return keep, keep, tracks, tr_idx0, view0
+    if direction == "down":
+        # W-07: clear the search results (recents return in Group BB)
+        return [], 0, keep, keep, keep
+    raise PreventUpdate
 
 
 if __name__ == "__main__":
