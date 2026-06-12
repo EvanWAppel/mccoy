@@ -160,4 +160,9 @@ def added_stamp_overlay():
 
 
 def add_counter_chip(n: int):
+    # Z-09: hidden until the first add of the session
+    if not n or n <= 0:
+        return html.Div(
+            className="rustle-counter-chip rustle-counter-chip--hidden"
+        )
     return html.Div(f"+{n} added", className="rustle-counter-chip")

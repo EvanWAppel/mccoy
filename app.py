@@ -21,6 +21,7 @@ from spotify import (
     search_playlists,
     get_playlist_tracks,
     add_track_to_playlist,
+    get_playlist_track_uris,
 )
 from components.header import render_header
 from components.artist_grid import render_grid
@@ -34,6 +35,7 @@ from components.rustle import (
     end_of_queue_card,
     card_stack,
     tap_to_start_overlay,
+    add_counter_chip,
 )
 
 logger = logging.getLogger(__name__)
@@ -191,6 +193,8 @@ def render_page(pathname):
                 dcc.Store(id="rustle-gesture", data=None),
                 dcc.Store(id="rustle-audio-unlocked", data=False),
                 dcc.Store(id="rustle-audio-sink", data=None),
+                dcc.Store(id="rustle-target-uris", data=[]),
+                dcc.Store(id="rustle-add-count", data=0),
                 html.Audio(id="rustle-audio", preload="auto"),
             ],
         ),
@@ -318,7 +322,8 @@ def _rustle_search_view(queue, idx):
     return html.Div(children)
 
 
-def _rustle_track_view(queue, idx, audio_unlocked=False):
+def _rustle_track_view(queue, idx, audio_unlocked=False, target_uris=None):
+    added = set(target_uris or [])
     if not queue:
         return _gesture_area([
             end_of_queue_card(
@@ -333,7 +338,12 @@ def _rustle_track_view(queue, idx, audio_unlocked=False):
                 "Swipe down to try another."
             ),
         ])
-    area = [card_stack([track_card(t) for t in queue[idx : idx + 4]])]
+    area = [
+        card_stack([
+            track_card(t, already_added=t["uri"] in added)
+            for t in queue[idx : idx + 4]
+        ])
+    ]
     if not audio_unlocked:
         area.append(tap_to_start_overlay())
     children = [_gesture_area(area)]
@@ -356,10 +366,12 @@ def _rustle_track_view(queue, idx, audio_unlocked=False):
     Input("rustle-track-queue", "data"),
     Input("rustle-track-index", "data"),
     Input("rustle-audio-unlocked", "data"),
+    Input("rustle-target-uris", "data"),
+    Input("rustle-add-count", "data"),
 )
 def render_rustle_content(
     mode, view, target, pl_queue, pl_idx, tr_queue, tr_idx,
-    audio_unlocked,
+    audio_unlocked, target_uris, add_count,
 ):
     if mode != "rustle":
         return None
@@ -375,8 +387,13 @@ def render_rustle_content(
         logger.info("Rustle target picker: %d playlists", len(playlists))
         return target_picker(playlists)
     if view == "track":
-        return _rustle_track_view(tr_queue, tr_idx, audio_unlocked)
-    return _rustle_search_view(pl_queue, pl_idx)
+        body = _rustle_track_view(
+            tr_queue, tr_idx, audio_unlocked, target_uris
+        )
+    else:
+        body = _rustle_search_view(pl_queue, pl_idx)
+    # Z-06 / Z-07: session add counter, fixed top-right
+    return html.Div([body, add_counter_chip(add_count or 0)])
 
 
 @app.callback(
@@ -433,15 +450,26 @@ def _enter_playlist(sp, queue, idx):
     return tracks, 0, "track"
 
 
-def _add_current_track(sp, queue, idx, target):
+def _fetch_target_uris(sp, target):
+    # Z-01: dedupe set against the target playlist
+    try:
+        return sorted(get_playlist_track_uris(sp, target))
+    except Exception as e:
+        logger.warning("get_playlist_track_uris failed: %s", e)
+        return []
+
+
+def _add_current_track(sp, queue, idx, target) -> bool:
     if idx >= len(queue) or not target:
-        return
+        return False
     track = queue[idx]
     try:
         add_track_to_playlist(sp, target, track["uri"])
         logger.info("Added %s to %s", track["uri"], target)
+        return True
     except Exception as e:
         logger.warning("add_track_to_playlist failed: %s", e)
+        return False
 
 
 @app.callback(
@@ -450,6 +478,8 @@ def _add_current_track(sp, queue, idx, target):
     Output("rustle-track-queue", "data"),
     Output("rustle-track-index", "data", allow_duplicate=True),
     Output("rustle-view", "data", allow_duplicate=True),
+    Output("rustle-target-uris", "data"),
+    Output("rustle-add-count", "data"),
     Input("rustle-gesture", "data"),
     State("rustle-view", "data"),
     State("rustle-target", "data"),
@@ -457,10 +487,13 @@ def _add_current_track(sp, queue, idx, target):
     State("rustle-playlist-index", "data"),
     State("rustle-track-queue", "data"),
     State("rustle-track-index", "data"),
+    State("rustle-target-uris", "data"),
+    State("rustle-add-count", "data"),
     prevent_initial_call=True,
 )
 def handle_gesture(
-    gesture, view, target, pl_queue, pl_idx, tr_queue, tr_idx
+    gesture, view, target, pl_queue, pl_idx, tr_queue, tr_idx,
+    target_uris, add_count,
 ):
     if not gesture or not gesture.get("direction"):
         raise PreventUpdate
@@ -472,42 +505,61 @@ def handle_gesture(
 
     if view == "track":
         if direction == "left":
-            return keep, keep, keep, max(0, tr_idx - 1), keep
+            return (
+                keep, keep, keep, max(0, tr_idx - 1), keep, keep, keep,
+            )
         if direction == "right":
             if not tr_queue:
                 raise PreventUpdate
             # len(queue) is the end-of-queue card position
             return (
                 keep, keep, keep,
-                min(len(tr_queue), tr_idx + 1), keep,
+                min(len(tr_queue), tr_idx + 1), keep, keep, keep,
             )
         if direction == "up":
             if not tr_queue or tr_idx >= len(tr_queue):
                 raise PreventUpdate
-            _add_current_track(sp, tr_queue, tr_idx, target)
+            uri = tr_queue[tr_idx]["uri"]
+            if uri in set(target_uris or []):
+                # Z-03: already in the target — no-op (the shake
+                # animation happens clientside)
+                raise PreventUpdate
+            ok = _add_current_track(sp, tr_queue, tr_idx, target)
+            new_uris = keep
+            new_count = keep
+            if ok:
+                # Z-07 / Z-08: bump the counter and grow the
+                # dedupe set so later cards see this add
+                new_uris = (target_uris or []) + [uri]
+                new_count = (add_count or 0) + 1
             return (
                 keep, keep, keep,
                 min(len(tr_queue), tr_idx + 1), keep,
+                new_uris, new_count,
             )
         if direction == "down":
-            return keep, keep, keep, keep, "search"
+            return keep, keep, keep, keep, "search", keep, keep
         raise PreventUpdate
 
     # search (playlist queue) view
     if direction == "left":
-        return keep, max(0, pl_idx - 1), keep, keep, keep
+        return keep, max(0, pl_idx - 1), keep, keep, keep, keep, keep
     if direction == "right":
         if not pl_queue:
             raise PreventUpdate
-        return keep, min(len(pl_queue) - 1, pl_idx + 1), keep, keep, keep
+        return (
+            keep, min(len(pl_queue) - 1, pl_idx + 1),
+            keep, keep, keep, keep, keep,
+        )
     if direction == "up":
         if not pl_queue:
             raise PreventUpdate
         tracks, tr_idx0, view0 = _enter_playlist(sp, pl_queue, pl_idx)
-        return keep, keep, tracks, tr_idx0, view0
+        uris = _fetch_target_uris(sp, target)
+        return keep, keep, tracks, tr_idx0, view0, uris, keep
     if direction == "down":
         # W-07: clear the search results (recents return in Group BB)
-        return [], 0, keep, keep, keep
+        return [], 0, keep, keep, keep, keep, keep
     raise PreventUpdate
 
 

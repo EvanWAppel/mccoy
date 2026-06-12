@@ -99,15 +99,42 @@
     }
   }
 
+  function animateExit(card, direction) {
+    // V-03: optimistic exit while the server round-trip runs
+    card.classList.add(
+      "rustle-card--exiting",
+      "rustle-card--exiting-" + direction
+    );
+  }
+
   function commit(direction) {
     var card = topCard();
-    if (card) {
-      // V-03: optimistic exit while the server round-trip runs
-      card.classList.add(
-        "rustle-card--exiting",
-        "rustle-card--exiting-" + direction
-      );
+    if (!card) {
+      sendGesture(direction);
+      return;
     }
+    var isTrack = card.classList.contains("rustle-card--track");
+    if (direction === "up" && isTrack) {
+      if (card.querySelector(".rustle-card__badge")) {
+        // Z-03: already in the target — shake, don't dispatch
+        card.classList.add("rustle-card--shake");
+        setTimeout(function () {
+          card.classList.remove("rustle-card--shake");
+        }, 250);
+        return;
+      }
+      // Z-05: stamp first, then fly the card off and dispatch
+      var stamp = document.createElement("div");
+      stamp.className = "added-stamp";
+      stamp.textContent = "Added";
+      card.appendChild(stamp);
+      setTimeout(function () {
+        animateExit(card, "up");
+        sendGesture("up");
+      }, 400);
+      return;
+    }
+    animateExit(card, direction);
     sendGesture(direction);
   }
 

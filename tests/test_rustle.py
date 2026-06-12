@@ -213,6 +213,17 @@ class TestAddCounterChip:
         result = add_counter_chip(3)
         assert _contains_text(result, "+3 added")
 
+    def test_zero_is_hidden(self):
+        result = add_counter_chip(0)
+        assert not _contains_text(result, "added")
+        assert "rustle-counter-chip--hidden" in (result.className or "")
+
+    def test_positive_is_not_hidden(self):
+        result = add_counter_chip(1)
+        assert "rustle-counter-chip--hidden" not in (
+            result.className or ""
+        )
+
 
 class TestTapToStartOverlay:
     def test_returns_div(self):
