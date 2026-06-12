@@ -5,6 +5,73 @@
  * dcc.Store via dash_clientside.set_props. Listeners live on
  * document because Dash re-renders the card area on every update.
  */
+/* Group X: clientside audio for the free preview_url path. */
+(function () {
+  var FADE_MS = 200; // X-03
+  var FADE_STEPS = 10;
+  // Short silent wav so the unlock tap has something to play
+  var SILENT_WAV =
+    "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAf" +
+    "AAABAAgAZGF0YQAAAAA=";
+
+  function getAudio() {
+    return document.getElementById("rustle-audio");
+  }
+
+  function fadeOut(audio, done) {
+    if (!audio || audio.paused) {
+      if (done) done();
+      return;
+    }
+    var step = audio.volume / FADE_STEPS;
+    var timer = setInterval(function () {
+      var v = audio.volume - step;
+      if (v <= 0) {
+        audio.volume = 0;
+        audio.pause();
+        clearInterval(timer);
+        if (done) done();
+      } else {
+        audio.volume = v;
+      }
+    }, FADE_MS / FADE_STEPS);
+  }
+
+  window.dash_clientside = window.dash_clientside || {};
+  window.dash_clientside.rustle = {
+    // X-02..X-04: on card change, fade the old preview out, then
+    // play the new card's preview (or stay silent without one)
+    playPreview: function (idx, queue, view, unlocked) {
+      var audio = getAudio();
+      if (!audio) return window.dash_clientside.no_update;
+      var track =
+        view === "track" && unlocked && queue && queue[idx]
+          ? queue[idx]
+          : null;
+      fadeOut(audio, function () {
+        if (!track || !track.preview_url) return; // X-04
+        audio.src = track.preview_url;
+        audio.volume = 1;
+        audio.play().catch(function () {
+          /* autoplay rejection — user can gesture again */
+        });
+      });
+      return window.dash_clientside.no_update;
+    },
+
+    // X-05: prime the audio element inside the tap gesture
+    unlockAudio: function (n_clicks) {
+      if (!n_clicks) return window.dash_clientside.no_update;
+      var audio = getAudio();
+      if (audio) {
+        audio.src = SILENT_WAV;
+        audio.play().catch(function () {});
+      }
+      return true;
+    },
+  };
+})();
+
 (function () {
   var COMMIT_PX = 80; // W-02: minimum drag distance to commit
 

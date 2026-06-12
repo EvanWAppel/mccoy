@@ -141,6 +141,20 @@ def end_of_queue_card(message: str):
     )
 
 
+def tap_to_start_overlay():
+    # X-05: one-time overlay whose tap primes the <audio> element
+    # inside a user gesture (iOS audio unlock).
+    return html.Div(
+        html.Button(
+            "Tap to start",
+            id="rustle-audio-unlock",
+            n_clicks=0,
+            className="rustle-unlock__btn",
+        ),
+        className="rustle-unlock",
+    )
+
+
 def added_stamp_overlay():
     return html.Div("Added", className="added-stamp")
 

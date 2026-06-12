@@ -16,6 +16,7 @@ try:
         added_stamp_overlay,
         add_counter_chip,
         card_stack,
+        tap_to_start_overlay,
     )
 except ImportError:
     pytest.skip(
@@ -211,6 +212,20 @@ class TestAddCounterChip:
     def test_renders_count(self):
         result = add_counter_chip(3)
         assert _contains_text(result, "+3 added")
+
+
+class TestTapToStartOverlay:
+    def test_returns_div(self):
+        result = tap_to_start_overlay()
+        assert isinstance(result, html.Div)
+
+    def test_contains_unlock_button(self):
+        result = tap_to_start_overlay()
+        assert _find_id(result, "rustle-audio-unlock") is not None
+
+    def test_contains_prompt_text(self):
+        result = tap_to_start_overlay()
+        assert _contains_text(result, "Tap to start")
 
 
 class TestCardStack:

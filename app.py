@@ -7,6 +7,7 @@ load_dotenv()
 
 from dash import (
     Dash, html, dcc, Input, Output, State, ALL, ctx, no_update,
+    ClientsideFunction,
 )
 from dash.exceptions import PreventUpdate
 import flask
@@ -32,6 +33,7 @@ from components.rustle import (
     track_card,
     end_of_queue_card,
     card_stack,
+    tap_to_start_overlay,
 )
 
 logger = logging.getLogger(__name__)
@@ -187,6 +189,9 @@ def render_page(pathname):
                 dcc.Store(id="rustle-track-queue", data=[]),
                 dcc.Store(id="rustle-track-index", data=0),
                 dcc.Store(id="rustle-gesture", data=None),
+                dcc.Store(id="rustle-audio-unlocked", data=False),
+                dcc.Store(id="rustle-audio-sink", data=None),
+                html.Audio(id="rustle-audio", preload="auto"),
             ],
         ),
     ])
@@ -313,7 +318,7 @@ def _rustle_search_view(queue, idx):
     return html.Div(children)
 
 
-def _rustle_track_view(queue, idx):
+def _rustle_track_view(queue, idx, audio_unlocked=False):
     if not queue:
         return _gesture_area([
             end_of_queue_card(
@@ -328,11 +333,10 @@ def _rustle_track_view(queue, idx):
                 "Swipe down to try another."
             ),
         ])
-    children = [
-        _gesture_area(
-            card_stack([track_card(t) for t in queue[idx : idx + 4]])
-        )
-    ]
+    area = [card_stack([track_card(t) for t in queue[idx : idx + 4]])]
+    if not audio_unlocked:
+        area.append(tap_to_start_overlay())
+    children = [_gesture_area(area)]
     children.append(
         html.P(
             f"{idx + 1} of {len(queue)} — {GESTURE_HINT}",
@@ -351,9 +355,11 @@ def _rustle_track_view(queue, idx):
     Input("rustle-playlist-index", "data"),
     Input("rustle-track-queue", "data"),
     Input("rustle-track-index", "data"),
+    Input("rustle-audio-unlocked", "data"),
 )
 def render_rustle_content(
-    mode, view, target, pl_queue, pl_idx, tr_queue, tr_idx
+    mode, view, target, pl_queue, pl_idx, tr_queue, tr_idx,
+    audio_unlocked,
 ):
     if mode != "rustle":
         return None
@@ -369,7 +375,7 @@ def render_rustle_content(
         logger.info("Rustle target picker: %d playlists", len(playlists))
         return target_picker(playlists)
     if view == "track":
-        return _rustle_track_view(tr_queue, tr_idx)
+        return _rustle_track_view(tr_queue, tr_idx, audio_unlocked)
     return _rustle_search_view(pl_queue, pl_idx)
 
 
@@ -503,6 +509,25 @@ def handle_gesture(
         # W-07: clear the search results (recents return in Group BB)
         return [], 0, keep, keep, keep
     raise PreventUpdate
+
+
+# X-02..X-04: play/fade the preview clientside on card change
+app.clientside_callback(
+    ClientsideFunction(namespace="rustle", function_name="playPreview"),
+    Output("rustle-audio-sink", "data"),
+    Input("rustle-track-index", "data"),
+    Input("rustle-track-queue", "data"),
+    Input("rustle-view", "data"),
+    Input("rustle-audio-unlocked", "data"),
+)
+
+# X-05 / X-06: prime the audio element inside the tap gesture
+app.clientside_callback(
+    ClientsideFunction(namespace="rustle", function_name="unlockAudio"),
+    Output("rustle-audio-unlocked", "data"),
+    Input("rustle-audio-unlock", "n_clicks"),
+    prevent_initial_call=True,
+)
 
 
 if __name__ == "__main__":
