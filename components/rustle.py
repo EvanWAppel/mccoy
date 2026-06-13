@@ -5,9 +5,20 @@ def mode_switcher():
     return dcc.Tabs(
         id="mode-tabs",
         value="stats",
+        className="mode-tabs",
         children=[
-            dcc.Tab(label="Stats", value="stats"),
-            dcc.Tab(label="Rustle", value="rustle"),
+            dcc.Tab(
+                label="Stats",
+                value="stats",
+                className="mode-tab",
+                selected_className="mode-tab--selected",
+            ),
+            dcc.Tab(
+                label="Rustle",
+                value="rustle",
+                className="mode-tab",
+                selected_className="mode-tab--selected",
+            ),
         ],
     )
 
@@ -27,7 +38,6 @@ def target_picker(playlists):
             "Create new…",
             id="rustle-target-create-new",
             n_clicks=0,
-            disabled=True,
             className="rustle-picker__btn rustle-picker__btn--create",
         )
     )
@@ -36,6 +46,46 @@ def target_picker(playlists):
         children=[
             html.H3("Rustle into…", className="rustle-picker__title"),
             html.Div(items, className="rustle-picker__list"),
+        ],
+    )
+
+
+def create_playlist_form():
+    # CC-02: replaces the picker list while naming a new playlist
+    return html.Div(
+        className="rustle-picker",
+        children=[
+            html.H3(
+                "Name your new playlist",
+                className="rustle-picker__title",
+            ),
+            dcc.Input(
+                id="rustle-new-name",
+                type="text",
+                placeholder="Playlist name…",
+                debounce=False,
+                className="rustle-search__input",
+            ),
+            html.Div(
+                className="rustle-picker__actions",
+                children=[
+                    html.Button(
+                        "Create",
+                        id="rustle-create-btn",
+                        n_clicks=0,
+                        className=(
+                            "rustle-picker__btn "
+                            "rustle-picker__btn--confirm"
+                        ),
+                    ),
+                    html.Button(
+                        "Cancel",
+                        id="rustle-create-cancel",
+                        n_clicks=0,
+                        className="rustle-picker__btn",
+                    ),
+                ],
+            ),
         ],
     )
 

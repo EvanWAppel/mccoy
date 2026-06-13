@@ -22,6 +22,7 @@ from spotify import (
     get_playlist_tracks,
     add_track_to_playlist,
     get_playlist_track_uris,
+    create_playlist,
 )
 from components.header import render_header
 from components.artist_grid import render_grid
@@ -36,6 +37,7 @@ from components.rustle import (
     card_stack,
     tap_to_start_overlay,
     add_counter_chip,
+    create_playlist_form,
 )
 
 logger = logging.getLogger(__name__)
@@ -182,7 +184,15 @@ def render_page(pathname):
                         ),
                     ],
                 ),
-                html.Div(id="rustle-content", style={"display": "none"}),
+                html.Div(
+                    id="rustle-wrap",
+                    style={"display": "none"},
+                    children=dcc.Loading(
+                        type="circle",
+                        color="#1db954",
+                        children=html.Div(id="rustle-content"),
+                    ),
+                ),
                 dcc.Store(id="rustle-user-id", data=profile.get("user_id", "")),
                 dcc.Store(id="rustle-target", data=None),
                 dcc.Store(id="rustle-view", data="picker"),
@@ -195,6 +205,7 @@ def render_page(pathname):
                 dcc.Store(id="rustle-audio-sink", data=None),
                 dcc.Store(id="rustle-target-uris", data=[]),
                 dcc.Store(id="rustle-add-count", data=0),
+                dcc.Store(id="rustle-picker-mode", data="list"),
                 html.Audio(id="rustle-audio", preload="auto"),
             ],
         ),
@@ -274,7 +285,7 @@ def update_bump_chart(n):
 
 @app.callback(
     Output("stats-content", "style"),
-    Output("rustle-content", "style"),
+    Output("rustle-wrap", "style"),
     Input("mode-tabs", "value"),
 )
 def toggle_mode(mode):
@@ -368,10 +379,11 @@ def _rustle_track_view(queue, idx, audio_unlocked=False, target_uris=None):
     Input("rustle-audio-unlocked", "data"),
     Input("rustle-target-uris", "data"),
     Input("rustle-add-count", "data"),
+    Input("rustle-picker-mode", "data"),
 )
 def render_rustle_content(
     mode, view, target, pl_queue, pl_idx, tr_queue, tr_idx,
-    audio_unlocked, target_uris, add_count,
+    audio_unlocked, target_uris, add_count, picker_mode,
 ):
     if mode != "rustle":
         return None
@@ -379,6 +391,8 @@ def render_rustle_content(
     if sp is None:
         return html.P("Not authenticated.", style={"color": "#b3b3b3"})
     if not target:
+        if picker_mode == "create":
+            return create_playlist_form()
         try:
             playlists = get_user_playlists(sp)
         except Exception as e:
@@ -427,7 +441,7 @@ def run_search(query):
     if sp is None:
         raise PreventUpdate
     try:
-        results = search_playlists(sp, query.strip(), limit=20)
+        results = search_playlists(sp, query.strip())
     except Exception as e:
         logger.warning("search_playlists failed: %s", e)
         results = []
@@ -561,6 +575,47 @@ def handle_gesture(
         # W-07: clear the search results (recents return in Group BB)
         return [], 0, keep, keep, keep, keep, keep
     raise PreventUpdate
+
+
+# CC-02: toggle the picker between list and create-input modes
+@app.callback(
+    Output("rustle-picker-mode", "data", allow_duplicate=True),
+    Input("rustle-target-create-new", "n_clicks"),
+    Input("rustle-create-cancel", "n_clicks"),
+    prevent_initial_call=True,
+)
+def toggle_picker_mode(create_n, cancel_n):
+    trigger = ctx.triggered_id
+    if trigger == "rustle-target-create-new" and create_n:
+        return "create"
+    if trigger == "rustle-create-cancel" and cancel_n:
+        return "list"
+    raise PreventUpdate
+
+
+# CC-03: create the playlist and make it the Rustle target
+@app.callback(
+    Output("rustle-target", "data", allow_duplicate=True),
+    Output("rustle-view", "data", allow_duplicate=True),
+    Output("rustle-picker-mode", "data", allow_duplicate=True),
+    Input("rustle-create-btn", "n_clicks"),
+    State("rustle-new-name", "value"),
+    State("rustle-user-id", "data"),
+    prevent_initial_call=True,
+)
+def create_new_target(n_clicks, name, user_id):
+    if not n_clicks or not name or not name.strip():
+        raise PreventUpdate
+    sp = get_sp_from_session(flask.session)
+    if sp is None:
+        raise PreventUpdate
+    try:
+        playlist_id = create_playlist(sp, user_id, name.strip())
+        logger.info("Created playlist %r (%s)", name.strip(), playlist_id)
+    except Exception as e:
+        logger.warning("create_playlist failed: %s", e)
+        raise PreventUpdate
+    return playlist_id, "search", "list"
 
 
 # X-02..X-04: play/fade the preview clientside on card change

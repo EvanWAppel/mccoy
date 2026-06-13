@@ -17,6 +17,7 @@ try:
         add_counter_chip,
         card_stack,
         tap_to_start_overlay,
+        create_playlist_form,
     )
 except ImportError:
     pytest.skip(
@@ -223,6 +224,33 @@ class TestAddCounterChip:
         assert "rustle-counter-chip--hidden" not in (
             result.className or ""
         )
+
+
+class TestCreatePlaylistFlow:
+    # CC-05: the picker toggles between the playlist dropdown and
+    # the create-input mode
+    def test_create_new_option_is_enabled(self):
+        result = target_picker([SAMPLE_PLAYLIST])
+        btn = _find_id(result, "rustle-target-create-new")
+        assert btn is not None
+        assert not getattr(btn, "disabled", False)
+
+    def test_form_returns_div(self):
+        result = create_playlist_form()
+        assert isinstance(result, html.Div)
+
+    def test_form_has_name_input(self):
+        result = create_playlist_form()
+        node = _find_id(result, "rustle-new-name")
+        assert isinstance(node, dcc.Input)
+
+    def test_form_has_create_button(self):
+        result = create_playlist_form()
+        assert _find_id(result, "rustle-create-btn") is not None
+
+    def test_form_has_cancel_button(self):
+        result = create_playlist_form()
+        assert _find_id(result, "rustle-create-cancel") is not None
 
 
 class TestTapToStartOverlay:

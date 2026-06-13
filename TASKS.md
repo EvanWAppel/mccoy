@@ -436,11 +436,11 @@ This slice deliberately omits: crate-stack perspective (single card only), audio
 ## Group CC — Create-new Playlist Flow
 > Depends on: U-16, R-05 (`create_playlist`).
 
-- [ ] **CC-01** Add a "Create new…" entry to the picker dropdown (already covered in Group T-02)
-- [ ] **CC-02** On selection, swap the dropdown UI for a single name input + Create button
-- [ ] **CC-03** On Create click, call `spotify.create_playlist(sp, user_id, name)` and use the returned `id` as `rustle-target`
-- [ ] **CC-04** Render the picker view's loading state while the create call is in flight
-- [ ] **CC-05** Write `tests/test_rustle.py` — picker toggles between dropdown and create-input modes correctly
+- [x] **CC-01** Add a "Create new…" entry to the picker dropdown (already covered in Group T-02)
+- [x] **CC-02** On selection, swap the dropdown UI for a single name input + Create button
+- [x] **CC-03** On Create click, call `spotify.create_playlist(sp, user_id, name)` and use the returned `id` as `rustle-target`
+- [x] **CC-04** Render the picker view's loading state while the create call is in flight
+- [x] **CC-05** Write `tests/test_rustle.py` — picker toggles between dropdown and create-input modes correctly
 
 ---
 
@@ -453,7 +453,7 @@ This slice deliberately omits: crate-stack perspective (single card only), audio
 - [ ] **DD-04** Implement the album-track end-of-queue card (AA-05 covers this; cross-reference)
 - [ ] **DD-05** Swipe Down on any end-of-queue card → return to the previous queue
 - [ ] **DD-06** Write `tests/test_rustle.py` — `end_of_queue_card` renders the right message per context
-- [ ] **DD-07** Write `tests/test_spotify.py` — pagination math: searching with `limit=20, offset=40` calls the API with the right args
+- [ ] **DD-07** Write `tests/test_spotify.py` — pagination math: searching with `offset=40` calls the API with the right args (note: Spotify caps playlist-search `limit` at 10 since ~2026; `search_playlists` clamps accordingly)
 
 ---
 

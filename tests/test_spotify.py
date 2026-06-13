@@ -125,7 +125,18 @@ class TestSearchPlaylists:
         }
         search_playlists(mock_sp, "indie")
         mock_sp.search.assert_called_once_with(
-            q="indie", type="playlist", limit=20, offset=0
+            q="indie", type="playlist", limit=10, offset=0
+        )
+
+    def test_limit_capped_at_spotify_playlist_max(self, mock_sp):
+        # Spotify rejects limit > 10 on type=playlist searches with
+        # 400 Invalid limit (observed live, 2026-06)
+        mock_sp.search.return_value = {
+            "playlists": {"items": [], "next": None}
+        }
+        search_playlists(mock_sp, "indie", limit=50)
+        mock_sp.search.assert_called_once_with(
+            q="indie", type="playlist", limit=10, offset=0
         )
 
     def test_returns_dicts_with_id_name_image_url(self, mock_sp):
@@ -163,7 +174,7 @@ class TestSearchPlaylists:
         }
         search_playlists(mock_sp, "indie", offset=40)
         mock_sp.search.assert_called_once_with(
-            q="indie", type="playlist", limit=20, offset=40
+            q="indie", type="playlist", limit=10, offset=40
         )
 
     def test_handles_playlist_with_no_image(self, mock_sp):
