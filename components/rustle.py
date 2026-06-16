@@ -90,7 +90,7 @@ def create_playlist_form():
     )
 
 
-def search_bar():
+def search_bar(value=""):
     return html.Div(
         className="rustle-search",
         children=[
@@ -98,6 +98,7 @@ def search_bar():
                 id="rustle-search",
                 type="search",
                 placeholder="Search playlists…",
+                value=value,
                 debounce=True,
                 className="rustle-search__input",
             ),
@@ -128,14 +129,20 @@ def recents_chips(queries):
     return html.Div(chips, className="rustle-recents")
 
 
+def _card_art(image_url):
+    # EE-03: grey placeholder square when art is missing
+    if image_url:
+        return html.Img(src=image_url, className="rustle-card__art")
+    return html.Div(
+        className="rustle-card__art rustle-card__art--placeholder"
+    )
+
+
 def playlist_card(playlist):
     return html.Div(
         className="rustle-card rustle-card--playlist",
         children=[
-            html.Img(
-                src=playlist.get("image_url"),
-                className="rustle-card__art",
-            ),
+            _card_art(playlist.get("image_url")),
             html.Div(
                 playlist["name"],
                 className="rustle-card__title",
@@ -146,10 +153,7 @@ def playlist_card(playlist):
 
 def track_card(track, already_added: bool = False):
     children = [
-        html.Img(
-            src=track.get("album_image_url"),
-            className="rustle-card__art",
-        ),
+        _card_art(track.get("album_image_url")),
         html.Div(track["name"], className="rustle-card__title"),
     ]
     if already_added:
@@ -180,6 +184,27 @@ def card_stack(cards):
         for i, card in enumerate(cards[:4])
     ]
     return html.Div(slots, className="rustle-stack")
+
+
+def no_results_state(recents=None):
+    # EE-01: zero search results, with recents below to recover
+    children = [
+        html.P(
+            "No playlists found. Try a different search.",
+            className="rustle-no-results",
+        )
+    ]
+    if recents:
+        children.append(recents_chips(recents))
+    return html.Div(children, className="rustle-empty")
+
+
+def error_toast(message: str, kind: str = "error"):
+    # EE-05 / EE-06: non-blocking error / offline notice
+    return html.Div(
+        message,
+        className=f"rustle-toast rustle-toast--{kind}",
+    )
 
 
 def end_of_queue_card(message: str):

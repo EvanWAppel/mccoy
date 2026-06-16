@@ -207,6 +207,31 @@ body, html {
 
 /* --- Rustling --- */
 
+/* FF-02: keep Rustle mode card-shaped and centered on desktop */
+#rustle-wrap {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* FF-01: cap the crate so it stays card-shaped on wide viewports */
+.rustle-stack {
+  max-width: min(92vw, 400px);
+}
+
+@media (max-width: 480px) {
+  .rustle-stack {
+    max-width: 100%;
+  }
+  .mode-tab {
+    font-size: 0.8rem !important;
+    padding: 9px 0 !important;
+  }
+  .rustle-counter-chip {
+    top: 64px;
+    right: 10px;
+  }
+}
+
 /* Mode switcher: pill tabs, green rounded outline marks the mode */
 .mode-tabs {
   display: flex !important;
@@ -237,6 +262,77 @@ body, html {
   background-color: rgba(29, 185, 84, 0.08) !important;
   border: 2px solid var(--accent) !important;
   color: var(--text-primary) !important;
+}
+
+/* EE-03: missing-art placeholder */
+.rustle-card__art--placeholder {
+  background: repeating-linear-gradient(
+    45deg, #2a2a2a, #2a2a2a 12px, #303030 12px, #303030 24px
+  );
+}
+
+/* BB: recent-search chips */
+.rustle-recents {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+  max-width: 420px;
+}
+
+.rustle-recents__chip {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid #333;
+  border-radius: 50px;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.rustle-recents__chip:hover {
+  border-color: var(--accent);
+}
+
+.rustle-recents__clear {
+  background: none;
+  color: var(--text-secondary);
+  border: none;
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* EE-01: zero-results state */
+.rustle-no-results {
+  color: var(--text-secondary);
+  margin-top: 16px;
+}
+
+/* EE-05 / EE-06: error / offline toast */
+.rustle-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 300;
+  padding: 10px 18px;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+}
+
+.rustle-toast--error {
+  background-color: #e22134;
+  color: #fff;
+}
+
+.rustle-toast--offline {
+  background-color: var(--bg-surface);
+  color: var(--text-secondary);
+  border: 1px solid #444;
 }
 
 /* W-01: gesture surface — stop the browser from scrolling or

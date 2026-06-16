@@ -423,13 +423,13 @@ This slice deliberately omits: crate-stack perspective (single card only), audio
 ## Group BB — Recent Searches Persistence
 > Depends on: P-09 (DB impl), U-16.
 
-- [ ] **BB-01** Implement `components/rustle.py:recents_chips(queries)` per the Group T tests
-- [ ] **BB-02** Render the chip row directly below `search_bar` when the search input is empty
-- [ ] **BB-03** Add a callback: on search submit (debounced fire), call `db.save_recent_search(user_id, query)`
-- [ ] **BB-04** Add a callback: on Rustle mode entry, call `db.get_recent_searches(user_id)` and render the chips
-- [ ] **BB-05** Wire chip click → write the chip's query into the search input value, which re-fires the search callback
-- [ ] **BB-06** Add a small `Clear` button next to the chip row → calls `db.clear_recent_searches(user_id)` and refreshes the chips
-- [ ] **BB-07** Write `tests/test_rustle.py` — chips render correctly for 0, 1, 5 queries; clear button shown only when chips > 0
+- [x] **BB-01** Implement `components/rustle.py:recents_chips(queries)` per the Group T tests
+- [x] **BB-02** Render the chip row directly below `search_bar` when the search input is empty
+- [x] **BB-03** Add a callback: on search submit (debounced fire), call `db.save_recent_search(user_id, query)`
+- [x] **BB-04** Add a callback: on Rustle mode entry, call `db.get_recent_searches(user_id)` and render the chips
+- [x] **BB-05** Wire chip click → write the chip's query into the search input value, which re-fires the search callback
+- [x] **BB-06** Add a small `Clear` button next to the chip row → calls `db.clear_recent_searches(user_id)` and refreshes the chips
+- [x] **BB-07** Write `tests/test_rustle.py` — chips render correctly for 0, 1, 5 queries; clear button shown only when chips > 0
 
 ---
 
@@ -460,23 +460,23 @@ This slice deliberately omits: crate-stack perspective (single card only), audio
 ## Group EE — Edge Cases & Error Handling
 > Depends on: U-16. Mostly parallel-able.
 
-- [ ] **EE-01** Zero search results state: render "No playlists found. Try a different search." and surface recents chips below
-- [ ] **EE-02** Filter non-track items in `get_playlist_tracks` (covered by R-02 test) — guarantee: queue never includes podcasts, local files, or null tracks
-- [ ] **EE-03** Missing album art: render grey square placeholder on `track_card` and `playlist_card` (reuse the existing artist-grid fallback pattern)
-- [ ] **EE-04** Wrap every Rustle-side Spotify call in `try / except SpotifyException`; on 401, redirect to `/login` (re-consent)
-- [ ] **EE-05** On 404 from `add_track_to_playlist` (target deleted in Spotify mid-session): show a non-blocking error toast, clear `rustle-target` Store, reopen the picker
-- [ ] **EE-06** Network drop: catch network-level exceptions on the gesture callback path, log via the standard logger, render a small "Offline — retrying" pill
-- [ ] **EE-07** Write `tests/test_rustle.py` — edge-case rendering: zero results, missing art, deleted target
+- [x] **EE-01** Zero search results state: render "No playlists found. Try a different search." and surface recents chips below
+- [x] **EE-02** Filter non-track items in `get_playlist_tracks` (covered by R-02 test) — guarantee: queue never includes podcasts, local files, or null tracks
+- [x] **EE-03** Missing album art: render grey square placeholder on `track_card` and `playlist_card` (reuse the existing artist-grid fallback pattern)
+- [x] **EE-04** Wrap every Rustle-side Spotify call in `try / except SpotifyException`; on 401, redirect to `/login` (re-consent)
+- [x] **EE-05** On 404 from `add_track_to_playlist` (target deleted in Spotify mid-session): show a non-blocking error toast, clear `rustle-target` Store, reopen the picker
+- [x] **EE-06** Network drop: catch network-level exceptions on the gesture callback path, log via the standard logger, render a small "Offline — retrying" pill
+- [x] **EE-07** Write `tests/test_rustle.py` — edge-case rendering: zero results, missing art, deleted target
 
 ---
 
 ## Group FF — Responsive Layout (mobile-first)
 > Depends on: U-16. Fully parallel.
 
-- [ ] **FF-01** Add mobile-first CSS for Rustle mode: cards take full container width on viewports < 480 px
-- [ ] **FF-02** Constrain Rustle mode to `max-width: 480px; margin: 0 auto;` on desktop so the crate stack stays card-shaped
-- [ ] **FF-03** Mode switcher: confirm pill tabs render legibly on both viewports
-- [ ] **FF-04** Target-picker modal: full-screen on mobile, centered modal (max-width: 420 px) on desktop
+- [x] **FF-01** Add mobile-first CSS for Rustle mode: cards take full container width on viewports < 480 px
+- [x] **FF-02** Constrain Rustle mode to `max-width: 480px; margin: 0 auto;` on desktop so the crate stack stays card-shaped
+- [x] **FF-03** Mode switcher: confirm pill tabs render legibly on both viewports
+- [x] **FF-04** Target-picker modal: full-screen on mobile, centered modal (max-width: 420 px) on desktop
 - [ ] **FF-05** Manual visual check on iPhone Safari + desktop Chrome at 1440 px wide
 
 ---

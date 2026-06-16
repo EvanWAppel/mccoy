@@ -38,7 +38,11 @@ from components.rustle import (
     tap_to_start_overlay,
     add_counter_chip,
     create_playlist_form,
+    recents_chips,
+    no_results_state,
+    error_toast,
 )
+from spotipy import SpotifyException
 
 logger = logging.getLogger(__name__)
 
@@ -206,6 +210,10 @@ def render_page(pathname):
                 dcc.Store(id="rustle-target-uris", data=[]),
                 dcc.Store(id="rustle-add-count", data=0),
                 dcc.Store(id="rustle-picker-mode", data="list"),
+                dcc.Store(id="rustle-recents", data=[]),
+                dcc.Store(id="rustle-query", data=""),
+                dcc.Store(id="rustle-error", data=None),
+                dcc.Store(id="rustle-auth-sink", data=None),
                 html.Audio(id="rustle-audio", preload="auto"),
             ],
         ),
@@ -308,15 +316,22 @@ def _gesture_area(children):
     )
 
 
-def _rustle_search_view(queue, idx):
-    children = [search_bar()]
+def _rustle_search_view(queue, idx, recents=None, query=""):
+    children = [search_bar(value=query or "")]
     if not queue:
-        children.append(
-            html.P(
-                "Type a search to flip through playlists.",
-                style={"color": "#b3b3b3", "marginTop": "16px"},
+        if query and query.strip():
+            # EE-01: searched but nothing came back
+            children.append(no_results_state(recents))
+        else:
+            # BB-02: idle search bar — offer recent searches
+            children.append(
+                html.P(
+                    "Type a search to flip through playlists.",
+                    style={"color": "#b3b3b3", "marginTop": "16px"},
+                )
             )
-        )
+            if recents:
+                children.append(recents_chips(recents))
         return html.Div(children)
     idx = max(0, min(idx, len(queue) - 1))
     children.append(
@@ -380,10 +395,14 @@ def _rustle_track_view(queue, idx, audio_unlocked=False, target_uris=None):
     Input("rustle-target-uris", "data"),
     Input("rustle-add-count", "data"),
     Input("rustle-picker-mode", "data"),
+    Input("rustle-recents", "data"),
+    Input("rustle-query", "data"),
+    Input("rustle-error", "data"),
 )
 def render_rustle_content(
     mode, view, target, pl_queue, pl_idx, tr_queue, tr_idx,
     audio_unlocked, target_uris, add_count, picker_mode,
+    recents, query, error,
 ):
     if mode != "rustle":
         return None
@@ -405,9 +424,17 @@ def render_rustle_content(
             tr_queue, tr_idx, audio_unlocked, target_uris
         )
     else:
-        body = _rustle_search_view(pl_queue, pl_idx)
+        body = _rustle_search_view(pl_queue, pl_idx, recents, query)
     # Z-06 / Z-07: session add counter, fixed top-right
-    return html.Div([body, add_counter_chip(add_count or 0)])
+    overlays = [add_counter_chip(add_count or 0)]
+    if error:
+        # EE-05 / EE-06: non-blocking toast (auth errors redirect
+        # clientside, so don't double-render them here)
+        if error.get("kind") != "auth":
+            overlays.append(
+                error_toast(error.get("msg", ""), error.get("kind"))
+            )
+    return html.Div([body, *overlays])
 
 
 @app.callback(
@@ -431,21 +458,87 @@ def select_target(n_clicks_list):
 @app.callback(
     Output("rustle-playlist-queue", "data"),
     Output("rustle-playlist-index", "data", allow_duplicate=True),
+    Output("rustle-query", "data", allow_duplicate=True),
+    Output("rustle-recents", "data", allow_duplicate=True),
+    Output("rustle-error", "data", allow_duplicate=True),
     Input("rustle-search", "value"),
+    State("rustle-user-id", "data"),
     prevent_initial_call=True,
 )
-def run_search(query):
+def run_search(query, user_id):
     if not query or not query.strip():
-        return [], 0
+        return [], 0, "", no_update, None
+    q = query.strip()
     sp = get_sp_from_session(flask.session)
     if sp is None:
         raise PreventUpdate
+    error = None
     try:
-        results = search_playlists(sp, query.strip())
+        results = search_playlists(sp, q)
     except Exception as e:
-        logger.warning("search_playlists failed: %s", e)
+        kind = _classify_error(e)
+        logger.warning("search_playlists failed (%s): %s", kind, e)
         results = []
-    return results, 0
+        error = _error_payload(kind)
+    # BB-03: persist the query and refresh the recents list
+    new_recents = no_update
+    if user_id:
+        try:
+            db.save_recent_search(user_id, q)
+            new_recents = db.get_recent_searches(user_id)
+        except Exception as e:
+            logger.warning("save_recent_search failed: %s", e)
+    return results, 0, q, new_recents, error
+
+
+# BB-04: load recent searches when entering Rustle mode
+@app.callback(
+    Output("rustle-recents", "data", allow_duplicate=True),
+    Input("mode-tabs", "value"),
+    State("rustle-user-id", "data"),
+    prevent_initial_call=True,
+)
+def load_recents(mode, user_id):
+    if mode != "rustle" or not user_id:
+        raise PreventUpdate
+    try:
+        return db.get_recent_searches(user_id)
+    except Exception as e:
+        logger.warning("get_recent_searches failed: %s", e)
+        raise PreventUpdate
+
+
+# BB-05: clicking a recent chip refills the search box, refiring search
+@app.callback(
+    Output("rustle-search", "value"),
+    Input({"type": "rustle-recent-chip", "query": ALL}, "n_clicks"),
+    prevent_initial_call=True,
+)
+def click_recent_chip(n_list):
+    if not n_list or not any(n_list):
+        raise PreventUpdate
+    trigger = ctx.triggered_id
+    if not trigger or "query" not in trigger:
+        raise PreventUpdate
+    return trigger["query"]
+
+
+# BB-06: clear all recent searches for this user
+@app.callback(
+    Output("rustle-recents", "data", allow_duplicate=True),
+    Input("rustle-recents-clear", "n_clicks"),
+    State("rustle-user-id", "data"),
+    prevent_initial_call=True,
+)
+def clear_recents(n_clicks, user_id):
+    if not n_clicks:
+        raise PreventUpdate
+    if user_id:
+        try:
+            db.clear_recent_searches(user_id)
+        except Exception as e:
+            logger.warning("clear_recent_searches failed: %s", e)
+    return []
 
 
 # W-06 / W-07: one dispatcher replaces the Group U temp buttons.
@@ -454,14 +547,46 @@ def run_search(query):
 # to the playlist queue.
 
 
+# EE-04/05/06: classify Spotify-side failures into toast/redirect kinds
+ERROR_MESSAGES = {
+    "auth": "Session expired. Reconnecting…",
+    "missing": "That playlist no longer exists. Pick another.",
+    "offline": "Offline — retrying…",
+    "error": "Something went wrong. Try again.",
+}
+
+
+def _is_network_error(e) -> bool:
+    name = type(e).__name__
+    return "Connection" in name or "Timeout" in name
+
+
+def _classify_error(e) -> str:
+    if isinstance(e, SpotifyException):
+        status = getattr(e, "http_status", None)
+        if status == 401:
+            return "auth"
+        if status == 404:
+            return "missing"
+        return "error"
+    if _is_network_error(e):
+        return "offline"
+    return "error"
+
+
+def _error_payload(kind: str) -> dict:
+    return {"kind": kind, "msg": ERROR_MESSAGES.get(kind, ERROR_MESSAGES["error"])}
+
+
 def _enter_playlist(sp, queue, idx):
     playlist = queue[idx]
     try:
         tracks = get_playlist_tracks(sp, playlist["id"])
+        return {"tracks": tracks, "error": None}
     except Exception as e:
-        logger.warning("get_playlist_tracks failed: %s", e)
-        tracks = []
-    return tracks, 0, "track"
+        kind = _classify_error(e)
+        logger.warning("get_playlist_tracks failed (%s): %s", kind, e)
+        return {"tracks": [], "error": _error_payload(kind)}
 
 
 def _fetch_target_uris(sp, target):
@@ -473,17 +598,18 @@ def _fetch_target_uris(sp, target):
         return []
 
 
-def _add_current_track(sp, queue, idx, target) -> bool:
+def _add_current_track(sp, queue, idx, target) -> str:
     if idx >= len(queue) or not target:
-        return False
+        return "error"
     track = queue[idx]
     try:
         add_track_to_playlist(sp, target, track["uri"])
         logger.info("Added %s to %s", track["uri"], target)
-        return True
+        return "ok"
     except Exception as e:
-        logger.warning("add_track_to_playlist failed: %s", e)
-        return False
+        kind = _classify_error(e)
+        logger.warning("add_track_to_playlist failed (%s): %s", kind, e)
+        return kind
 
 
 @app.callback(
@@ -494,6 +620,9 @@ def _add_current_track(sp, queue, idx, target) -> bool:
     Output("rustle-view", "data", allow_duplicate=True),
     Output("rustle-target-uris", "data"),
     Output("rustle-add-count", "data"),
+    Output("rustle-target", "data", allow_duplicate=True),
+    Output("rustle-error", "data", allow_duplicate=True),
+    Output("rustle-query", "data", allow_duplicate=True),
     Input("rustle-gesture", "data"),
     State("rustle-view", "data"),
     State("rustle-target", "data"),
@@ -515,21 +644,31 @@ def handle_gesture(
     sp = get_sp_from_session(flask.session)
     if sp is None:
         raise PreventUpdate
-    keep = no_update
+
+    out = {
+        "pl_queue": no_update, "pl_idx": no_update,
+        "tr_queue": no_update, "tr_idx": no_update,
+        "view": no_update, "uris": no_update, "count": no_update,
+        "target": no_update, "error": None, "query": no_update,
+    }
+
+    def ret():
+        return (
+            out["pl_queue"], out["pl_idx"], out["tr_queue"],
+            out["tr_idx"], out["view"], out["uris"], out["count"],
+            out["target"], out["error"], out["query"],
+        )
 
     if view == "track":
         if direction == "left":
-            return (
-                keep, keep, keep, max(0, tr_idx - 1), keep, keep, keep,
-            )
+            out["tr_idx"] = max(0, tr_idx - 1)
+            return ret()
         if direction == "right":
             if not tr_queue:
                 raise PreventUpdate
             # len(queue) is the end-of-queue card position
-            return (
-                keep, keep, keep,
-                min(len(tr_queue), tr_idx + 1), keep, keep, keep,
-            )
+            out["tr_idx"] = min(len(tr_queue), tr_idx + 1)
+            return ret()
         if direction == "up":
             if not tr_queue or tr_idx >= len(tr_queue):
                 raise PreventUpdate
@@ -538,42 +677,55 @@ def handle_gesture(
                 # Z-03: already in the target — no-op (the shake
                 # animation happens clientside)
                 raise PreventUpdate
-            ok = _add_current_track(sp, tr_queue, tr_idx, target)
-            new_uris = keep
-            new_count = keep
-            if ok:
-                # Z-07 / Z-08: bump the counter and grow the
-                # dedupe set so later cards see this add
-                new_uris = (target_uris or []) + [uri]
-                new_count = (add_count or 0) + 1
-            return (
-                keep, keep, keep,
-                min(len(tr_queue), tr_idx + 1), keep,
-                new_uris, new_count,
-            )
+            status = _add_current_track(sp, tr_queue, tr_idx, target)
+            if status == "ok":
+                # Z-07 / Z-08: bump the counter and grow the dedupe
+                # set so later cards see this add
+                out["uris"] = (target_uris or []) + [uri]
+                out["count"] = (add_count or 0) + 1
+                out["tr_idx"] = min(len(tr_queue), tr_idx + 1)
+            elif status == "missing":
+                # EE-05: target was deleted in Spotify mid-session
+                out["target"] = None
+                out["view"] = "search"
+                out["error"] = _error_payload("missing")
+            else:
+                # auth / offline / generic — surface, keep the card
+                out["error"] = _error_payload(status)
+            return ret()
         if direction == "down":
-            return keep, keep, keep, keep, "search", keep, keep
+            out["view"] = "search"
+            return ret()
         raise PreventUpdate
 
     # search (playlist queue) view
     if direction == "left":
-        return keep, max(0, pl_idx - 1), keep, keep, keep, keep, keep
+        out["pl_idx"] = max(0, pl_idx - 1)
+        return ret()
     if direction == "right":
         if not pl_queue:
             raise PreventUpdate
-        return (
-            keep, min(len(pl_queue) - 1, pl_idx + 1),
-            keep, keep, keep, keep, keep,
-        )
+        out["pl_idx"] = min(len(pl_queue) - 1, pl_idx + 1)
+        return ret()
     if direction == "up":
         if not pl_queue:
             raise PreventUpdate
-        tracks, tr_idx0, view0 = _enter_playlist(sp, pl_queue, pl_idx)
-        uris = _fetch_target_uris(sp, target)
-        return keep, keep, tracks, tr_idx0, view0, uris, keep
+        result = _enter_playlist(sp, pl_queue, pl_idx)
+        if result["error"]:
+            out["error"] = result["error"]
+            return ret()
+        out["tr_queue"] = result["tracks"]
+        out["tr_idx"] = 0
+        out["view"] = "track"
+        out["uris"] = _fetch_target_uris(sp, target)
+        return ret()
     if direction == "down":
-        # W-07: clear the search results (recents return in Group BB)
-        return [], 0, keep, keep, keep, keep, keep
+        # W-07: clear the search results, back to recents
+        out["pl_queue"] = []
+        out["pl_idx"] = 0
+        out["query"] = ""
+        return ret()
+    raise PreventUpdate
     raise PreventUpdate
 
 
@@ -633,6 +785,21 @@ app.clientside_callback(
     ClientsideFunction(namespace="rustle", function_name="unlockAudio"),
     Output("rustle-audio-unlocked", "data"),
     Input("rustle-audio-unlock", "n_clicks"),
+    prevent_initial_call=True,
+)
+
+# EE-04: a 401 from any Rustle-side call → full re-auth at /login
+app.clientside_callback(
+    """
+    function(error) {
+        if (error && error.kind === 'auth') {
+            window.location.href = '/login';
+        }
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output("rustle-auth-sink", "data"),
+    Input("rustle-error", "data"),
     prevent_initial_call=True,
 )
 

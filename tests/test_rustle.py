@@ -18,6 +18,8 @@ try:
         card_stack,
         tap_to_start_overlay,
         create_playlist_form,
+        no_results_state,
+        error_toast,
     )
 except ImportError:
     pytest.skip(
@@ -136,6 +138,19 @@ class TestRecentsChips:
         result = recents_chips(["q1", "q2", "q3", "q4", "q5"])
         for q in ["q1", "q2", "q3", "q4", "q5"]:
             assert _contains_text(result, q)
+
+    # BB-07: clear button shown only when there are chips
+    def test_single_query_renders_one_chip(self):
+        result = recents_chips(["solo"])
+        assert _contains_text(result, "solo")
+
+    def test_clear_button_shown_when_chips_present(self):
+        result = recents_chips(["a"])
+        assert _find_id(result, "rustle-recents-clear") is not None
+
+    def test_clear_button_hidden_when_no_chips(self):
+        result = recents_chips([])
+        assert _find_id(result, "rustle-recents-clear") is None
 
 
 class TestPlaylistCard:
@@ -289,3 +304,57 @@ class TestCardStack:
         classes = [c.className for c in result.children]
         for i in range(4):
             assert f"rustle-stack__card--{i}" in classes[i]
+
+
+# EE-07: edge-case rendering
+
+def _has_any_image(component) -> bool:
+    return any(isinstance(c, html.Img) for c in _walk(component))
+
+
+class TestMissingArtPlaceholder:
+    def test_playlist_card_without_art_has_no_img(self):
+        result = playlist_card(
+            {"id": "p1", "name": "X", "image_url": None}
+        )
+        assert not _has_any_image(result)
+
+    def test_playlist_card_without_art_has_placeholder_class(self):
+        result = playlist_card(
+            {"id": "p1", "name": "X", "image_url": None}
+        )
+        classes = [
+            getattr(c, "className", "") or "" for c in _walk(result)
+        ]
+        assert any("placeholder" in c for c in classes)
+
+    def test_track_card_without_art_has_no_img(self):
+        result = track_card({**SAMPLE_TRACK, "album_image_url": None})
+        assert not _has_any_image(result)
+
+    def test_track_card_with_art_still_has_img(self):
+        result = track_card(SAMPLE_TRACK)
+        assert _has_any_image(result)
+
+
+class TestNoResultsState:
+    def test_returns_div_with_message(self):
+        result = no_results_state()
+        assert isinstance(result, html.Div)
+        assert _contains_text(result, "No playlists found")
+
+    def test_includes_recents_when_given(self):
+        result = no_results_state(["indie", "jazz"])
+        assert _contains_text(result, "indie")
+        assert _contains_text(result, "jazz")
+
+
+class TestErrorToast:
+    def test_returns_div_with_message(self):
+        result = error_toast("Playlist was deleted")
+        assert isinstance(result, html.Div)
+        assert _contains_text(result, "Playlist was deleted")
+
+    def test_kind_in_class(self):
+        result = error_toast("Offline — retrying", kind="offline")
+        assert "rustle-toast--offline" in (result.className or "")
