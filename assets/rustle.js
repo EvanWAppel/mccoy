@@ -74,14 +74,24 @@
 
 (function () {
   var COMMIT_PX = 80; // W-02: minimum drag distance to commit
+  var TAP_PX = 10; // AA-01: max movement that still counts as a tap
 
-  var drag = null; // {x, y} of pointerdown
+  var drag = null; // {x, y, onArt} of pointerdown
 
   function cardArea(target) {
     return (
       target &&
       target.closest &&
       target.closest('[data-rustle-card-area="true"]')
+    );
+  }
+
+  // AA-01: did the gesture start on a track card's album art?
+  function onArt(target) {
+    return (
+      target &&
+      target.closest &&
+      target.closest('[data-rustle-art="true"]')
     );
   }
 
@@ -141,7 +151,7 @@
   // W-01 / W-05: one Pointer Events path for touch and mouse drag
   document.addEventListener("pointerdown", function (ev) {
     if (!cardArea(ev.target)) return;
-    drag = { x: ev.clientX, y: ev.clientY };
+    drag = { x: ev.clientX, y: ev.clientY, onArt: !!onArt(ev.target) };
   });
 
   document.addEventListener("pointermove", function (ev) {
@@ -159,10 +169,23 @@
     if (!drag) return;
     var dx = ev.clientX - drag.x;
     var dy = ev.clientY - drag.y;
+    var startedOnArt = drag.onArt;
     drag = null;
     var ax = Math.abs(dx);
     var ay = Math.abs(dy);
     var card = topCard();
+    // AA-01: a near-stationary tap on a track card's album art
+    // drills into that track's album (level 2 → level 3 only).
+    if (
+      Math.max(ax, ay) < TAP_PX &&
+      startedOnArt &&
+      card &&
+      card.classList.contains("rustle-card--track")
+    ) {
+      card.style.transform = "";
+      sendGesture("tap-art");
+      return;
+    }
     if (Math.max(ax, ay) < COMMIT_PX) {
       if (card) card.style.transform = "";
       return;

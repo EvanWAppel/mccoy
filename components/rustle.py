@@ -129,12 +129,30 @@ def recents_chips(queries):
     return html.Div(chips, className="rustle-recents")
 
 
-def _card_art(image_url):
-    # EE-03: grey placeholder square when art is missing
+# AA-05 / DD-02 / DD-03: canonical end-of-queue copy, kept here so
+# app.py and the tests share one source of truth.
+ALBUM_END_MESSAGE = "End of the record. Swipe down to keep digging."
+SEARCH_END_MESSAGE = (
+    "That's everything for this search. Swipe down to start over."
+)
+TRACK_END_MESSAGE = (
+    "You've flipped through every track in this playlist. "
+    "Swipe down to try another."
+)
+
+
+def _card_art(image_url, drill=False):
+    # EE-03: grey placeholder square when art is missing.
+    # AA-01: drill=True marks the art so assets/rustle.js can detect a
+    # tap on it and emit the "tap-art" album-drill gesture.
+    extra = {"data-rustle-art": "true"} if drill else {}
     if image_url:
-        return html.Img(src=image_url, className="rustle-card__art")
+        return html.Img(
+            src=image_url, className="rustle-card__art", **extra
+        )
     return html.Div(
-        className="rustle-card__art rustle-card__art--placeholder"
+        className="rustle-card__art rustle-card__art--placeholder",
+        **extra,
     )
 
 
@@ -153,7 +171,8 @@ def playlist_card(playlist):
 
 def track_card(track, already_added: bool = False):
     children = [
-        _card_art(track.get("album_image_url")),
+        # AA-01: track art is tap-drillable into its parent album
+        _card_art(track.get("album_image_url"), drill=True),
         html.Div(track["name"], className="rustle-card__title"),
     ]
     if already_added:
