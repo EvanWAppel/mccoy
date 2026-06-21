@@ -240,6 +240,8 @@ def render_page(pathname):
                 dcc.Store(id="rustle-device-id", data=None),
                 dcc.Store(id="rustle-sdk-sink", data=None),
                 dcc.Store(id="rustle-playback-sink", data=None),
+                dcc.Store(id="rustle-play-uri", data=None),
+                dcc.Store(id="rustle-playback-result", data=None),
                 html.Audio(id="rustle-audio", preload="auto"),
             ],
         ),
@@ -471,15 +473,16 @@ def render_rustle_content(
         return html.P("Not authenticated.", style={"color": "#b3b3b3"})
     if not target:
         if picker_mode == "create":
-            return create_playlist_form()
-        try:
-            playlists = get_user_playlists(sp)
-        except Exception as e:
-            logger.warning("Could not load user playlists: %s", e)
-            playlists = []
-        logger.info("Rustle target picker: %d playlists", len(playlists))
-        return target_picker(playlists)
-    if view == "album":
+            body = create_playlist_form()
+        else:
+            try:
+                playlists = get_user_playlists(sp)
+            except Exception as e:
+                logger.warning("Could not load user playlists: %s", e)
+                playlists = []
+            logger.info("Rustle picker: %d playlists", len(playlists))
+            body = target_picker(playlists)
+    elif view == "album":
         # AA-03: album drill view
         body = _rustle_album_view(al_queue, al_idx, target_uris)
     elif view == "track":
@@ -917,7 +920,6 @@ def handle_gesture(
         out["query"] = ""
         return ret()
     raise PreventUpdate
-    raise PreventUpdate
 
 
 # CC-02: toggle the picker between list and create-input modes
@@ -937,10 +939,17 @@ def toggle_picker_mode(create_n, cancel_n):
 
 
 # CC-03: create the playlist and make it the Rustle target
+CREATE_BLOCKED_MSG = (
+    "Spotify blocked creating a playlist for this app. "
+    "Pick an existing one instead."
+)
+
+
 @app.callback(
     Output("rustle-target", "data", allow_duplicate=True),
     Output("rustle-view", "data", allow_duplicate=True),
     Output("rustle-picker-mode", "data", allow_duplicate=True),
+    Output("rustle-error", "data", allow_duplicate=True),
     Input("rustle-create-btn", "n_clicks"),
     State("rustle-new-name", "value"),
     State("rustle-user-id", "data"),
@@ -956,9 +965,14 @@ def create_new_target(n_clicks, name, user_id):
         playlist_id = create_playlist(sp, user_id, name.strip())
         logger.info("Created playlist %r (%s)", name.strip(), playlist_id)
     except Exception as e:
+        # Spotify returns 403 on playlist creation for apps without
+        # extended access — surface it instead of failing silently.
         logger.warning("create_playlist failed: %s", e)
-        raise PreventUpdate
-    return playlist_id, "search", "list"
+        return (
+            no_update, no_update, no_update,
+            {"kind": "error", "msg": CREATE_BLOCKED_MSG},
+        )
+    return playlist_id, "search", "list", None
 
 
 # X-02..X-04: play/fade the preview clientside on card change
@@ -1028,40 +1042,46 @@ app.clientside_callback(
 )
 
 
-# Y-04: on track-card change, if premium + a ready device + the track
-# view is active, play the full track server-side. Otherwise no-op so
-# the Group X preview_url path (free / fallback) drives audio instead.
-@app.callback(
+# Y-04: premium full-track playback, DEBOUNCED so it tracks the card
+# the user settles on rather than every rapid swipe. The clientside
+# half watches the current card (track OR album view) and, after a
+# short settle, writes the target uri to rustle-play-uri. The server
+# half then starts playback on the SDK device.
+app.clientside_callback(
+    ClientsideFunction(
+        namespace="rustle", function_name="requestPlayback"
+    ),
     Output("rustle-playback-sink", "data"),
     Input("rustle-track-index", "data"),
     Input("rustle-track-queue", "data"),
-    State("rustle-view", "data"),
-    State("rustle-product", "data"),
+    Input("rustle-album-index", "data"),
+    Input("rustle-album-queue", "data"),
+    Input("rustle-view", "data"),
+    Input("rustle-product", "data"),
+    Input("rustle-device-id", "data"),
+    prevent_initial_call=True,
+)
+
+
+@app.callback(
+    Output("rustle-playback-result", "data"),
+    Input("rustle-play-uri", "data"),
     State("rustle-device-id", "data"),
     prevent_initial_call=True,
 )
-def premium_playback(tr_idx, tr_queue, view, product, device_id):
-    if product != "premium" or not device_id or view != "track":
-        raise PreventUpdate
-    if not tr_queue or tr_idx is None or tr_idx >= len(tr_queue):
-        raise PreventUpdate
-    track = tr_queue[tr_idx]
-    uri = track.get("uri")
-    if not uri:
+def do_premium_playback(req, device_id):
+    if not req or not req.get("uri") or not device_id:
         raise PreventUpdate
     sp = get_sp_from_session(flask.session)
     if sp is None:
         raise PreventUpdate
-    # Y-05: if the SDK never produced a device this never runs; a live
-    # playback failure is logged and we fall back silently (the free
-    # preview path covers audio when present).
     try:
-        start_playback(sp, device_id, uri)
-        logger.info("Premium playback %s on device %s", uri, device_id)
+        start_playback(sp, device_id, req["uri"])
+        logger.info("Premium playback %s", req["uri"])
     except Exception as e:
         logger.warning("start_playback failed: %s", e)
         raise PreventUpdate
-    return uri
+    return req["uri"]
 
 
 if __name__ == "__main__":

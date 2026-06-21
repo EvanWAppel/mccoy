@@ -123,6 +123,22 @@
     );
   }
 
+  // Undo the optimistic exit/drag styling. The server re-render
+  // normally swaps in a fresh card, but a no-op gesture (boundary
+  // swipe, already-added) produces no re-render — so we self-heal,
+  // otherwise the card stays flung off-screen and topCard() freezes.
+  function clearCardFx(card) {
+    if (!card) return;
+    card.classList.remove(
+      "rustle-card--exiting",
+      "rustle-card--exiting-left",
+      "rustle-card--exiting-right",
+      "rustle-card--exiting-up",
+      "rustle-card--exiting-down"
+    );
+    card.style.transform = "";
+  }
+
   function commit(direction) {
     var card = topCard();
     if (!card) {
@@ -147,16 +163,21 @@
       setTimeout(function () {
         animateExit(card, "up");
         sendGesture("up");
+        setTimeout(function () { clearCardFx(card); }, 360);
       }, 400);
       return;
     }
     animateExit(card, direction);
     sendGesture(direction);
+    setTimeout(function () { clearCardFx(card); }, 360);
   }
 
   // W-01 / W-05: one Pointer Events path for touch and mouse drag
   document.addEventListener("pointerdown", function (ev) {
     if (!cardArea(ev.target)) return;
+    // Heal any card left stuck by a prior no-op gesture before we
+    // start a new drag on it.
+    clearCardFx(topCard());
     drag = { x: ev.clientX, y: ev.clientY, onArt: !!onArt(ev.target) };
   });
 
@@ -265,6 +286,38 @@
 
   window.dash_clientside = window.dash_clientside || {};
   window.dash_clientside.rustle = window.dash_clientside.rustle || {};
+
+  // Y-04: debounced playback request. Fires on every card/index/view
+  // change but only writes the target uri to rustle-play-uri after the
+  // user settles (~450ms with no further change), so rapid swiping
+  // doesn't queue up start_playback calls and leave audio a card
+  // behind. Covers BOTH the track queue and the album-drill queue.
+  var playTimer = null;
+  var lastPlayUri = null;
+  window.dash_clientside.rustle.requestPlayback = function (
+    trIdx, trQueue, alIdx, alQueue, view, product, deviceId
+  ) {
+    if (product !== "premium" || !deviceId) {
+      return "no-device";
+    }
+    var uri = null;
+    if (view === "album" && alQueue && alQueue[alIdx]) {
+      uri = alQueue[alIdx].uri;
+    } else if (view === "track" && trQueue && trQueue[trIdx]) {
+      uri = trQueue[trIdx].uri;
+    }
+    if (!uri || uri === lastPlayUri) {
+      return "nochange";
+    }
+    if (playTimer) {
+      clearTimeout(playTimer);
+    }
+    playTimer = setTimeout(function () {
+      lastPlayUri = uri;
+      setProps("rustle-play-uri", { data: { uri: uri, ts: Date.now() } });
+    }, 450);
+    return "pending";
+  };
 
   // Y-02: inject the SDK <script> tag exactly once, only for premium.
   // Side-effect-only clientside callback → always returns a concrete
