@@ -614,6 +614,7 @@ def clear_recents(n_clicks, user_id):
 ERROR_MESSAGES = {
     "auth": "Session expired. Reconnecting…",
     "missing": "That playlist no longer exists. Pick another.",
+    "restricted": "Spotify won't open this playlist. Swipe to the next.",
     "offline": "Offline — retrying…",
     "error": "Something went wrong. Try again.",
 }
@@ -631,6 +632,10 @@ def _classify_error(e) -> str:
             return "auth"
         if status == 404:
             return "missing"
+        if status == 403:
+            # Spotify restricts editorial/algorithmic playlists to
+            # third-party apps (returns 403 on /items)
+            return "restricted"
         return "error"
     if _is_network_error(e):
         return "offline"
