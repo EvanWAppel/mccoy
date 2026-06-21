@@ -260,6 +260,19 @@ class TestGetPlaylistTracks:
             "preview_url": "https://example.com/preview.mp3",
         }
 
+    def test_reads_item_key_when_track_absent(self, mock_sp):
+        # Spotify (late 2024) nests the track under "item" instead of
+        # "track" in playlist-items responses; read either.
+        track = _playlist_item()["track"]
+        mock_sp.playlist_items.return_value = {
+            "items": [{"item": track}],
+            "next": None,
+        }
+        result = get_playlist_tracks(mock_sp, "pl1")
+        assert len(result) == 1
+        assert result[0]["uri"] == "spotify:track:abc"
+        assert result[0]["name"] == "Song"
+
     def test_filters_out_null_tracks(self, mock_sp):
         mock_sp.playlist_items.return_value = {
             "items": [{"track": None}, _playlist_item()],
@@ -425,6 +438,15 @@ class TestGetPlaylistTrackUris:
         }
         result = get_playlist_track_uris(mock_sp, "pl1")
         assert result == {"spotify:track:a", "spotify:track:b"}
+
+    def test_reads_item_key_when_track_absent(self, mock_sp):
+        # Late-2024 Spotify response shape: track under "item"
+        mock_sp.playlist_items.return_value = {
+            "items": [{"item": {"uri": "spotify:track:z"}}],
+            "next": None,
+        }
+        result = get_playlist_track_uris(mock_sp, "pl1")
+        assert result == {"spotify:track:z"}
 
     def test_skips_null_tracks_and_null_uris(self, mock_sp):
         mock_sp.playlist_items.return_value = {

@@ -24,7 +24,17 @@ def mode_switcher():
 
 
 def target_picker(playlists):
+    # Create-new sits first so it's reachable without scrolling past a
+    # long playlist list (some users have hundreds).
     items = [
+        html.Button(
+            "+ Create new playlist…",
+            id="rustle-target-create-new",
+            n_clicks=0,
+            className="rustle-picker__btn rustle-picker__btn--create",
+        )
+    ]
+    items += [
         html.Button(
             p["name"],
             id={"type": "rustle-target-pick", "playlist_id": p["id"]},
@@ -33,14 +43,6 @@ def target_picker(playlists):
         )
         for p in playlists
     ]
-    items.append(
-        html.Button(
-            "Create new…",
-            id="rustle-target-create-new",
-            n_clicks=0,
-            className="rustle-picker__btn rustle-picker__btn--create",
-        )
-    )
     return html.Div(
         className="rustle-picker",
         children=[

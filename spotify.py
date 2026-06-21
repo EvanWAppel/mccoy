@@ -85,7 +85,9 @@ def get_playlist_tracks(sp, playlist_id: str) -> list[dict]:
     out = []
     for page in _iter_pages(sp, first):
         for entry in page["items"]:
-            track = entry.get("track")
+            # Spotify (late 2024) moved the track payload from "track"
+            # to "item" in playlist-items responses; accept either.
+            track = entry.get("track") or entry.get("item")
             if track is None or track.get("uri") is None:
                 continue
             album = track.get("album") or {}
@@ -145,7 +147,8 @@ def get_playlist_track_uris(sp, playlist_id: str) -> set[str]:
     uris: set[str] = set()
     for page in _iter_pages(sp, first):
         for entry in page["items"]:
-            track = entry.get("track")
+            # late-2024 Spotify nests the track under "item"
+            track = entry.get("track") or entry.get("item")
             if track is None:
                 continue
             uri = track.get("uri")
