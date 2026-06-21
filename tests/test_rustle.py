@@ -15,6 +15,14 @@ try:
         end_of_queue_card,
         added_stamp_overlay,
         add_counter_chip,
+        card_stack,
+        tap_to_start_overlay,
+        create_playlist_form,
+        no_results_state,
+        error_toast,
+        ALBUM_END_MESSAGE,
+        SEARCH_END_MESSAGE,
+        TRACK_END_MESSAGE,
     )
 except ImportError:
     pytest.skip(
@@ -134,6 +142,19 @@ class TestRecentsChips:
         for q in ["q1", "q2", "q3", "q4", "q5"]:
             assert _contains_text(result, q)
 
+    # BB-07: clear button shown only when there are chips
+    def test_single_query_renders_one_chip(self):
+        result = recents_chips(["solo"])
+        assert _contains_text(result, "solo")
+
+    def test_clear_button_shown_when_chips_present(self):
+        result = recents_chips(["a"])
+        assert _find_id(result, "rustle-recents-clear") is not None
+
+    def test_clear_button_hidden_when_no_chips(self):
+        result = recents_chips([])
+        assert _find_id(result, "rustle-recents-clear") is None
+
 
 class TestPlaylistCard:
     def test_returns_div(self):
@@ -210,3 +231,189 @@ class TestAddCounterChip:
     def test_renders_count(self):
         result = add_counter_chip(3)
         assert _contains_text(result, "+3 added")
+
+    def test_zero_is_hidden(self):
+        result = add_counter_chip(0)
+        assert not _contains_text(result, "added")
+        assert "rustle-counter-chip--hidden" in (result.className or "")
+
+    def test_positive_is_not_hidden(self):
+        result = add_counter_chip(1)
+        assert "rustle-counter-chip--hidden" not in (
+            result.className or ""
+        )
+
+
+class TestCreatePlaylistFlow:
+    # CC-05: the picker toggles between the playlist dropdown and
+    # the create-input mode
+    def test_create_new_option_is_enabled(self):
+        result = target_picker([SAMPLE_PLAYLIST])
+        btn = _find_id(result, "rustle-target-create-new")
+        assert btn is not None
+        assert not getattr(btn, "disabled", False)
+
+    def test_form_returns_div(self):
+        result = create_playlist_form()
+        assert isinstance(result, html.Div)
+
+    def test_form_has_name_input(self):
+        result = create_playlist_form()
+        node = _find_id(result, "rustle-new-name")
+        assert isinstance(node, dcc.Input)
+
+    def test_form_has_create_button(self):
+        result = create_playlist_form()
+        assert _find_id(result, "rustle-create-btn") is not None
+
+    def test_form_has_cancel_button(self):
+        result = create_playlist_form()
+        assert _find_id(result, "rustle-create-cancel") is not None
+
+
+class TestTapToStartOverlay:
+    def test_returns_div(self):
+        result = tap_to_start_overlay()
+        assert isinstance(result, html.Div)
+
+    def test_contains_unlock_button(self):
+        result = tap_to_start_overlay()
+        assert _find_id(result, "rustle-audio-unlock") is not None
+
+    def test_contains_prompt_text(self):
+        result = tap_to_start_overlay()
+        assert _contains_text(result, "Tap to start")
+
+
+class TestCardStack:
+    def _cards(self, n):
+        return [playlist_card(SAMPLE_PLAYLIST) for _ in range(n)]
+
+    def test_returns_div_with_stack_class(self):
+        result = card_stack(self._cards(4))
+        assert isinstance(result, html.Div)
+        assert "rustle-stack" in (result.className or "")
+
+    def test_renders_at_most_four_cards(self):
+        result = card_stack(self._cards(6))
+        assert len(result.children) == 4
+
+    def test_single_card_renders_one_slot(self):
+        result = card_stack(self._cards(1))
+        assert len(result.children) == 1
+
+    def test_slots_have_depth_position_classes(self):
+        result = card_stack(self._cards(4))
+        classes = [c.className for c in result.children]
+        for i in range(4):
+            assert f"rustle-stack__card--{i}" in classes[i]
+
+
+# EE-07: edge-case rendering
+
+def _has_any_image(component) -> bool:
+    return any(isinstance(c, html.Img) for c in _walk(component))
+
+
+class TestMissingArtPlaceholder:
+    def test_playlist_card_without_art_has_no_img(self):
+        result = playlist_card(
+            {"id": "p1", "name": "X", "image_url": None}
+        )
+        assert not _has_any_image(result)
+
+    def test_playlist_card_without_art_has_placeholder_class(self):
+        result = playlist_card(
+            {"id": "p1", "name": "X", "image_url": None}
+        )
+        classes = [
+            getattr(c, "className", "") or "" for c in _walk(result)
+        ]
+        assert any("placeholder" in c for c in classes)
+
+    def test_track_card_without_art_has_no_img(self):
+        result = track_card({**SAMPLE_TRACK, "album_image_url": None})
+        assert not _has_any_image(result)
+
+    def test_track_card_with_art_still_has_img(self):
+        result = track_card(SAMPLE_TRACK)
+        assert _has_any_image(result)
+
+
+class TestNoResultsState:
+    def test_returns_div_with_message(self):
+        result = no_results_state()
+        assert isinstance(result, html.Div)
+        assert _contains_text(result, "No playlists found")
+
+    def test_includes_recents_when_given(self):
+        result = no_results_state(["indie", "jazz"])
+        assert _contains_text(result, "indie")
+        assert _contains_text(result, "jazz")
+
+
+class TestErrorToast:
+    def test_returns_div_with_message(self):
+        result = error_toast("Playlist was deleted")
+        assert isinstance(result, html.Div)
+        assert _contains_text(result, "Playlist was deleted")
+
+    def test_kind_in_class(self):
+        result = error_toast("Offline — retrying", kind="offline")
+        assert "rustle-toast--offline" in (result.className or "")
+
+
+# AA-01: the track card's album art is marked so assets/rustle.js can
+# detect a tap on it and emit the album-drill gesture.
+
+def _props_with_attr(component, attr):
+    for c in _walk(component):
+        if hasattr(c, "to_plotly_json"):
+            props = c.to_plotly_json().get("props", {})
+            if attr in props:
+                yield props
+
+
+class TestTrackCardAlbumArtTap:
+    def test_art_marked_for_drill(self):
+        result = track_card(SAMPLE_TRACK)
+        marked = list(_props_with_attr(result, "data-rustle-art"))
+        assert marked
+        assert marked[0]["data-rustle-art"] == "true"
+
+    def test_placeholder_art_also_marked(self):
+        # drilling depends on album_id, not on art being present
+        result = track_card({**SAMPLE_TRACK, "album_image_url": None})
+        marked = list(_props_with_attr(result, "data-rustle-art"))
+        assert marked
+
+    def test_playlist_card_art_not_marked(self):
+        result = playlist_card(SAMPLE_PLAYLIST)
+        marked = list(_props_with_attr(result, "data-rustle-art"))
+        assert not marked
+
+
+# AA-05 / AA-06 / DD-02 / DD-03 / DD-06: end-of-queue copy per context.
+# The view functions live in app.py (which needs env vars to import),
+# so the canonical messages are kept in components.rustle and the card
+# is exercised directly with each one.
+
+class TestEndOfQueueMessages:
+    def test_album_end_message(self):
+        card = end_of_queue_card(ALBUM_END_MESSAGE)
+        assert _contains_text(card, "End of the record")
+        assert _contains_text(card, "keep digging")
+
+    def test_search_end_message(self):
+        card = end_of_queue_card(SEARCH_END_MESSAGE)
+        assert _contains_text(card, "That's everything for this search")
+        assert _contains_text(card, "start over")
+
+    def test_track_end_message(self):
+        card = end_of_queue_card(TRACK_END_MESSAGE)
+        assert _contains_text(card, "every track in this playlist")
+        assert _contains_text(card, "try another")
+
+    def test_messages_are_distinct(self):
+        msgs = {ALBUM_END_MESSAGE, SEARCH_END_MESSAGE, TRACK_END_MESSAGE}
+        assert len(msgs) == 3

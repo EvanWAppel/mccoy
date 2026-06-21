@@ -50,9 +50,15 @@ def aggregate_genres(artists: list[dict]) -> list[dict]:
     ]
 
 
+# Spotify's /v1/search returns 400 "Invalid limit" for type=playlist
+# when limit > 10 (undocumented change, observed live 2026-06)
+PLAYLIST_SEARCH_MAX_LIMIT = 10
+
+
 def search_playlists(
-    sp, query: str, limit: int = 20, offset: int = 0
+    sp, query: str, limit: int = PLAYLIST_SEARCH_MAX_LIMIT, offset: int = 0
 ) -> list[dict]:
+    limit = min(limit, PLAYLIST_SEARCH_MAX_LIMIT)
     response = sp.search(q=query, type="playlist", limit=limit, offset=offset)
     out = []
     for item in response["playlists"]["items"]:
@@ -151,3 +157,8 @@ def get_playlist_track_uris(sp, playlist_id: str) -> set[str]:
 
 def get_user_product(sp) -> str:
     return sp.current_user().get("product", "open")
+
+
+def start_playback(sp, device_id: str, track_uri: str) -> None:
+    # Y-04: play a full track on the Web Playback SDK device (premium)
+    sp.start_playback(device_id=device_id, uris=[track_uri])

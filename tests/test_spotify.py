@@ -12,6 +12,7 @@ from spotify import (
     add_track_to_playlist,
     get_playlist_track_uris,
     get_user_product,
+    start_playback,
 )
 
 
@@ -125,7 +126,18 @@ class TestSearchPlaylists:
         }
         search_playlists(mock_sp, "indie")
         mock_sp.search.assert_called_once_with(
-            q="indie", type="playlist", limit=20, offset=0
+            q="indie", type="playlist", limit=10, offset=0
+        )
+
+    def test_limit_capped_at_spotify_playlist_max(self, mock_sp):
+        # Spotify rejects limit > 10 on type=playlist searches with
+        # 400 Invalid limit (observed live, 2026-06)
+        mock_sp.search.return_value = {
+            "playlists": {"items": [], "next": None}
+        }
+        search_playlists(mock_sp, "indie", limit=50)
+        mock_sp.search.assert_called_once_with(
+            q="indie", type="playlist", limit=10, offset=0
         )
 
     def test_returns_dicts_with_id_name_image_url(self, mock_sp):
@@ -163,7 +175,18 @@ class TestSearchPlaylists:
         }
         search_playlists(mock_sp, "indie", offset=40)
         mock_sp.search.assert_called_once_with(
-            q="indie", type="playlist", limit=20, offset=40
+            q="indie", type="playlist", limit=10, offset=40
+        )
+
+    def test_pagination_offset_clamps_limit(self, mock_sp):
+        # DD-07: paging steps by the Spotify-capped limit (10) even
+        # when a larger limit is requested at a non-zero offset
+        mock_sp.search.return_value = {
+            "playlists": {"items": [], "next": None}
+        }
+        search_playlists(mock_sp, "indie", limit=50, offset=40)
+        mock_sp.search.assert_called_once_with(
+            q="indie", type="playlist", limit=10, offset=40
         )
 
     def test_handles_playlist_with_no_image(self, mock_sp):
@@ -440,3 +463,12 @@ class TestGetUserProduct:
         }
         result = get_user_product(mock_sp)
         assert result == product
+
+
+# Y-06: premium full-track playback via the Web Playback SDK device
+class TestStartPlayback:
+    def test_calls_start_playback_with_device_and_uri(self, mock_sp):
+        start_playback(mock_sp, "device123", "spotify:track:abc")
+        mock_sp.start_playback.assert_called_once_with(
+            device_id="device123", uris=["spotify:track:abc"]
+        )

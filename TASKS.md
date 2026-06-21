@@ -343,10 +343,10 @@ This slice deliberately omits: crate-stack perspective (single card only), audio
 ## Group V — Crate-of-Records Visual Polish
 > Depends on: U-16. Run in parallel with W, X, Z, AA, BB, CC, DD, EE, FF.
 
-- [ ] **V-01** Add `.rustle-stack` container styles in `assets/style.css`: `perspective: 1200px`, fixed aspect-ratio for cards
-- [ ] **V-02** Render the top 4 entries of the active queue inside `.rustle-stack`: top card centered, next three peeking behind with progressive `translateY`, `scale(0.95)…(0.85)`, and small forward tilt via `rotateX`
-- [ ] **V-03** Add a CSS class `.rustle-card--exiting` that translates the top card off-screen in the gesture direction and fades it out over ~240 ms
-- [ ] **V-04** Add a CSS class for the next-card slide-up-to-top transition (~240 ms)
+- [x] **V-01** Add `.rustle-stack` container styles in `assets/style.css`: `perspective: 1200px`, fixed aspect-ratio for cards
+- [x] **V-02** Render the top 4 entries of the active queue inside `.rustle-stack`: top card centered, next three peeking behind with progressive `translateY`, `scale(0.95)…(0.85)`, and small forward tilt via `rotateX`
+- [x] **V-03** Add a CSS class `.rustle-card--exiting` that translates the top card off-screen in the gesture direction and fades it out over ~240 ms
+- [x] **V-04** Add a CSS class for the next-card slide-up-to-top transition (~240 ms)
 - [ ] **V-05** Manual visual check on desktop Chrome
 - [ ] **V-06** Manual visual check on mobile Safari
 
@@ -355,13 +355,13 @@ This slice deliberately omits: crate-stack perspective (single card only), audio
 ## Group W — Gesture Input (touch / keyboard / drag)
 > Depends on: U-16. Run in parallel with V, X.
 
-- [ ] **W-01** Create `assets/rustle.js` — Pointer Events listener on a `data-rustle-card-area="true"` element
-- [ ] **W-02** Compute drag distance + dominant axis; ≥80 px commits a gesture (L / R / Up / Down)
-- [ ] **W-03** Communicate the resolved gesture to Dash via a clientside callback writing to `dcc.Store(id="rustle-gesture")` with shape `{direction, ts}`
-- [ ] **W-04** Bind `keydown`: ArrowLeft/Right = L/R, ArrowUp = Up, ArrowDown = Down, Enter = Up
-- [ ] **W-05** Click-and-drag on desktop mirrors touch (same Pointer Events path)
-- [ ] **W-06** Replace temporary buttons from Group U with server callbacks listening to `rustle-gesture`: L/R = index ±1, Up = commit (enter playlist / add track), Down = back one level
-- [ ] **W-07** Handle Down in track view → back to playlist queue; Down in playlist queue → clear search (returns to recents)
+- [x] **W-01** Create `assets/rustle.js` — Pointer Events listener on a `data-rustle-card-area="true"` element
+- [x] **W-02** Compute drag distance + dominant axis; ≥80 px commits a gesture (L / R / Up / Down)
+- [x] **W-03** Communicate the resolved gesture to Dash via a clientside callback writing to `dcc.Store(id="rustle-gesture")` with shape `{direction, ts}`
+- [x] **W-04** Bind `keydown`: ArrowLeft/Right = L/R, ArrowUp = Up, ArrowDown = Down, Enter = Up
+- [x] **W-05** Click-and-drag on desktop mirrors touch (same Pointer Events path)
+- [x] **W-06** Replace temporary buttons from Group U with server callbacks listening to `rustle-gesture`: L/R = index ±1, Up = commit (enter playlist / add track), Down = back one level
+- [x] **W-07** Handle Down in track view → back to playlist queue; Down in playlist queue → clear search (returns to recents)
 - [ ] **W-08** Manual smoke test: swipe on phone, arrow keys on desktop, drag on desktop — verify behaviors match Group U vertical slice
 
 ---
@@ -369,13 +369,13 @@ This slice deliberately omits: crate-stack perspective (single card only), audio
 ## Group X — Audio: Free `preview_url` Path
 > Depends on: U-16. Run in parallel with V, W.
 
-- [ ] **X-01** Add a single `<audio id="rustle-audio">` element in the layout (managed clientside)
-- [ ] **X-02** Add a clientside callback: when the current card changes, set `audio.src = preview_url` and call `audio.play()`
-- [ ] **X-03** Fade audio volume to 0 over ~200 ms before each card transition (clientside)
-- [ ] **X-04** If `preview_url` is null, show a small "No preview available" pill on the card and skip the play call
-- [ ] **X-05** Add a one-time "Tap to start" overlay on the very first card after Rustle entry; tapping it primes the `<audio>` element (iOS audio unlock)
-- [ ] **X-06** Persist "unlocked" state in a `dcc.Store(id="rustle-audio-unlocked")` for the session (so the overlay shows once per Rustle entry, not per card)
-- [ ] **X-07** Write `tests/test_rustle.py` — `track_card(track_without_preview)` includes the "No preview available" indicator
+- [x] **X-01** Add a single `<audio id="rustle-audio">` element in the layout (managed clientside)
+- [x] **X-02** Add a clientside callback: when the current card changes, set `audio.src = preview_url` and call `audio.play()`
+- [x] **X-03** Fade audio volume to 0 over ~200 ms before each card transition (clientside)
+- [x] **X-04** If `preview_url` is null, show a small "No preview available" pill on the card and skip the play call
+- [x] **X-05** Add a one-time "Tap to start" overlay on the very first card after Rustle entry; tapping it primes the `<audio>` element (iOS audio unlock)
+- [x] **X-06** Persist "unlocked" state in a `dcc.Store(id="rustle-audio-unlocked")` for the session (so the overlay shows once per Rustle entry, not per card)
+- [x] **X-07** Write `tests/test_rustle.py` — `track_card(track_without_preview)` includes the "No preview available" indicator
 - [ ] **X-08** Manual smoke test in iOS Safari (or DevTools mobile emulator with Safari iOS UA)
 
 ---
@@ -383,12 +383,12 @@ This slice deliberately omits: crate-stack perspective (single card only), audio
 ## Group Y — Audio: Premium Web Playback SDK
 > Depends on: X (Free fallback must exist before SDK fallback is wired).
 
-- [ ] **Y-01** Add a Dash callback: on Rustle mode entry, call `get_user_product(sp)` and write to `dcc.Store(id="rustle-product")`
-- [ ] **Y-02** If product == `premium`, inject the Spotify Web Playback SDK `<script>` tag into the document (clientside conditional)
-- [ ] **Y-03** In `assets/rustle.js`, initialize a `Spotify.Player` once the SDK is ready; capture `device_id` and write it to `dcc.Store(id="rustle-device-id")`
-- [ ] **Y-04** Add a server callback: on track-card change, if Premium + `device_id` present, call `sp.start_playback(device_id, uris=[track_uri])` server-side instead of using `preview_url`
-- [ ] **Y-05** If SDK init fails or times out (>5 s), log the error and fall back to the Group X `preview_url` path silently
-- [ ] **Y-06** Add `tests/test_spotify.py` — `get_user_product` mocked responses for premium / free / open
+- [x] **Y-01** Add a Dash callback: on Rustle mode entry, call `get_user_product(sp)` and write to `dcc.Store(id="rustle-product")`
+- [x] **Y-02** If product == `premium`, inject the Spotify Web Playback SDK `<script>` tag into the document (clientside conditional)
+- [x] **Y-03** In `assets/rustle.js`, initialize a `Spotify.Player` once the SDK is ready; capture `device_id` and write it to `dcc.Store(id="rustle-device-id")`
+- [x] **Y-04** Add a server callback: on track-card change, if Premium + `device_id` present, call `sp.start_playback(device_id, uris=[track_uri])` server-side instead of using `preview_url`
+- [x] **Y-05** If SDK init fails or times out (>5 s), log the error and fall back to the Group X `preview_url` path silently
+- [x] **Y-06** Add `tests/test_spotify.py` — `get_user_product` mocked responses for premium / free / open
 - [ ] **Y-07** Manual smoke test as a Premium account and as a Free account
 
 ---
@@ -396,87 +396,87 @@ This slice deliberately omits: crate-stack perspective (single card only), audio
 ## Group Z — Selection: Dedupe, Counter, Animations
 > Depends on: U-16. Run in parallel with V, W, X.
 
-- [ ] **Z-01** Add a callback: on entering a playlist's track queue, call `get_playlist_track_uris(rustle-target)` and write to `dcc.Store(id="rustle-target-uris")`
-- [ ] **Z-02** Render the "Already added" badge on `track_card` when `track.uri ∈ rustle-target-uris` (component already supports this from Group T)
-- [ ] **Z-03** When the commit gesture fires on an already-added track, no-op and add a CSS shake class for ~200 ms
-- [ ] **Z-04** Implement the `added_stamp_overlay()` animation: scale-in + fade-out over ~600 ms via CSS keyframes
-- [ ] **Z-05** On successful add: show the stamp overlay on top of the card, wait ~400 ms, then animate the card off-screen (reuse `.rustle-card--exiting`)
-- [ ] **Z-06** Implement `add_counter_chip(n)` styling: fixed-position top-right, Spotify-green pill
-- [ ] **Z-07** Add a `dcc.Store(id="rustle-add-count")` initialized to 0; increment on each successful add via callback
-- [ ] **Z-08** Append the new URI to `rustle-target-uris` after each successful add so subsequent cards see the updated dedupe set
-- [ ] **Z-09** Write `tests/test_rustle.py` — counter chip renders `"+N added"` for `n > 0`, and is hidden for `n == 0`
+- [x] **Z-01** Add a callback: on entering a playlist's track queue, call `get_playlist_track_uris(rustle-target)` and write to `dcc.Store(id="rustle-target-uris")`
+- [x] **Z-02** Render the "Already added" badge on `track_card` when `track.uri ∈ rustle-target-uris` (component already supports this from Group T)
+- [x] **Z-03** When the commit gesture fires on an already-added track, no-op and add a CSS shake class for ~200 ms
+- [x] **Z-04** Implement the `added_stamp_overlay()` animation: scale-in + fade-out over ~600 ms via CSS keyframes
+- [x] **Z-05** On successful add: show the stamp overlay on top of the card, wait ~400 ms, then animate the card off-screen (reuse `.rustle-card--exiting`)
+- [x] **Z-06** Implement `add_counter_chip(n)` styling: fixed-position top-right, Spotify-green pill
+- [x] **Z-07** Add a `dcc.Store(id="rustle-add-count")` initialized to 0; increment on each successful add via callback
+- [x] **Z-08** Append the new URI to `rustle-target-uris` after each successful add so subsequent cards see the updated dedupe set
+- [x] **Z-09** Write `tests/test_rustle.py` — counter chip renders `"+N added"` for `n > 0`, and is hidden for `n == 0`
 
 ---
 
 ## Group AA — Album Drill
 > Depends on: U-16, R-03 (`get_album_tracks`).
 
-- [ ] **AA-01** Add a tap handler to the album art region of `track_card`: tap → emit a `tap-art` action via `rustle-gesture` Store
-- [ ] **AA-02** Add a callback: on `tap-art`, call `get_album_tracks(track.album_id)`, store in `dcc.Store(id="rustle-album-queue")`, reset `rustle-album-index`, switch view to the album drill
-- [ ] **AA-03** Reuse `track_card` for album drill cards (same shape)
-- [ ] **AA-04** Wire Down gesture from album view → return to the playlist track queue at the same index it was left
-- [ ] **AA-05** Show the "End of the record. Swipe down to keep digging." card after the last album track
-- [ ] **AA-06** Write `tests/test_rustle.py` — album drill navigation: entering an album sets the album queue; Down clears it
+- [x] **AA-01** Add a tap handler to the album art region of `track_card`: tap → emit a `tap-art` action via `rustle-gesture` Store
+- [x] **AA-02** Add a callback: on `tap-art`, call `get_album_tracks(track.album_id)`, store in `dcc.Store(id="rustle-album-queue")`, reset `rustle-album-index`, switch view to the album drill
+- [x] **AA-03** Reuse `track_card` for album drill cards (same shape)
+- [x] **AA-04** Wire Down gesture from album view → return to the playlist track queue at the same index it was left
+- [x] **AA-05** Show the "End of the record. Swipe down to keep digging." card after the last album track
+- [x] **AA-06** Write `tests/test_rustle.py` — album drill navigation: entering an album sets the album queue; Down clears it
 
 ---
 
 ## Group BB — Recent Searches Persistence
 > Depends on: P-09 (DB impl), U-16.
 
-- [ ] **BB-01** Implement `components/rustle.py:recents_chips(queries)` per the Group T tests
-- [ ] **BB-02** Render the chip row directly below `search_bar` when the search input is empty
-- [ ] **BB-03** Add a callback: on search submit (debounced fire), call `db.save_recent_search(user_id, query)`
-- [ ] **BB-04** Add a callback: on Rustle mode entry, call `db.get_recent_searches(user_id)` and render the chips
-- [ ] **BB-05** Wire chip click → write the chip's query into the search input value, which re-fires the search callback
-- [ ] **BB-06** Add a small `Clear` button next to the chip row → calls `db.clear_recent_searches(user_id)` and refreshes the chips
-- [ ] **BB-07** Write `tests/test_rustle.py` — chips render correctly for 0, 1, 5 queries; clear button shown only when chips > 0
+- [x] **BB-01** Implement `components/rustle.py:recents_chips(queries)` per the Group T tests
+- [x] **BB-02** Render the chip row directly below `search_bar` when the search input is empty
+- [x] **BB-03** Add a callback: on search submit (debounced fire), call `db.save_recent_search(user_id, query)`
+- [x] **BB-04** Add a callback: on Rustle mode entry, call `db.get_recent_searches(user_id)` and render the chips
+- [x] **BB-05** Wire chip click → write the chip's query into the search input value, which re-fires the search callback
+- [x] **BB-06** Add a small `Clear` button next to the chip row → calls `db.clear_recent_searches(user_id)` and refreshes the chips
+- [x] **BB-07** Write `tests/test_rustle.py` — chips render correctly for 0, 1, 5 queries; clear button shown only when chips > 0
 
 ---
 
 ## Group CC — Create-new Playlist Flow
 > Depends on: U-16, R-05 (`create_playlist`).
 
-- [ ] **CC-01** Add a "Create new…" entry to the picker dropdown (already covered in Group T-02)
-- [ ] **CC-02** On selection, swap the dropdown UI for a single name input + Create button
-- [ ] **CC-03** On Create click, call `spotify.create_playlist(sp, user_id, name)` and use the returned `id` as `rustle-target`
-- [ ] **CC-04** Render the picker view's loading state while the create call is in flight
-- [ ] **CC-05** Write `tests/test_rustle.py` — picker toggles between dropdown and create-input modes correctly
+- [x] **CC-01** Add a "Create new…" entry to the picker dropdown (already covered in Group T-02)
+- [x] **CC-02** On selection, swap the dropdown UI for a single name input + Create button
+- [x] **CC-03** On Create click, call `spotify.create_playlist(sp, user_id, name)` and use the returned `id` as `rustle-target`
+- [x] **CC-04** Render the picker view's loading state while the create call is in flight
+- [x] **CC-05** Write `tests/test_rustle.py` — picker toggles between dropdown and create-input modes correctly
 
 ---
 
 ## Group DD — Exhaustion / End-of-Queue
 > Depends on: U-16.
 
-- [ ] **DD-01** Implement search pagination: when `rustle-playlist-index` reaches the end of `rustle-playlist-queue`, call `search_playlists` with `offset += len(queue)` and append results
-- [ ] **DD-02** Cap total search results at 100; once reached, render the end-of-queue card instead of paginating further
-- [ ] **DD-03** Implement the playlist-track end-of-queue card: "You've flipped through every track in this playlist. Swipe down to try another."
-- [ ] **DD-04** Implement the album-track end-of-queue card (AA-05 covers this; cross-reference)
-- [ ] **DD-05** Swipe Down on any end-of-queue card → return to the previous queue
-- [ ] **DD-06** Write `tests/test_rustle.py` — `end_of_queue_card` renders the right message per context
-- [ ] **DD-07** Write `tests/test_spotify.py` — pagination math: searching with `limit=20, offset=40` calls the API with the right args
+- [x] **DD-01** Implement search pagination: when `rustle-playlist-index` reaches the end of `rustle-playlist-queue`, call `search_playlists` with `offset += len(queue)` and append results
+- [x] **DD-02** Cap total search results at 100; once reached, render the end-of-queue card instead of paginating further
+- [x] **DD-03** Implement the playlist-track end-of-queue card: "You've flipped through every track in this playlist. Swipe down to try another."
+- [x] **DD-04** Implement the album-track end-of-queue card (AA-05 covers this; cross-reference)
+- [x] **DD-05** Swipe Down on any end-of-queue card → return to the previous queue
+- [x] **DD-06** Write `tests/test_rustle.py` — `end_of_queue_card` renders the right message per context
+- [x] **DD-07** Write `tests/test_spotify.py` — pagination math: searching with `offset=40` calls the API with the right args (note: Spotify caps playlist-search `limit` at 10 since ~2026; `search_playlists` clamps accordingly)
 
 ---
 
 ## Group EE — Edge Cases & Error Handling
 > Depends on: U-16. Mostly parallel-able.
 
-- [ ] **EE-01** Zero search results state: render "No playlists found. Try a different search." and surface recents chips below
-- [ ] **EE-02** Filter non-track items in `get_playlist_tracks` (covered by R-02 test) — guarantee: queue never includes podcasts, local files, or null tracks
-- [ ] **EE-03** Missing album art: render grey square placeholder on `track_card` and `playlist_card` (reuse the existing artist-grid fallback pattern)
-- [ ] **EE-04** Wrap every Rustle-side Spotify call in `try / except SpotifyException`; on 401, redirect to `/login` (re-consent)
-- [ ] **EE-05** On 404 from `add_track_to_playlist` (target deleted in Spotify mid-session): show a non-blocking error toast, clear `rustle-target` Store, reopen the picker
-- [ ] **EE-06** Network drop: catch network-level exceptions on the gesture callback path, log via the standard logger, render a small "Offline — retrying" pill
-- [ ] **EE-07** Write `tests/test_rustle.py` — edge-case rendering: zero results, missing art, deleted target
+- [x] **EE-01** Zero search results state: render "No playlists found. Try a different search." and surface recents chips below
+- [x] **EE-02** Filter non-track items in `get_playlist_tracks` (covered by R-02 test) — guarantee: queue never includes podcasts, local files, or null tracks
+- [x] **EE-03** Missing album art: render grey square placeholder on `track_card` and `playlist_card` (reuse the existing artist-grid fallback pattern)
+- [x] **EE-04** Wrap every Rustle-side Spotify call in `try / except SpotifyException`; on 401, redirect to `/login` (re-consent)
+- [x] **EE-05** On 404 from `add_track_to_playlist` (target deleted in Spotify mid-session): show a non-blocking error toast, clear `rustle-target` Store, reopen the picker
+- [x] **EE-06** Network drop: catch network-level exceptions on the gesture callback path, log via the standard logger, render a small "Offline — retrying" pill
+- [x] **EE-07** Write `tests/test_rustle.py` — edge-case rendering: zero results, missing art, deleted target
 
 ---
 
 ## Group FF — Responsive Layout (mobile-first)
 > Depends on: U-16. Fully parallel.
 
-- [ ] **FF-01** Add mobile-first CSS for Rustle mode: cards take full container width on viewports < 480 px
-- [ ] **FF-02** Constrain Rustle mode to `max-width: 480px; margin: 0 auto;` on desktop so the crate stack stays card-shaped
-- [ ] **FF-03** Mode switcher: confirm pill tabs render legibly on both viewports
-- [ ] **FF-04** Target-picker modal: full-screen on mobile, centered modal (max-width: 420 px) on desktop
+- [x] **FF-01** Add mobile-first CSS for Rustle mode: cards take full container width on viewports < 480 px
+- [x] **FF-02** Constrain Rustle mode to `max-width: 480px; margin: 0 auto;` on desktop so the crate stack stays card-shaped
+- [x] **FF-03** Mode switcher: confirm pill tabs render legibly on both viewports
+- [x] **FF-04** Target-picker modal: full-screen on mobile, centered modal (max-width: 420 px) on desktop
 - [ ] **FF-05** Manual visual check on iPhone Safari + desktop Chrome at 1440 px wide
 
 ---
