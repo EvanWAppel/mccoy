@@ -383,12 +383,12 @@ This slice deliberately omits: crate-stack perspective (single card only), audio
 ## Group Y — Audio: Premium Web Playback SDK
 > Depends on: X (Free fallback must exist before SDK fallback is wired).
 
-- [ ] **Y-01** Add a Dash callback: on Rustle mode entry, call `get_user_product(sp)` and write to `dcc.Store(id="rustle-product")`
-- [ ] **Y-02** If product == `premium`, inject the Spotify Web Playback SDK `<script>` tag into the document (clientside conditional)
-- [ ] **Y-03** In `assets/rustle.js`, initialize a `Spotify.Player` once the SDK is ready; capture `device_id` and write it to `dcc.Store(id="rustle-device-id")`
-- [ ] **Y-04** Add a server callback: on track-card change, if Premium + `device_id` present, call `sp.start_playback(device_id, uris=[track_uri])` server-side instead of using `preview_url`
-- [ ] **Y-05** If SDK init fails or times out (>5 s), log the error and fall back to the Group X `preview_url` path silently
-- [ ] **Y-06** Add `tests/test_spotify.py` — `get_user_product` mocked responses for premium / free / open
+- [x] **Y-01** Add a Dash callback: on Rustle mode entry, call `get_user_product(sp)` and write to `dcc.Store(id="rustle-product")`
+- [x] **Y-02** If product == `premium`, inject the Spotify Web Playback SDK `<script>` tag into the document (clientside conditional)
+- [x] **Y-03** In `assets/rustle.js`, initialize a `Spotify.Player` once the SDK is ready; capture `device_id` and write it to `dcc.Store(id="rustle-device-id")`
+- [x] **Y-04** Add a server callback: on track-card change, if Premium + `device_id` present, call `sp.start_playback(device_id, uris=[track_uri])` server-side instead of using `preview_url`
+- [x] **Y-05** If SDK init fails or times out (>5 s), log the error and fall back to the Group X `preview_url` path silently
+- [x] **Y-06** Add `tests/test_spotify.py` — `get_user_product` mocked responses for premium / free / open
 - [ ] **Y-07** Manual smoke test as a Premium account and as a Free account
 
 ---
@@ -411,12 +411,12 @@ This slice deliberately omits: crate-stack perspective (single card only), audio
 ## Group AA — Album Drill
 > Depends on: U-16, R-03 (`get_album_tracks`).
 
-- [ ] **AA-01** Add a tap handler to the album art region of `track_card`: tap → emit a `tap-art` action via `rustle-gesture` Store
-- [ ] **AA-02** Add a callback: on `tap-art`, call `get_album_tracks(track.album_id)`, store in `dcc.Store(id="rustle-album-queue")`, reset `rustle-album-index`, switch view to the album drill
-- [ ] **AA-03** Reuse `track_card` for album drill cards (same shape)
-- [ ] **AA-04** Wire Down gesture from album view → return to the playlist track queue at the same index it was left
-- [ ] **AA-05** Show the "End of the record. Swipe down to keep digging." card after the last album track
-- [ ] **AA-06** Write `tests/test_rustle.py` — album drill navigation: entering an album sets the album queue; Down clears it
+- [x] **AA-01** Add a tap handler to the album art region of `track_card`: tap → emit a `tap-art` action via `rustle-gesture` Store
+- [x] **AA-02** Add a callback: on `tap-art`, call `get_album_tracks(track.album_id)`, store in `dcc.Store(id="rustle-album-queue")`, reset `rustle-album-index`, switch view to the album drill
+- [x] **AA-03** Reuse `track_card` for album drill cards (same shape)
+- [x] **AA-04** Wire Down gesture from album view → return to the playlist track queue at the same index it was left
+- [x] **AA-05** Show the "End of the record. Swipe down to keep digging." card after the last album track
+- [x] **AA-06** Write `tests/test_rustle.py` — album drill navigation: entering an album sets the album queue; Down clears it
 
 ---
 
@@ -447,13 +447,13 @@ This slice deliberately omits: crate-stack perspective (single card only), audio
 ## Group DD — Exhaustion / End-of-Queue
 > Depends on: U-16.
 
-- [ ] **DD-01** Implement search pagination: when `rustle-playlist-index` reaches the end of `rustle-playlist-queue`, call `search_playlists` with `offset += len(queue)` and append results
-- [ ] **DD-02** Cap total search results at 100; once reached, render the end-of-queue card instead of paginating further
-- [ ] **DD-03** Implement the playlist-track end-of-queue card: "You've flipped through every track in this playlist. Swipe down to try another."
-- [ ] **DD-04** Implement the album-track end-of-queue card (AA-05 covers this; cross-reference)
-- [ ] **DD-05** Swipe Down on any end-of-queue card → return to the previous queue
-- [ ] **DD-06** Write `tests/test_rustle.py` — `end_of_queue_card` renders the right message per context
-- [ ] **DD-07** Write `tests/test_spotify.py` — pagination math: searching with `offset=40` calls the API with the right args (note: Spotify caps playlist-search `limit` at 10 since ~2026; `search_playlists` clamps accordingly)
+- [x] **DD-01** Implement search pagination: when `rustle-playlist-index` reaches the end of `rustle-playlist-queue`, call `search_playlists` with `offset += len(queue)` and append results
+- [x] **DD-02** Cap total search results at 100; once reached, render the end-of-queue card instead of paginating further
+- [x] **DD-03** Implement the playlist-track end-of-queue card: "You've flipped through every track in this playlist. Swipe down to try another."
+- [x] **DD-04** Implement the album-track end-of-queue card (AA-05 covers this; cross-reference)
+- [x] **DD-05** Swipe Down on any end-of-queue card → return to the previous queue
+- [x] **DD-06** Write `tests/test_rustle.py` — `end_of_queue_card` renders the right message per context
+- [x] **DD-07** Write `tests/test_spotify.py` — pagination math: searching with `offset=40` calls the API with the right args (note: Spotify caps playlist-search `limit` at 10 since ~2026; `search_playlists` clamps accordingly)
 
 ---
 
