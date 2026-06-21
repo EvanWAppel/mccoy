@@ -24,6 +24,8 @@ from spotify import (
     add_track_to_playlist,
     get_playlist_track_uris,
     create_playlist,
+    get_user_product,
+    start_playback,
 )
 from components.header import render_header
 from components.artist_grid import render_grid
@@ -79,6 +81,16 @@ def callback_route():
 def logout():
     flask.session.clear()
     return flask.redirect("/login")
+
+
+# Y-03: the Web Playback SDK's getOAuthToken callback fetches this to
+# obtain the current access token. Only served when logged in.
+@server.route("/token")
+def token_route():
+    token = flask.session.get("token")
+    if not token or not token.get("access_token"):
+        return flask.jsonify({}), 401
+    return flask.jsonify({"access_token": token["access_token"]})
 
 
 # --- Layout helpers ---
@@ -223,6 +235,11 @@ def render_page(pathname):
                 dcc.Store(id="rustle-query", data=""),
                 dcc.Store(id="rustle-error", data=None),
                 dcc.Store(id="rustle-auth-sink", data=None),
+                # Y-01/Y-02/Y-03: premium Web Playback SDK plumbing
+                dcc.Store(id="rustle-product", data=None),
+                dcc.Store(id="rustle-device-id", data=None),
+                dcc.Store(id="rustle-sdk-sink", data=None),
+                dcc.Store(id="rustle-playback-sink", data=None),
                 html.Audio(id="rustle-audio", preload="auto"),
             ],
         ),
@@ -972,6 +989,74 @@ app.clientside_callback(
     Input("rustle-error", "data"),
     prevent_initial_call=True,
 )
+
+
+# --- Group Y: Premium Web Playback SDK ---
+
+
+# Y-01: on entering Rustle mode, record the user's product tier so the
+# premium path can decide whether to use the SDK or the free preview.
+@app.callback(
+    Output("rustle-product", "data"),
+    Input("mode-tabs", "value"),
+    prevent_initial_call=True,
+)
+def load_product(mode):
+    if mode != "rustle":
+        raise PreventUpdate
+    sp = get_sp_from_session(flask.session)
+    if sp is None:
+        raise PreventUpdate
+    product = get_user_product(sp)
+    logger.info("Rustle product tier: %s", product)
+    return product
+
+
+# Y-02: inject the Web Playback SDK <script> once, only for premium.
+# Clientside side-effect callback → returns a concrete string to the
+# sink store (never no_update, which has broken the renderer here).
+app.clientside_callback(
+    ClientsideFunction(namespace="rustle", function_name="injectSDK"),
+    Output("rustle-sdk-sink", "data"),
+    Input("rustle-product", "data"),
+    prevent_initial_call=True,
+)
+
+
+# Y-04: on track-card change, if premium + a ready device + the track
+# view is active, play the full track server-side. Otherwise no-op so
+# the Group X preview_url path (free / fallback) drives audio instead.
+@app.callback(
+    Output("rustle-playback-sink", "data"),
+    Input("rustle-track-index", "data"),
+    Input("rustle-track-queue", "data"),
+    State("rustle-view", "data"),
+    State("rustle-product", "data"),
+    State("rustle-device-id", "data"),
+    prevent_initial_call=True,
+)
+def premium_playback(tr_idx, tr_queue, view, product, device_id):
+    if product != "premium" or not device_id or view != "track":
+        raise PreventUpdate
+    if not tr_queue or tr_idx is None or tr_idx >= len(tr_queue):
+        raise PreventUpdate
+    track = tr_queue[tr_idx]
+    uri = track.get("uri")
+    if not uri:
+        raise PreventUpdate
+    sp = get_sp_from_session(flask.session)
+    if sp is None:
+        raise PreventUpdate
+    # Y-05: if the SDK never produced a device this never runs; a live
+    # playback failure is logged and we fall back silently (the free
+    # preview path covers audio when present).
+    try:
+        start_playback(sp, device_id, uri)
+        logger.info("Premium playback %s on device %s", uri, device_id)
+    except Exception as e:
+        logger.warning("start_playback failed: %s", e)
+        raise PreventUpdate
+    return uri
 
 
 if __name__ == "__main__":

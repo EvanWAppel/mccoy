@@ -12,6 +12,7 @@ from spotify import (
     add_track_to_playlist,
     get_playlist_track_uris,
     get_user_product,
+    start_playback,
 )
 
 
@@ -462,3 +463,12 @@ class TestGetUserProduct:
         }
         result = get_user_product(mock_sp)
         assert result == product
+
+
+# Y-06: premium full-track playback via the Web Playback SDK device
+class TestStartPlayback:
+    def test_calls_start_playback_with_device_and_uri(self, mock_sp):
+        start_playback(mock_sp, "device123", "spotify:track:abc")
+        mock_sp.start_playback.assert_called_once_with(
+            device_id="device123", uris=["spotify:track:abc"]
+        )

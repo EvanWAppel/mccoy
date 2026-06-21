@@ -157,3 +157,8 @@ def get_playlist_track_uris(sp, playlist_id: str) -> set[str]:
 
 def get_user_product(sp) -> str:
     return sp.current_user().get("product", "open")
+
+
+def start_playback(sp, device_id: str, track_uri: str) -> None:
+    # Y-04: play a full track on the Web Playback SDK device (premium)
+    sp.start_playback(device_id=device_id, uris=[track_uri])

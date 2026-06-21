@@ -44,6 +44,12 @@
     playPreview: function (idx, queue, view, unlocked) {
       var audio = getAudio();
       if (!audio) return window.dash_clientside.no_update;
+      // Y: premium plays full tracks via the Web Playback SDK; keep
+      // the free preview silent so they don't double up.
+      if (window.__rustlePremiumActive) {
+        if (!audio.paused) audio.pause();
+        return window.dash_clientside.no_update;
+      }
       var track =
         view === "track" && unlocked && queue && queue[idx]
           ? queue[idx]
@@ -231,4 +237,126 @@
     ev.preventDefault();
     commit(direction);
   });
+})();
+
+/* ===================================================================
+ * Group Y — Audio: Premium Web Playback SDK
+ * Self-contained block. Coordinates with the Group X playPreview path
+ * via window.__rustlePremiumActive (playPreview early-returns when set).
+ * =================================================================== */
+(function () {
+  "use strict";
+
+  var SDK_SRC = "https://sdk.scdn.co/spotify-player.js";
+  var SDK_SCRIPT_ID = "spotify-web-playback-sdk"; // dedupe marker
+  var READY_TIMEOUT_MS = 5000; // Y-05
+  var player = null;
+  var initStarted = false;
+
+  // Flag the Group X playPreview clientside fn reads to suppress the
+  // free preview while premium plays full tracks.
+  window.__rustlePremiumActive = window.__rustlePremiumActive || false;
+
+  function setProps(id, props) {
+    if (window.dash_clientside && window.dash_clientside.set_props) {
+      window.dash_clientside.set_props(id, props);
+    }
+  }
+
+  window.dash_clientside = window.dash_clientside || {};
+  window.dash_clientside.rustle = window.dash_clientside.rustle || {};
+
+  // Y-02: inject the SDK <script> tag exactly once, only for premium.
+  // Side-effect-only clientside callback → always returns a concrete
+  // string (never dash_clientside.no_update) to the sink store.
+  window.dash_clientside.rustle.injectSDK = function (product) {
+    if (product !== "premium") {
+      return "not-premium";
+    }
+    if (document.getElementById(SDK_SCRIPT_ID)) {
+      return "already-present";
+    }
+    var tag = document.createElement("script");
+    tag.id = SDK_SCRIPT_ID;
+    tag.src = SDK_SRC;
+    tag.async = true;
+    document.head.appendChild(tag);
+    return "injected";
+  };
+
+  // Y-03: build and connect the player once the SDK script is ready.
+  function initPlayer() {
+    if (initStarted || typeof Spotify === "undefined") {
+      return;
+    }
+    initStarted = true;
+
+    player = new Spotify.Player({
+      name: "mccoy Rustle",
+      // Y-03: the SDK asks for a fresh token; fetch it from /token.
+      getOAuthToken: function (cb) {
+        fetch("/token", { credentials: "same-origin" })
+          .then(function (r) {
+            return r.ok ? r.json() : null;
+          })
+          .then(function (d) {
+            if (d && d.access_token) {
+              cb(d.access_token);
+            }
+          })
+          .catch(function (e) {
+            console.warn("Rustle: /token fetch failed", e);
+          });
+      },
+      volume: 1.0,
+    });
+
+    // Y-03: capture the device id so the server can target playback.
+    player.addListener("ready", function (data) {
+      window.__rustlePremiumActive = true;
+      console.info("Rustle: premium device ready", data.device_id);
+      setProps("rustle-device-id", { data: data.device_id });
+    });
+
+    player.addListener("not_ready", function (data) {
+      // Device went offline; drop back to the free path.
+      window.__rustlePremiumActive = false;
+      console.warn("Rustle: premium device offline", data.device_id);
+    });
+
+    // Y-05: any error leaves device-id empty → free-preview fallback.
+    var onErr = function (label) {
+      return function (e) {
+        console.warn("Rustle: SDK " + label, e && e.message);
+      };
+    };
+    player.addListener("initialization_error", onErr("init error"));
+    player.addListener("authentication_error", onErr("auth error"));
+    player.addListener("account_error", onErr("account error"));
+    player.addListener("playback_error", onErr("playback error"));
+
+    player.connect();
+
+    // Y-05: if "ready" never fires within ~5s, log and stay on the
+    // free preview path (rustle-device-id is never written).
+    setTimeout(function () {
+      if (!window.__rustlePremiumActive) {
+        console.warn(
+          "Rustle: Web Playback SDK not ready within " +
+            READY_TIMEOUT_MS +
+            "ms; using free preview fallback"
+        );
+      }
+    }, READY_TIMEOUT_MS);
+  }
+
+  // Y-03: the SDK invokes this global as soon as its script loads.
+  // Chain any pre-existing handler so we don't clobber it.
+  var prevReady = window.onSpotifyWebPlaybackSDKReady;
+  window.onSpotifyWebPlaybackSDKReady = function () {
+    if (typeof prevReady === "function") {
+      prevReady();
+    }
+    initPlayer();
+  };
 })();
