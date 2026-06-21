@@ -649,7 +649,7 @@ def handle_gesture(
         "pl_queue": no_update, "pl_idx": no_update,
         "tr_queue": no_update, "tr_idx": no_update,
         "view": no_update, "uris": no_update, "count": no_update,
-        "target": no_update, "error": None, "query": no_update,
+        "target": no_update, "error": no_update, "query": no_update,
     }
 
     def ret():
@@ -684,6 +684,7 @@ def handle_gesture(
                 out["uris"] = (target_uris or []) + [uri]
                 out["count"] = (add_count or 0) + 1
                 out["tr_idx"] = min(len(tr_queue), tr_idx + 1)
+                out["error"] = None  # clear any prior toast
             elif status == "missing":
                 # EE-05: target was deleted in Spotify mid-session
                 out["target"] = None
@@ -718,6 +719,7 @@ def handle_gesture(
         out["tr_idx"] = 0
         out["view"] = "track"
         out["uris"] = _fetch_target_uris(sp, target)
+        out["error"] = None  # clear any prior toast
         return ret()
     if direction == "down":
         # W-07: clear the search results, back to recents
@@ -794,8 +796,9 @@ app.clientside_callback(
     function(error) {
         if (error && error.kind === 'auth') {
             window.location.href = '/login';
+            return 'redirecting';
         }
-        return window.dash_clientside.no_update;
+        return '';
     }
     """,
     Output("rustle-auth-sink", "data"),
