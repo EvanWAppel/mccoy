@@ -20,6 +20,9 @@ try:
         create_playlist_form,
         no_results_state,
         error_toast,
+        ALBUM_END_MESSAGE,
+        SEARCH_END_MESSAGE,
+        TRACK_END_MESSAGE,
     )
 except ImportError:
     pytest.skip(
@@ -358,3 +361,59 @@ class TestErrorToast:
     def test_kind_in_class(self):
         result = error_toast("Offline — retrying", kind="offline")
         assert "rustle-toast--offline" in (result.className or "")
+
+
+# AA-01: the track card's album art is marked so assets/rustle.js can
+# detect a tap on it and emit the album-drill gesture.
+
+def _props_with_attr(component, attr):
+    for c in _walk(component):
+        if hasattr(c, "to_plotly_json"):
+            props = c.to_plotly_json().get("props", {})
+            if attr in props:
+                yield props
+
+
+class TestTrackCardAlbumArtTap:
+    def test_art_marked_for_drill(self):
+        result = track_card(SAMPLE_TRACK)
+        marked = list(_props_with_attr(result, "data-rustle-art"))
+        assert marked
+        assert marked[0]["data-rustle-art"] == "true"
+
+    def test_placeholder_art_also_marked(self):
+        # drilling depends on album_id, not on art being present
+        result = track_card({**SAMPLE_TRACK, "album_image_url": None})
+        marked = list(_props_with_attr(result, "data-rustle-art"))
+        assert marked
+
+    def test_playlist_card_art_not_marked(self):
+        result = playlist_card(SAMPLE_PLAYLIST)
+        marked = list(_props_with_attr(result, "data-rustle-art"))
+        assert not marked
+
+
+# AA-05 / AA-06 / DD-02 / DD-03 / DD-06: end-of-queue copy per context.
+# The view functions live in app.py (which needs env vars to import),
+# so the canonical messages are kept in components.rustle and the card
+# is exercised directly with each one.
+
+class TestEndOfQueueMessages:
+    def test_album_end_message(self):
+        card = end_of_queue_card(ALBUM_END_MESSAGE)
+        assert _contains_text(card, "End of the record")
+        assert _contains_text(card, "keep digging")
+
+    def test_search_end_message(self):
+        card = end_of_queue_card(SEARCH_END_MESSAGE)
+        assert _contains_text(card, "That's everything for this search")
+        assert _contains_text(card, "start over")
+
+    def test_track_end_message(self):
+        card = end_of_queue_card(TRACK_END_MESSAGE)
+        assert _contains_text(card, "every track in this playlist")
+        assert _contains_text(card, "try another")
+
+    def test_messages_are_distinct(self):
+        msgs = {ALBUM_END_MESSAGE, SEARCH_END_MESSAGE, TRACK_END_MESSAGE}
+        assert len(msgs) == 3

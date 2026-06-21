@@ -20,6 +20,7 @@ from spotify import (
     get_user_playlists,
     search_playlists,
     get_playlist_tracks,
+    get_album_tracks,
     add_track_to_playlist,
     get_playlist_track_uris,
     create_playlist,
@@ -41,6 +42,9 @@ from components.rustle import (
     recents_chips,
     no_results_state,
     error_toast,
+    ALBUM_END_MESSAGE,
+    SEARCH_END_MESSAGE,
+    TRACK_END_MESSAGE,
 )
 from spotipy import SpotifyException
 
@@ -204,6 +208,11 @@ def render_page(pathname):
                 dcc.Store(id="rustle-playlist-index", data=0),
                 dcc.Store(id="rustle-track-queue", data=[]),
                 dcc.Store(id="rustle-track-index", data=0),
+                # AA-02: album drill queue + index, and the playlist
+                # track index to restore when drilling back out (AA-04)
+                dcc.Store(id="rustle-album-queue", data=[]),
+                dcc.Store(id="rustle-album-index", data=0),
+                dcc.Store(id="rustle-track-return-index", data=0),
                 dcc.Store(id="rustle-gesture", data=None),
                 dcc.Store(id="rustle-audio-unlocked", data=False),
                 dcc.Store(id="rustle-audio-sink", data=None),
@@ -333,6 +342,13 @@ def _rustle_search_view(queue, idx, recents=None, query=""):
             if recents:
                 children.append(recents_chips(recents))
         return html.Div(children)
+    if idx >= len(queue):
+        # DD-02: search exhausted or hard-capped — end-of-queue card.
+        # Swipe down from here clears the search (DD-05).
+        children.append(_gesture_area([
+            end_of_queue_card(SEARCH_END_MESSAGE),
+        ]))
+        return html.Div(children)
     idx = max(0, min(idx, len(queue) - 1))
     children.append(
         _gesture_area(
@@ -358,11 +374,9 @@ def _rustle_track_view(queue, idx, audio_unlocked=False, target_uris=None):
             ),
         ])
     if idx >= len(queue):
+        # DD-03: playlist-track exhaustion card
         return _gesture_area([
-            end_of_queue_card(
-                "You've flipped through every track in this playlist. "
-                "Swipe down to try another."
-            ),
+            end_of_queue_card(TRACK_END_MESSAGE),
         ])
     area = [
         card_stack([
@@ -373,6 +387,32 @@ def _rustle_track_view(queue, idx, audio_unlocked=False, target_uris=None):
     if not audio_unlocked:
         area.append(tap_to_start_overlay())
     children = [_gesture_area(area)]
+    children.append(
+        html.P(
+            f"{idx + 1} of {len(queue)} — {GESTURE_HINT}",
+            style={"color": "#b3b3b3", "fontSize": "0.8rem"},
+        )
+    )
+    return html.Div(children)
+
+
+def _rustle_album_view(queue, idx, target_uris=None):
+    # AA-03: album drill reuses the track_card shape. Album tracks
+    # carry their art under "image_url"; map it to the
+    # "album_image_url" key track_card expects.
+    added = set(target_uris or [])
+    if not queue or idx >= len(queue):
+        # AA-05 / DD-04: end of the record
+        return _gesture_area([
+            end_of_queue_card(ALBUM_END_MESSAGE),
+        ])
+    cards = []
+    for t in queue[idx : idx + 4]:
+        shaped = {**t, "album_image_url": t.get("image_url")}
+        cards.append(
+            track_card(shaped, already_added=t["uri"] in added)
+        )
+    children = [_gesture_area([card_stack(cards)])]
     children.append(
         html.P(
             f"{idx + 1} of {len(queue)} — {GESTURE_HINT}",
@@ -398,11 +438,14 @@ def _rustle_track_view(queue, idx, audio_unlocked=False, target_uris=None):
     Input("rustle-recents", "data"),
     Input("rustle-query", "data"),
     Input("rustle-error", "data"),
+    # AA-03: album drill queue + index
+    Input("rustle-album-queue", "data"),
+    Input("rustle-album-index", "data"),
 )
 def render_rustle_content(
     mode, view, target, pl_queue, pl_idx, tr_queue, tr_idx,
     audio_unlocked, target_uris, add_count, picker_mode,
-    recents, query, error,
+    recents, query, error, al_queue, al_idx,
 ):
     if mode != "rustle":
         return None
@@ -419,7 +462,10 @@ def render_rustle_content(
             playlists = []
         logger.info("Rustle target picker: %d playlists", len(playlists))
         return target_picker(playlists)
-    if view == "track":
+    if view == "album":
+        # AA-03: album drill view
+        body = _rustle_album_view(al_queue, al_idx, target_uris)
+    elif view == "track":
         body = _rustle_track_view(
             tr_queue, tr_idx, audio_unlocked, target_uris
         )
@@ -612,6 +658,41 @@ def _add_current_track(sp, queue, idx, target) -> str:
         return kind
 
 
+# DD-02: hard cap on how many playlist results we'll paginate into
+SEARCH_RESULT_CAP = 100
+
+
+def _paginate_search(sp, query, offset):
+    # DD-01: fetch the next page (Spotify caps the limit at 10, so the
+    # caller steps offset by len(queue)). Returns [] on error or when
+    # Spotify has nothing more.
+    if not query:
+        return []
+    try:
+        return search_playlists(sp, query, offset=offset)
+    except Exception as e:
+        kind = _classify_error(e)
+        logger.warning(
+            "paginate search_playlists failed (%s): %s", kind, e
+        )
+        return []
+
+
+def _drill_album(sp, queue, idx):
+    # AA-02: load the current track's parent album for the drill view
+    track = queue[idx]
+    album_id = track.get("album_id")
+    if not album_id:
+        return {"tracks": None, "error": None}
+    try:
+        tracks = get_album_tracks(sp, album_id)
+        return {"tracks": tracks, "error": None}
+    except Exception as e:
+        kind = _classify_error(e)
+        logger.warning("get_album_tracks failed (%s): %s", kind, e)
+        return {"tracks": None, "error": _error_payload(kind)}
+
+
 @app.callback(
     Output("rustle-playlist-queue", "data", allow_duplicate=True),
     Output("rustle-playlist-index", "data", allow_duplicate=True),
@@ -623,6 +704,10 @@ def _add_current_track(sp, queue, idx, target) -> str:
     Output("rustle-target", "data", allow_duplicate=True),
     Output("rustle-error", "data", allow_duplicate=True),
     Output("rustle-query", "data", allow_duplicate=True),
+    # AA-02/AA-03/AA-04: album drill outputs
+    Output("rustle-album-queue", "data", allow_duplicate=True),
+    Output("rustle-album-index", "data", allow_duplicate=True),
+    Output("rustle-track-return-index", "data", allow_duplicate=True),
     Input("rustle-gesture", "data"),
     State("rustle-view", "data"),
     State("rustle-target", "data"),
@@ -632,11 +717,16 @@ def _add_current_track(sp, queue, idx, target) -> str:
     State("rustle-track-index", "data"),
     State("rustle-target-uris", "data"),
     State("rustle-add-count", "data"),
+    # AA/DD: album drill state + the live query for search pagination
+    State("rustle-album-queue", "data"),
+    State("rustle-album-index", "data"),
+    State("rustle-track-return-index", "data"),
+    State("rustle-query", "data"),
     prevent_initial_call=True,
 )
 def handle_gesture(
     gesture, view, target, pl_queue, pl_idx, tr_queue, tr_idx,
-    target_uris, add_count,
+    target_uris, add_count, al_queue, al_idx, tr_return, query,
 ):
     if not gesture or not gesture.get("direction"):
         raise PreventUpdate
@@ -650,6 +740,9 @@ def handle_gesture(
         "tr_queue": no_update, "tr_idx": no_update,
         "view": no_update, "uris": no_update, "count": no_update,
         "target": no_update, "error": no_update, "query": no_update,
+        # AA: album drill outputs
+        "al_queue": no_update, "al_idx": no_update,
+        "tr_return": no_update,
     }
 
     def ret():
@@ -657,6 +750,7 @@ def handle_gesture(
             out["pl_queue"], out["pl_idx"], out["tr_queue"],
             out["tr_idx"], out["view"], out["uris"], out["count"],
             out["target"], out["error"], out["query"],
+            out["al_queue"], out["al_idx"], out["tr_return"],
         )
 
     if view == "track":
@@ -697,6 +791,64 @@ def handle_gesture(
         if direction == "down":
             out["view"] = "search"
             return ret()
+        if direction == "tap-art":
+            # AA-02: drill into the current track's parent album
+            if not tr_queue or tr_idx >= len(tr_queue):
+                raise PreventUpdate
+            result = _drill_album(sp, tr_queue, tr_idx)
+            if result["error"]:
+                out["error"] = result["error"]
+                return ret()
+            if result["tracks"] is None:
+                # no album_id on this track — nothing to drill into
+                raise PreventUpdate
+            out["al_queue"] = result["tracks"]
+            out["al_idx"] = 0
+            out["tr_return"] = tr_idx  # AA-04: restore on the way back
+            out["view"] = "album"
+            out["error"] = None
+            return ret()
+        raise PreventUpdate
+
+    if view == "album":
+        # AA-03: L/R navigate, Up adds (reusing _add_current_track),
+        # Down returns to the playlist track queue (AA-04 / DD-05).
+        if direction == "left":
+            out["al_idx"] = max(0, al_idx - 1)
+            return ret()
+        if direction == "right":
+            if not al_queue:
+                raise PreventUpdate
+            # len(queue) is the end-of-record card position (AA-05)
+            out["al_idx"] = min(len(al_queue), al_idx + 1)
+            return ret()
+        if direction == "up":
+            if not al_queue or al_idx >= len(al_queue):
+                raise PreventUpdate
+            uri = al_queue[al_idx]["uri"]
+            if uri in set(target_uris or []):
+                # Z-03: already in the target — clientside shake
+                raise PreventUpdate
+            status = _add_current_track(sp, al_queue, al_idx, target)
+            if status == "ok":
+                out["uris"] = (target_uris or []) + [uri]
+                out["count"] = (add_count or 0) + 1
+                out["al_idx"] = min(len(al_queue), al_idx + 1)
+                out["error"] = None
+            elif status == "missing":
+                out["target"] = None
+                out["view"] = "search"
+                out["error"] = _error_payload("missing")
+            else:
+                out["error"] = _error_payload(status)
+            return ret()
+        if direction == "down":
+            # AA-04 / DD-05: back to the playlist track queue at the
+            # index we left
+            out["view"] = "track"
+            out["tr_idx"] = tr_return or 0
+            return ret()
+        # tap-art in album view: already at the deepest level, no-op
         raise PreventUpdate
 
     # search (playlist queue) view
@@ -706,10 +858,25 @@ def handle_gesture(
     if direction == "right":
         if not pl_queue:
             raise PreventUpdate
-        out["pl_idx"] = min(len(pl_queue) - 1, pl_idx + 1)
+        if pl_idx + 1 < len(pl_queue):
+            out["pl_idx"] = pl_idx + 1
+            return ret()
+        # DD-01: at the end of loaded results — try to page forward
+        if len(pl_queue) >= SEARCH_RESULT_CAP:
+            # DD-02: hard cap reached — show the end-of-queue card
+            out["pl_idx"] = len(pl_queue)
+            return ret()
+        more = _paginate_search(sp, query, len(pl_queue))
+        if more:
+            out["pl_queue"] = pl_queue + more
+            out["pl_idx"] = pl_idx + 1
+        else:
+            # DD-02: Spotify exhausted — show the end-of-queue card
+            out["pl_idx"] = len(pl_queue)
         return ret()
     if direction == "up":
-        if not pl_queue:
+        if not pl_queue or pl_idx >= len(pl_queue):
+            # nothing to enter (incl. the DD-02 end-of-queue card)
             raise PreventUpdate
         result = _enter_playlist(sp, pl_queue, pl_idx)
         if result["error"]:

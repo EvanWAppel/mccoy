@@ -177,6 +177,17 @@ class TestSearchPlaylists:
             q="indie", type="playlist", limit=10, offset=40
         )
 
+    def test_pagination_offset_clamps_limit(self, mock_sp):
+        # DD-07: paging steps by the Spotify-capped limit (10) even
+        # when a larger limit is requested at a non-zero offset
+        mock_sp.search.return_value = {
+            "playlists": {"items": [], "next": None}
+        }
+        search_playlists(mock_sp, "indie", limit=50, offset=40)
+        mock_sp.search.assert_called_once_with(
+            q="indie", type="playlist", limit=10, offset=40
+        )
+
     def test_handles_playlist_with_no_image(self, mock_sp):
         mock_sp.search.return_value = {
             "playlists": {
