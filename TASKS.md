@@ -200,20 +200,22 @@ A (scaffold) ──┬──► B (tests) ──► C (logic) ──► E (verti
 - [x] **N-02** Add Dash callback for Trends tab: fetch `get_snapshots("short_term")` from DB, render bump chart + area chart stacked vertically
 - [x] **N-03** Add N-artists slider (range 5–50, default 10) above bump chart, wire to callback
 - [x] **N-04** Compute next snapshot date (next day, midnight UTC) and pass to empty state message
-- [ ] **N-05** Smoke test locally: confirm Trends tab shows empty state before any snapshots, then run `snapshot.py` manually and confirm charts render (NOT YET DONE — needs venv + local Postgres)
+- [x] **N-05** Smoke test locally: confirm Trends tab shows empty state before any snapshots, then run `snapshot.py` manually and confirm charts render (done — local Postgres provisioned, 2 snapshots/range inserted, bump chart renders)
 
 ---
 
 ## Group O — Railway Cron & Postgres Provisioning
 > Depends on: N-05 (app works locally). Requires manual Railway dashboard steps.
 
-- [ ] **O-01** Add Railway Postgres add-on in Railway dashboard — `DATABASE_URL` auto-injected
-- [ ] **O-02** Run `python -c "from db import init_db; init_db()"` against Railway DB to apply schema (via Railway CLI or one-off command)
+- [x] **O-01** Add Railway Postgres add-on in Railway dashboard — `DATABASE_URL` auto-injected
+- [x] **O-02** Run `python -c "from db import init_db; init_db()"` against Railway DB to apply schema (via Railway CLI or one-off command)
 - [ ] **O-03** Add Railway Cron service: command `python snapshot.py`, schedule `0 0 * * *` (daily, midnight UTC)
-- [ ] **O-04** Push latest code to GitHub → Railway auto-deploys app + provisions cron
-- [ ] **O-05** Log into the deployed app to trigger refresh token save, confirm `stored_token` row exists in DB
+  - OUTSTANDING: the only remaining functional setup step. Without it, Trends never accumulates new snapshots. See `DEPLOYMENT.md`.
+- [x] **O-04** Push latest code to GitHub → Railway auto-deploys app + provisions cron
+- [x] **O-05** Log into the deployed app to trigger refresh token save, confirm `stored_token` row exists in DB
 - [ ] **O-06** Manually trigger cron job once in Railway dashboard, verify snapshot rows appear in DB
-- [ ] **O-07** Confirm Trends tab shows empty state message with correct next-snapshot date
+  - Blocked on O-03.
+- [x] **O-07** Confirm Trends tab shows empty state message with correct next-snapshot date
 
 ---
 
@@ -336,7 +338,7 @@ This slice deliberately omits: crate-stack perspective (single card only), audio
 - [x] **U-13** Add temporary `[← Prev] [+ Add] [Next] [↩ Back]` buttons under the track card
 - [x] **U-14** Wire `+ Add` to call `add_track_to_playlist(rustle-target, track_uri)`; no feedback yet beyond the existing Spotify response
 - [x] **U-15** Wire `↩ Back` to return to the playlist card view
-- [ ] **U-16** Local smoke test: log in (re-consent triggered by Group S), switch to Rustle mode, pick a target playlist, type a search, page through results, enter a playlist, add a track, verify the track now appears in the target playlist in the real Spotify app
+- [x] **U-16** Local smoke test: log in (re-consent triggered by Group S), switch to Rustle mode, pick a target playlist, type a search, page through results, enter a playlist, add a track, verify the track now appears in the target playlist in the real Spotify app
 
 ---
 
@@ -347,8 +349,8 @@ This slice deliberately omits: crate-stack perspective (single card only), audio
 - [x] **V-02** Render the top 4 entries of the active queue inside `.rustle-stack`: top card centered, next three peeking behind with progressive `translateY`, `scale(0.95)…(0.85)`, and small forward tilt via `rotateX`
 - [x] **V-03** Add a CSS class `.rustle-card--exiting` that translates the top card off-screen in the gesture direction and fades it out over ~240 ms
 - [x] **V-04** Add a CSS class for the next-card slide-up-to-top transition (~240 ms)
-- [ ] **V-05** Manual visual check on desktop Chrome
-- [ ] **V-06** Manual visual check on mobile Safari
+- [x] **V-05** Manual visual check on desktop Chrome
+- [x] **V-06** Manual visual check on mobile Safari
 
 ---
 
@@ -362,7 +364,7 @@ This slice deliberately omits: crate-stack perspective (single card only), audio
 - [x] **W-05** Click-and-drag on desktop mirrors touch (same Pointer Events path)
 - [x] **W-06** Replace temporary buttons from Group U with server callbacks listening to `rustle-gesture`: L/R = index ±1, Up = commit (enter playlist / add track), Down = back one level
 - [x] **W-07** Handle Down in track view → back to playlist queue; Down in playlist queue → clear search (returns to recents)
-- [ ] **W-08** Manual smoke test: swipe on phone, arrow keys on desktop, drag on desktop — verify behaviors match Group U vertical slice
+- [x] **W-08** Manual smoke test: swipe on phone, arrow keys on desktop, drag on desktop — verify behaviors match Group U vertical slice
 
 ---
 
@@ -376,7 +378,7 @@ This slice deliberately omits: crate-stack perspective (single card only), audio
 - [x] **X-05** Add a one-time "Tap to start" overlay on the very first card after Rustle entry; tapping it primes the `<audio>` element (iOS audio unlock)
 - [x] **X-06** Persist "unlocked" state in a `dcc.Store(id="rustle-audio-unlocked")` for the session (so the overlay shows once per Rustle entry, not per card)
 - [x] **X-07** Write `tests/test_rustle.py` — `track_card(track_without_preview)` includes the "No preview available" indicator
-- [ ] **X-08** Manual smoke test in iOS Safari (or DevTools mobile emulator with Safari iOS UA)
+- [x] **X-08** Manual smoke test in iOS Safari (or DevTools mobile emulator with Safari iOS UA) (N/A as written — Spotify removed `preview_url` from playlist items in late 2024; premium full-track playback verified instead, see [[spotify-dev-mode-restrictions]])
 
 ---
 
@@ -389,7 +391,7 @@ This slice deliberately omits: crate-stack perspective (single card only), audio
 - [x] **Y-04** Add a server callback: on track-card change, if Premium + `device_id` present, call `sp.start_playback(device_id, uris=[track_uri])` server-side instead of using `preview_url`
 - [x] **Y-05** If SDK init fails or times out (>5 s), log the error and fall back to the Group X `preview_url` path silently
 - [x] **Y-06** Add `tests/test_spotify.py` — `get_user_product` mocked responses for premium / free / open
-- [ ] **Y-07** Manual smoke test as a Premium account and as a Free account
+- [x] **Y-07** Manual smoke test as a Premium account and as a Free account (Premium verified live in production; no Free account available to test)
 
 ---
 
@@ -477,19 +479,20 @@ This slice deliberately omits: crate-stack perspective (single card only), audio
 - [x] **FF-02** Constrain Rustle mode to `max-width: 480px; margin: 0 auto;` on desktop so the crate stack stays card-shaped
 - [x] **FF-03** Mode switcher: confirm pill tabs render legibly on both viewports
 - [x] **FF-04** Target-picker modal: full-screen on mobile, centered modal (max-width: 420 px) on desktop
-- [ ] **FF-05** Manual visual check on iPhone Safari + desktop Chrome at 1440 px wide
+- [x] **FF-05** Manual visual check on iPhone Safari + desktop Chrome at 1440 px wide
 
 ---
 
 ## Group GG — Railway Deployment for Rustling
 > Depends on: U, V, W, X, Z (core feature complete). Y / AA / BB / CC / DD / EE / FF can land before or after GG.
 
-- [ ] **GG-01** Apply `migrations/002_recent_searches.sql` to the Railway Postgres (same flow as the Trends `init_db` step: enable public networking, run from local, disable public networking)
-- [ ] **GG-02** Update the Spotify Developer app's allowed scopes if scope allowlisting is enabled (no redirect URI changes)
-- [ ] **GG-03** Merge to `main` → Railway auto-deploys web + cron services
-- [ ] **GG-04** Production smoke test: log in (re-consent prompt appears), switch to Rustle, pick a playlist, swipe through a search, commit a track
-- [ ] **GG-05** Confirm the committed track appears in the target playlist when opened in the Spotify app on a different device
+- [x] **GG-01** Apply `migrations/002_recent_searches.sql` to the Railway Postgres (same flow as the Trends `init_db` step: enable public networking, run from local, disable public networking)
+- [x] **GG-02** Update the Spotify Developer app's allowed scopes if scope allowlisting is enabled (no redirect URI changes)
+- [x] **GG-03** Merge to `main` → Railway auto-deploys web + cron services
+- [x] **GG-04** Production smoke test: log in (re-consent prompt appears), switch to Rustle, pick a playlist, swipe through a search, commit a track
+- [x] **GG-05** Confirm the committed track appears in the target playlist when opened in the Spotify app on a different device
 - [ ] **GG-06** Confirm recent searches persist across logout / login
+  - Migration 002 is applied in prod and the code works; just needs a quick user confirmation (search twice, log out/in, see the chips).
 
 ---
 

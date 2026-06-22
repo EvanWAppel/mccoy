@@ -1,6 +1,5 @@
 """H-05: Integration test — mock Spotify response → aggregate_genres → render_genre_chart."""
 from dash import dcc
-from tests.conftest import MOCK_ARTISTS_RAW, MOCK_ARTISTS
 from spotify import get_top_artists, aggregate_genres
 from components.genre_chart import render_genre_chart
 

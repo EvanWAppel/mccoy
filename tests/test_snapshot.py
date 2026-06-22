@@ -1,6 +1,4 @@
-import pytest
-import spotipy
-from unittest.mock import patch, MagicMock, call
+from unittest.mock import patch, MagicMock
 from snapshot import run_snapshot
 
 

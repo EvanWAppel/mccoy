@@ -1,4 +1,3 @@
-import pytest
 from dash import html, dcc
 from components.artist_grid import render_artist_card, render_grid
 from components.genre_chart import render_genre_chart
