@@ -1,4 +1,3 @@
-import pytest
 from datetime import datetime, timezone, timedelta
 from dash import dcc, html
 from components.trends import render_bump_chart, render_area_chart

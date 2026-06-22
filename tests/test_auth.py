@@ -1,6 +1,6 @@
 import pytest
 import spotipy
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from auth import get_auth_url, handle_callback, get_sp_from_session
 
 
