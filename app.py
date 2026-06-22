@@ -56,9 +56,78 @@ app = Dash(
     __name__,
     suppress_callback_exceptions=True,
     title="mccoy",
+    # PWA: mobile viewport + iOS standalone hints. The manifest and
+    # icon <link>s live in index_string below (they're <link>, not
+    # <meta>, so meta_tags can't carry them).
+    meta_tags=[
+        {
+            "name": "viewport",
+            "content": "width=device-width, initial-scale=1, "
+            "viewport-fit=cover",
+        },
+        {"name": "theme-color", "content": "#1db954"},
+        {"name": "mobile-web-app-capable", "content": "yes"},
+        {"name": "apple-mobile-web-app-capable", "content": "yes"},
+        {"name": "apple-mobile-web-app-title", "content": "mccoy"},
+        {
+            "name": "apple-mobile-web-app-status-bar-style",
+            "content": "black-translucent",
+        },
+    ],
 )
 server = app.server
 server.secret_key = os.environ["FLASK_SECRET_KEY"]
+
+# PWA: link the manifest + apple touch icon, and register a
+# root-scoped service worker (served at /sw.js below).
+app.index_string = """<!DOCTYPE html>
+<html>
+    <head>
+        {%metas%}
+        <title>{%title%}</title>
+        {%favicon%}
+        <link rel="manifest" href="/assets/manifest.json">
+        <link rel="apple-touch-icon"
+              href="/assets/apple-touch-icon.png">
+        {%css%}
+    </head>
+    <body>
+        {%app_entry%}
+        <footer>
+            {%config%}
+            {%scripts%}
+            {%renderer%}
+        </footer>
+        <script>
+          if ("serviceWorker" in navigator) {
+            window.addEventListener("load", function () {
+              navigator.serviceWorker
+                .register("/sw.js")
+                .catch(function () {});
+            });
+          }
+        </script>
+    </body>
+</html>"""
+
+
+# PWA: minimal service worker, served from root so its scope is "/".
+# Passthrough only — no caching, to avoid serving stale app content.
+_SERVICE_WORKER_JS = """
+self.addEventListener('install', function () { self.skipWaiting(); });
+self.addEventListener('activate', function (e) {
+  e.waitUntil(self.clients.claim());
+});
+self.addEventListener('fetch', function () { /* network passthrough */ });
+"""
+
+
+@server.route("/sw.js")
+def service_worker():
+    return flask.Response(
+        _SERVICE_WORKER_JS, mimetype="application/javascript"
+    )
+
 
 # --- Flask routes for OAuth ---
 
