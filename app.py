@@ -13,12 +13,18 @@ from dash.exceptions import PreventUpdate
 import flask
 
 import db
-from auth import get_auth_url, handle_callback, get_sp_from_session
+from auth import (
+    get_auth_url,
+    handle_callback,
+    get_sp_from_session,
+    get_app_token_client,
+)
 from spotify import (
     get_top_artists,
     get_user_profile,
     get_user_playlists,
     search_playlists,
+    search_albums,
     get_playlist_tracks,
     get_album_tracks,
     add_track_to_playlist,
@@ -30,6 +36,7 @@ from spotify import (
 from components.header import render_header
 from components.artist_grid import render_grid
 from components.trends import render_bump_chart
+from components.about import about_tab
 from components.rustle import (
     mode_switcher,
     target_picker,
@@ -44,6 +51,7 @@ from components.rustle import (
     recents_chips,
     no_results_state,
     error_toast,
+    embed_player,
     ALBUM_END_MESSAGE,
     SEARCH_END_MESSAGE,
     TRACK_END_MESSAGE,
@@ -78,6 +86,29 @@ app = Dash(
 server = app.server
 server.secret_key = os.environ["FLASK_SECRET_KEY"]
 
+# MM: Share & SEO. Absolute URLs need the deployed origin, which only
+# Railway knows — set PUBLIC_BASE_URL there (e.g.
+# https://mccoy.up.railway.app). Falls back to relative paths locally.
+_BASE = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
+_OG_IMAGE = f"{_BASE}/assets/icon-512.png" if _BASE else "/assets/icon-512.png"
+_OG_DESC = (
+    "A personal Spotify listening dashboard and crate-digging tool, "
+    "built in Python by Evan Appel. Live demo — no login required."
+)
+_OG_TITLE = "mccoy — Spotify dashboard by Evan Appel"
+_SEO_META = f"""
+        <meta name="description" content="{_OG_DESC}">
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="mccoy">
+        <meta property="og:title" content="{_OG_TITLE}">
+        <meta property="og:description" content="{_OG_DESC}">
+        <meta property="og:image" content="{_OG_IMAGE}">
+        {'<meta property="og:url" content="' + _BASE + '/">' if _BASE else ''}
+        <meta name="twitter:card" content="summary">
+        <meta name="twitter:title" content="{_OG_TITLE}">
+        <meta name="twitter:description" content="{_OG_DESC}">
+        <meta name="twitter:image" content="{_OG_IMAGE}">"""
+
 # PWA: link the manifest + apple touch icon, and register a
 # root-scoped service worker (served at /sw.js below).
 app.index_string = """<!DOCTYPE html>
@@ -85,6 +116,7 @@ app.index_string = """<!DOCTYPE html>
     <head>
         {%metas%}
         <title>{%title%}</title>
+        __SEO_META__
         {%favicon%}
         <link rel="manifest" href="/assets/manifest.json">
         <link rel="apple-touch-icon"
@@ -108,7 +140,7 @@ app.index_string = """<!DOCTYPE html>
           }
         </script>
     </body>
-</html>"""
+</html>""".replace("__SEO_META__", _SEO_META)
 
 
 # PWA: minimal service worker, served from root so its scope is "/".
@@ -199,6 +231,233 @@ LOGIN_PAGE = html.Div(
 )
 
 
+# --- Public (logged-out) portfolio shell ---
+
+PUBLIC_DATA_CAPTION = (
+    "This is my real Spotify listening data, captured by mccoy's "
+    "weekly snapshot pipeline."
+)
+
+
+def _public_header():
+    return html.Div(
+        className="app-header",
+        children=[
+            html.Div(
+                className="app-header__identity",
+                children=[
+                    html.Span("mccoy", className="app-header__name"),
+                ],
+            ),
+            html.A(
+                "Connect with Spotify",
+                href="/login",
+                className="app-header__connect",
+            ),
+        ],
+    )
+
+
+# JJ-08: shown only if the live app-token album search fails, so the
+# crate is never empty. Art falls back to the grey placeholder. These
+# are real album ids (album tracks ARE readable with an app token).
+CURATED_CRATE = [
+    {"id": "6dVIqQ8qmQ5GBnJ9shOYGE", "name": "OK Computer",
+     "image_url": None},
+    {"id": "4LH4d3cOWNNsVw41Gqt2kv", "name": "The Dark Side of the Moon",
+     "image_url": None},
+    {"id": "1ATL5GLyefJaxhQzSPVrLX", "name": "Rumours",
+     "image_url": None},
+    {"id": "0ETFjACtuP2ADo6LFhL6HN", "name": "Abbey Road",
+     "image_url": None},
+]
+
+PUBLIC_SIGN_IN_HINT = "Saving tracks is owner-only — sign in to rustle."
+
+
+def _public_rustle_sandbox():
+    return html.Div([
+        html.Div(
+            className="rustle-search",
+            children=[
+                dcc.Input(
+                    id="public-rustle-search",
+                    type="search",
+                    placeholder="Search playlists…",
+                    debounce=True,
+                    className="rustle-search__input",
+                ),
+            ],
+        ),
+        dcc.Loading(
+            type="circle", color="#1db954",
+            children=html.Div(id="public-rustle-content"),
+        ),
+        dcc.Store(id="public-rustle-gesture", data=None),
+        # view: "search" (album cards) | "track" (album's tracks)
+        dcc.Store(id="public-rustle-view", data="search"),
+        dcc.Store(id="public-rustle-pl-queue", data=[]),  # albums
+        dcc.Store(id="public-rustle-pl-idx", data=0),
+        dcc.Store(id="public-rustle-tr-queue", data=[]),  # album tracks
+        dcc.Store(id="public-rustle-tr-idx", data=0),
+        dcc.Store(id="public-rustle-query", data=""),
+        dcc.Store(id="public-rustle-hint", data=None),
+    ])
+
+
+def _public_about_placeholder():
+    # KK: the engineering narrative + recruiter hooks.
+    return about_tab()
+
+
+def _safe_snapshot_count(time_range="short_term"):
+    try:
+        return db.count_snapshots(time_range)
+    except Exception as e:
+        logger.warning("count_snapshots failed: %s", e)
+        return 0
+
+
+def _public_stats_tabs(snapshot_count):
+    # LL: gate the Trends sub-tab on having enough history.
+    tabs = [
+        dcc.Tab(
+            label="Artists", value="artists",
+            style=TAB_STYLE, selected_style=TAB_SELECTED_STYLE,
+        ),
+    ]
+    if snapshot_count and snapshot_count >= 2:
+        tabs.append(
+            dcc.Tab(
+                label="Trends", value="trends",
+                style=TAB_STYLE, selected_style=TAB_SELECTED_STYLE,
+            )
+        )
+    return tabs
+
+
+def _public_demo():
+    return html.Div([
+        dcc.Tabs(
+            id="public-mode-tabs",
+            value="stats",
+            children=[
+                dcc.Tab(
+                    label="Stats", value="stats",
+                    style=TAB_STYLE, selected_style=TAB_SELECTED_STYLE,
+                ),
+                dcc.Tab(
+                    label="Rustle", value="rustle",
+                    style=TAB_STYLE, selected_style=TAB_SELECTED_STYLE,
+                ),
+            ],
+        ),
+        html.Div(
+            id="public-stats",
+            children=[
+                # LL: Trends only appears once there are >=2 snapshots,
+                # so recruiters never see the empty "check back" state.
+                dcc.Tabs(
+                    id="public-content-tabs",
+                    value="artists",
+                    children=_public_stats_tabs(_safe_snapshot_count()),
+                    style={"marginTop": "4px"},
+                ),
+                html.Div(
+                    id="public-stats-artists",
+                    children=[
+                        dcc.Tabs(
+                            id="public-time-tabs",
+                            value="short_term",
+                            children=[
+                                dcc.Tab(
+                                    label=w["label"], value=w["value"],
+                                    style=TAB_STYLE,
+                                    selected_style=TAB_SELECTED_STYLE,
+                                )
+                                for w in TIME_WINDOWS
+                            ],
+                        ),
+                        html.P(
+                            PUBLIC_DATA_CAPTION,
+                            style={
+                                "color": "#b3b3b3", "fontSize": "0.85rem",
+                                "margin": "12px 0",
+                            },
+                        ),
+                        dcc.Loading(
+                            type="circle", color="#1db954",
+                            children=html.Div(
+                                id="public-artist-grid",
+                                style={"marginTop": "8px"},
+                            ),
+                        ),
+                    ],
+                ),
+                html.Div(
+                    id="public-stats-trends",
+                    style={"display": "none"},
+                    children=[
+                        html.P(
+                            "Top-artist rank movement across weekly "
+                            "snapshots (4-week window).",
+                            style={
+                                "color": "#b3b3b3", "fontSize": "0.85rem",
+                                "margin": "12px 0",
+                            },
+                        ),
+                        dcc.Loading(
+                            type="circle", color="#1db954",
+                            children=html.Div(id="public-bump-container"),
+                        ),
+                    ],
+                ),
+            ],
+        ),
+        html.Div(
+            id="public-rustle",
+            style={"display": "none"},
+            children=_public_rustle_sandbox(),
+        ),
+    ])
+
+
+def public_layout():
+    return html.Div([
+        _public_header(),
+        html.Div(
+            style={
+                "maxWidth": "1100px", "margin": "0 auto",
+                "padding": "24px 16px",
+            },
+            children=[
+                dcc.Tabs(
+                    id="public-tabs",
+                    value="demo",
+                    children=[
+                        dcc.Tab(
+                            label="Demo", value="demo",
+                            style=TAB_STYLE,
+                            selected_style=TAB_SELECTED_STYLE,
+                        ),
+                        dcc.Tab(
+                            label="About", value="about",
+                            style=TAB_STYLE,
+                            selected_style=TAB_SELECTED_STYLE,
+                        ),
+                    ],
+                ),
+                html.Div(id="public-demo", children=_public_demo()),
+                html.Div(
+                    id="public-about",
+                    style={"display": "none"},
+                    children=_public_about_placeholder(),
+                ),
+            ],
+        ),
+    ])
+
+
 def _next_snapshot_utc() -> str:
     now = datetime.now(timezone.utc)
     next_run = (now + timedelta(days=1)).replace(
@@ -226,11 +485,12 @@ app.layout = html.Div(
 def render_page(pathname):
     token = flask.session.get("token")
     if not token:
-        return LOGIN_PAGE
+        # Logged-out: recruiter-facing portfolio shell, not a wall.
+        return public_layout()
 
     sp = get_sp_from_session(flask.session)
     if sp is None:
-        return LOGIN_PAGE
+        return public_layout()
 
     profile = get_user_profile(sp)
 
@@ -315,6 +575,280 @@ def render_page(pathname):
             ],
         ),
     ])
+
+
+# --- Public (logged-out) callbacks ---
+
+
+@app.callback(
+    Output("public-demo", "style"),
+    Output("public-about", "style"),
+    Input("public-tabs", "value"),
+)
+def toggle_public_tabs(tab):
+    if tab == "about":
+        return {"display": "none"}, {"display": "block"}
+    return {"display": "block"}, {"display": "none"}
+
+
+@app.callback(
+    Output("public-stats", "style"),
+    Output("public-rustle", "style"),
+    Input("public-mode-tabs", "value"),
+)
+def toggle_public_mode(mode):
+    if mode == "rustle":
+        return {"display": "none"}, {"display": "block"}
+    return {"display": "block"}, {"display": "none"}
+
+
+@app.callback(
+    Output("public-stats-artists", "style"),
+    Output("public-stats-trends", "style"),
+    Input("public-content-tabs", "value"),
+)
+def toggle_public_content(tab):
+    if tab == "trends":
+        return {"display": "none"}, {"display": "block"}
+    return {"display": "block"}, {"display": "none"}
+
+
+@app.callback(
+    Output("public-bump-container", "children"),
+    Input("public-content-tabs", "value"),
+    prevent_initial_call=True,
+)
+def render_public_trends(tab):
+    if tab != "trends":
+        raise PreventUpdate
+    try:
+        snapshots = db.get_snapshots("short_term")
+    except Exception as e:
+        logger.warning("public trends load failed: %s", e)
+        snapshots = []
+    return render_bump_chart(snapshots, n=10)
+
+
+@app.callback(
+    Output("public-artist-grid", "children"),
+    Input("public-time-tabs", "value"),
+    prevent_initial_call=False,
+)
+def render_public_stats(time_range):
+    try:
+        snap = db.get_latest_snapshot(time_range)
+    except Exception as e:
+        logger.warning("Could not load latest snapshot: %s", e)
+        snap = None
+    if not snap or not snap.get("artists"):
+        return html.P(
+            "No snapshot data captured for this window yet.",
+            style={"color": "#b3b3b3", "padding": "32px 0"},
+        )
+    return html.Div(
+        id="public-artist-grid-inner",
+        children=render_grid(snap["artists"]),
+    )
+
+
+# --- Public Rustle sandbox (read-only, app-token) ---
+
+PUBLIC_GESTURE_HINT = (
+    "Swipe/drag or use arrow keys. Up opens the record."
+)
+
+
+def _public_gesture_area(children):
+    # Reuses assets/rustle.js, but names its own gesture store and
+    # marks itself read-only so 'up' never animates a fake "Added".
+    return html.Div(
+        children,
+        **{
+            "data-rustle-card-area": "true",
+            "data-rustle-gesture-store": "public-rustle-gesture",
+            "data-rustle-readonly": "true",
+        },
+    )
+
+
+def _public_caption(text):
+    return html.P(
+        text,
+        style={"color": "#b3b3b3", "fontSize": "0.8rem",
+               "marginTop": "8px"},
+    )
+
+
+def _public_search_view(queue, idx, query):
+    if not queue:
+        if query and query.strip():
+            return no_results_state()
+        return html.P(
+            "Search Spotify and flip through real albums — "
+            "no login needed.",
+            style={"color": "#b3b3b3", "marginTop": "16px"},
+        )
+    if idx >= len(queue):
+        return _public_gesture_area([end_of_queue_card(SEARCH_END_MESSAGE)])
+    idx = max(0, min(idx, len(queue) - 1))
+    return html.Div([
+        _public_gesture_area(
+            # album cards reuse playlist_card (cover art + name)
+            card_stack([playlist_card(a) for a in queue[idx:idx + 4]])
+        ),
+        _public_caption(f"{idx + 1} of {len(queue)} — {PUBLIC_GESTURE_HINT}"),
+    ])
+
+
+def _public_track_view(queue, idx):
+    if not queue:
+        return _public_gesture_area([
+            end_of_queue_card(
+                "No playable tracks here. Swipe down to pick another."
+            ),
+        ])
+    if idx >= len(queue):
+        return _public_gesture_area([end_of_queue_card(ALBUM_END_MESSAGE)])
+    # album tracks carry art under "image_url"; map to album_image_url
+    cards = card_stack([
+        track_card(
+            {**t, "album_image_url": t.get("image_url")},
+            show_preview_note=False,
+        )
+        for t in queue[idx:idx + 4]
+    ])
+    current = queue[idx]
+    return html.Div([
+        _public_gesture_area([cards]),
+        embed_player(current.get("uri", "")),
+        _public_caption(PUBLIC_SIGN_IN_HINT),
+    ])
+
+
+@app.callback(
+    Output("public-rustle-pl-queue", "data"),
+    Output("public-rustle-pl-idx", "data"),
+    Output("public-rustle-view", "data"),
+    Output("public-rustle-query", "data"),
+    Input("public-rustle-search", "value"),
+    prevent_initial_call=True,
+)
+def run_public_search(query):
+    if not query or not query.strip():
+        return [], 0, "search", ""
+    q = query.strip()
+    sp = get_app_token_client()
+    try:
+        results = search_albums(sp, q)
+    except Exception as e:
+        # JJ-08: live album search failed — fall back to the curated
+        # crate so the stack is never empty.
+        logger.warning("public search failed, using crate: %s", e)
+        results = CURATED_CRATE
+    return results, 0, "search", q
+
+
+@app.callback(
+    Output("public-rustle-content", "children"),
+    Input("public-rustle-view", "data"),
+    Input("public-rustle-pl-queue", "data"),
+    Input("public-rustle-pl-idx", "data"),
+    Input("public-rustle-tr-queue", "data"),
+    Input("public-rustle-tr-idx", "data"),
+    Input("public-rustle-query", "data"),
+    Input("public-rustle-hint", "data"),
+)
+def render_public_rustle(
+    view, pl_queue, pl_idx, tr_queue, tr_idx, query, hint,
+):
+    if view == "track":
+        body = _public_track_view(tr_queue, tr_idx)
+    else:
+        body = _public_search_view(pl_queue, pl_idx, query)
+    overlays = []
+    if hint:
+        overlays.append(error_toast(hint, "info"))
+    return html.Div([body, *overlays])
+
+
+@app.callback(
+    Output("public-rustle-pl-idx", "data", allow_duplicate=True),
+    Output("public-rustle-tr-queue", "data"),
+    Output("public-rustle-tr-idx", "data"),
+    Output("public-rustle-view", "data", allow_duplicate=True),
+    Output("public-rustle-hint", "data"),
+    Input("public-rustle-gesture", "data"),
+    State("public-rustle-view", "data"),
+    State("public-rustle-pl-queue", "data"),
+    State("public-rustle-pl-idx", "data"),
+    State("public-rustle-tr-queue", "data"),
+    State("public-rustle-tr-idx", "data"),
+    prevent_initial_call=True,
+)
+def handle_public_gesture(
+    gesture, view, pl_queue, pl_idx, tr_queue, tr_idx,
+):
+    if not gesture or not gesture.get("direction"):
+        raise PreventUpdate
+    direction = gesture["direction"]
+    out = {
+        "pl_idx": no_update, "tr_queue": no_update, "tr_idx": no_update,
+        "view": no_update, "hint": no_update,
+    }
+
+    def ret():
+        return (
+            out["pl_idx"], out["tr_queue"], out["tr_idx"], out["view"],
+            out["hint"],
+        )
+
+    # Level 2: the album's tracks
+    if view == "track":
+        if direction == "left":
+            out["tr_idx"] = max(0, tr_idx - 1)
+        elif direction == "right":
+            if not tr_queue:
+                raise PreventUpdate
+            out["tr_idx"] = min(len(tr_queue), tr_idx + 1)
+        elif direction == "up":
+            # JJ-05: writes are owner-only — no add, just a hint.
+            out["hint"] = PUBLIC_SIGN_IN_HINT
+        elif direction == "down":
+            out["view"] = "search"
+            out["hint"] = None
+        else:
+            # tap-art: already at the deepest level — no-op
+            raise PreventUpdate
+        return ret()
+
+    # Level 1: album search results
+    if direction == "left":
+        out["pl_idx"] = max(0, pl_idx - 1)
+    elif direction == "right":
+        if not pl_queue:
+            raise PreventUpdate
+        out["pl_idx"] = min(len(pl_queue), pl_idx + 1)
+    elif direction == "up":
+        if not pl_queue or pl_idx >= len(pl_queue):
+            raise PreventUpdate
+        try:
+            tracks = get_album_tracks(
+                get_app_token_client(), pl_queue[pl_idx]["id"]
+            )
+        except Exception as e:
+            logger.warning("public get_album_tracks failed: %s", e)
+            out["hint"] = "Spotify won't open that one. Swipe to the next."
+            return ret()
+        out["tr_queue"] = tracks
+        out["tr_idx"] = 0
+        out["view"] = "track"
+        out["hint"] = None
+    elif direction == "down":
+        out["pl_idx"] = 0
+        out["hint"] = None
+    else:
+        raise PreventUpdate
+    return ret()
 
 
 @app.callback(

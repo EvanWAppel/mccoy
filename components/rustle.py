@@ -171,7 +171,9 @@ def playlist_card(playlist):
     )
 
 
-def track_card(track, already_added: bool = False):
+def track_card(
+    track, already_added: bool = False, show_preview_note: bool = True
+):
     children = [
         # AA-01: track art is tap-drillable into its parent album
         _card_art(track.get("album_image_url"), drill=True),
@@ -181,7 +183,7 @@ def track_card(track, already_added: bool = False):
         children.append(
             html.Div("Already added", className="rustle-card__badge")
         )
-    if not track.get("preview_url"):
+    if show_preview_note and not track.get("preview_url"):
         children.append(
             html.Div(
                 "No preview available",
@@ -191,6 +193,23 @@ def track_card(track, already_added: bool = False):
     return html.Div(
         className="rustle-card rustle-card--track",
         children=children,
+    )
+
+
+def embed_player(track_id: str):
+    # JJ-02: the public Rustle sandbox can't stream (no user token) and
+    # dev-mode strips preview_url, so audio comes from Spotify's official
+    # embed iframe. Accepts a bare id or a "spotify:track:ID" uri.
+    if track_id and ":" in track_id:
+        track_id = track_id.rsplit(":", 1)[-1]
+    return html.Iframe(
+        src=f"https://open.spotify.com/embed/track/{track_id}",
+        className="rustle-embed",
+        style={"border": "0", "width": "100%", "height": "80px"},
+        **{
+            "allow": "encrypted-media; autoplay; clipboard-write; "
+            "fullscreen; picture-in-picture",
+        },
     )
 
 

@@ -519,3 +519,152 @@ T (component tests) ─────────────┘                  
 **Critical path to a working demo:** P + Q → R, S, T → U.
 
 **Parallelism plan:** P, Q, S, T all kick off on day 1; one agent each. As soon as Q is done, a fifth agent picks up R. U is single-agent and serial (it's the integration moment). After U-16 turns green, V / W / X / Z / AA / BB / CC / DD / EE / FF can fan out to up to ten agents, each owning one group.
+
+---
+
+## Feature: Public Portfolio Mode (Recruiter-Facing)
+
+Refer to `prd.md` → **Public Portfolio Mode (Recruiter-Facing)** for
+the full spec. Goal: the deployed site is valuable to a technical
+recruiter **who never logs in**, while the owner keeps full
+authenticated use. There is **one app**; the public experience is the
+**logged-out state** of the same UI (Stats from stored snapshots +
+a read-only Rustle sandbox), wrapped in a **Demo / About** shell.
+
+**TDD discipline:** `-tests` tasks are the red phase; the matching
+`-impl` task makes them green. Don't skip the red phase.
+
+---
+
+## Group HH — Public Data & Sandbox Auth Layer
+> No dependencies. Start immediately.
+
+- [x] **HH-01** Write `tests/test_db.py` — `get_latest_snapshot(time_range)` returns the most recent snapshot dict (`{snapshot_id, captured_at, artists}`) for that window
+- [x] **HH-02** Write `tests/test_db.py` — `get_latest_snapshot` returns `None` when no snapshots exist for that window
+- [x] **HH-03** Implement `db.get_latest_snapshot(time_range)` — newest snapshot + its artist entries, ordered by rank
+- [x] **HH-04** Write `tests/test_db.py` — `count_snapshots(time_range)` returns the number of snapshots for a window (used for Trends gating)
+- [x] **HH-05** Implement `db.count_snapshots(time_range)`
+- [x] **HH-06** Write `tests/test_auth.py` — `get_app_token_client()` builds a Spotipy client via `SpotifyClientCredentials` (mocked), with **no** user scopes / redirect round-trip
+- [x] **HH-07** Implement `auth.get_app_token_client()` — `spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(...))` using the existing `SPOTIPY_CLIENT_ID` / `SPOTIPY_CLIENT_SECRET`
+- [x] **HH-08** Write `tests/test_spotify.py` — `search_playlists` works unchanged when handed an app-token client (no user-only fields accessed)
+- [x] **HH-09** Run `pytest tests/test_db.py tests/test_auth.py tests/test_spotify.py` — all new tests green
+
+---
+
+## Group II — Public Shell & Stats Demo (Vertical Slice)
+> Depends on: HH-03, HH-05. **Highest priority** — get the logged-out
+> recruiter experience visible end-to-end first.
+
+This slice deliberately omits: the Rustle sandbox (Group JJ), About
+content (KK), Trends gating polish (LL), SEO (MM). It proves the
+shell + read-only Stats render with no login.
+
+- [x] **II-01** Add `tests/test_app.py` (or extend existing) — an unauthenticated request to `/` renders the Demo/About shell, **not** the login-only screen
+- [x] **II-02** Implement auth-state detection in `app.py` layout: logged-out → public layout; logged-in owner → existing app shell
+- [x] **II-03** Build the top-level `dcc.Tabs` shell: values `demo` and `about`, **`demo` selected by default**
+- [x] **II-04** Add the discreet **"Connect Spotify"** button to the header (links to `/login`); present on the public site, harmless for non-allowlisted visitors
+- [x] **II-05** Demo tab (logged-out): render the Stats view from `db.get_latest_snapshot(time_range)` per window — **no Spotify API call**
+- [x] **II-06** Reuse `render_grid` / artist cards against snapshot rows (`name`, `image_url`, `rank`)
+- [x] **II-07** Wire the 4 Weeks / 6 Months / All Time tabs to switch between stored snapshots in logged-out mode
+- [x] **II-08** Add the "This is my real Spotify data" caption above the grid
+- [x] **II-09** Local smoke test: visit `/` in a fresh/incognito session (no login) → see Demo/About tabs and the artist grid populated from snapshots
+
+---
+
+## Group JJ — Read-only Rustle Sandbox
+> Depends on: II-09, HH-07 (app-token client), HH-08.
+> **Reshaped to album-first:** an app-token can't read playlist
+> `/items` (401), so the sandbox searches **albums** → enters an album
+> → swipes its tracks. See [[spotify-app-token-restrictions]] /
+> PRD "Rustle sandbox (read-only, album-first)".
+
+- [x] **JJ-01** `tests/test_rustle.py::TestEmbedPlayer` — `embed_player(track_id)` returns an `html.Iframe` whose `src` is the Spotify track embed URL (accepts bare id or `spotify:track:` uri)
+- [x] **JJ-02** Implement `components/rustle.py:embed_player(track_id)` — Spotify embed iframe (30s preview, no auth)
+- [x] **JJ-03** Sandbox entry (logged-out Rustle mode): **no target picker**; album search via `auth.get_app_token_client()` + `spotify.search_albums` (clamped to limit 10)
+- [x] **JJ-04** Render the search bar + card stack reusing existing components (album cards via `playlist_card`, track cards via `track_card`); left/right navigate, swipe-up opens an album
+- [x] **JJ-05** Disable the commit gesture on track cards: no write, subtle "Saving tracks is owner-only — sign in to rustle" hint. `rustle.js` made store-aware (`data-rustle-gesture-store`) + read-only-aware (skips the fake "Added" stamp)
+- [x] **JJ-06** Card audio uses `embed_player` under the stack (custom card visual + embed mini-player); `track_card(show_preview_note=False)` suppresses the misleading "No preview available" note
+- [x] **JJ-07** Add-counter chip and dedupe omitted in sandbox mode (nothing is added)
+- [x] **JJ-08** Curated fallback **album** crate; used only if the live `search_albums` call fails, so the stack is never empty
+- [x] **JJ-09** `tests/test_app.py::TestPublicRustleSandbox` — sandbox swipe-up is a no-op (no write path exists) and surfaces the sign-in hint; album entry + crate fallback covered
+- [x] **JJ-10** Smoke test (logged-out, verified at callback layer): live album search → enter album → 12 tracks → swipe-up returns hint without advancing; gesture-area emits `public-rustle-gesture` + readonly attrs. *In-browser swipe/keyboard confirmation still recommended.*
+
+---
+
+## Group KK — About Tab (Engineering Narrative)
+> Depends on: II-03. Fully parallel with JJ / LL / MM.
+
+- [x] **KK-01** `tests/test_about.py` — `about_tab()` renders the GitHub repo URL + LinkedIn/email/resume links and the Architecture/build sections
+- [x] **KK-02** Implement `components/about.py:about_tab()` with sections: mccoy intro, Architecture, Tradeoffs, Why I built it, Links
+- [x] **KK-03** Architecture/tech writeup drafted (Dash, live vs. Postgres snapshot pipeline, weekly cron, clientside-callback gestures, client-credentials album-first sandbox, dev-mode tradeoffs) — *draft for Evan to edit*
+- [x] **KK-04** Build story / "why I built mccoy" drafted from career source — *draft for Evan to edit*
+- [x] **KK-05** Recruiter links: GitHub repo, résumé (hosted at `/assets/resume.pdf` — AI-engineer resume, no phone), LinkedIn, email (appelew@gmail.com)
+- [x] **KK-06** Styled the About tab (`.about*` — constrained max-width prose, dark theme, pill links)
+- [x] **KK-07** `pytest tests/test_about.py` — green
+
+---
+
+## Group LL — Trends Gating & Demo Polish
+> Depends on: HH-05 (`count_snapshots`), II-09.
+
+- [x] **LL-01** `tests/test_app.py::TestPublicTrendsGating` — `_public_stats_tabs(1)` omits Trends; `_public_stats_tabs(2)` includes it
+- [x] **LL-02** Implemented the gate: public Stats has a content sub-tab; Trends appears only when `count_snapshots("short_term") >= 2`, with a `render_public_trends` bump chart and `toggle_public_content` show/hide
+- [x] **LL-03** Owner view unaffected — owner uses separate `content-tabs`/`time-window-tabs` IDs and still shows Trends with its empty state
+- [x] **LL-04** Tests green; verified live (2 local snapshots → Trends tab + bump chart render)
+
+---
+
+## Group MM — Share & SEO Polish
+> Depends on: II-03. Fully parallel.
+
+- [x] **MM-01** OG + Twitter Card meta tags injected into `app.index_string` (og:title/description/image/type/site_name, twitter:card=summary; og:url emitted when `PUBLIC_BASE_URL` env is set)
+- [~] **MM-02** og:image currently reuses `assets/icon-512.png` (square) with `twitter:card=summary`. **TODO:** a bespoke 1200×630 image + `summary_large_image` would look better — needs a designed asset.
+- [x] **MM-03** Meta description + og/twitter titles set ("mccoy — Spotify dashboard by Evan Appel"); `<title>` stays "mccoy"
+- [x] **MM-04** Verified `/` returns 200 (crawlable) when logged-out — no auth redirect
+- [ ] **MM-05** Verify link preview by pasting the prod URL into a checker — **post-deploy**, needs the live URL + `PUBLIC_BASE_URL` set on Railway
+
+---
+
+## Group NN — Owner Experience Regression Check
+> Depends on: II-09, JJ-10. **Design change:** the owner keeps today's
+> UI as-is (header + Stats/Rustle); the Demo/About shell is shown only
+> to logged-out visitors (`render_page` branches on auth state). So
+> there is no owner "upgrade" to build — this group just confirms the
+> existing owner flow still works after the public shell was added.
+
+- [x] **NN-01** ~~Owner Demo tab renders live data~~ **N/A** — owner UI is unchanged; `render_page` returns the existing owner shell when logged in, the public shell when not
+- [ ] **NN-02** Owner Rustle = the real flow (target picker, writes, full/premium audio) — confirm unchanged
+- [x] **NN-03** Confirm the public shell uses isolated IDs (`public-*`) so its callbacks never fire in the owner layout and vice-versa
+- [ ] **NN-04** Local smoke test: log in as owner → existing Stats + real Rustle still work; log out → reverts to the public Demo
+
+---
+
+## Group OO — Deployment & Smoke Tests
+> Depends on: II, JJ, KK, LL, MM, NN (feature complete).
+
+- [ ] **OO-01** Confirm `SPOTIPY_CLIENT_ID` / `SPOTIPY_CLIENT_SECRET` are set in Railway (already present — reused for the app-token client; no new env vars)
+- [ ] **OO-02** Merge to `main` → Railway auto-deploys
+- [ ] **OO-03** Public smoke test (incognito, no login): Demo + About render, Stats populated from snapshots, Rustle sandbox swipes + embed audio work, commit no-ops
+- [ ] **OO-04** Owner smoke test: log in → live Stats + real Rustle; verify a committed track lands in the target playlist
+- [ ] **OO-05** Production link-preview check (OG image + title render when the URL is shared)
+
+---
+
+## Public Portfolio Mode Dependency Graph
+
+```
+HH (data + sandbox auth) ──► II (public shell + stats demo, slice) ──┬─► JJ (rustle sandbox)
+                                                                     ├─► KK (about tab)
+                                                                     ├─► LL (trends gating)
+                                                                     ├─► MM (share/seo)
+                                                                     └─► NN (owner upgrade)
+                                                                              │
+                                                                              ▼
+                                                                            OO (deploy)
+```
+
+**Critical path to a working recruiter demo:** HH → II.
+
+**Parallelism plan:** HH first (one agent). II is the serial
+integration moment. After II-09 turns green, JJ / KK / LL / MM / NN
+fan out to up to five agents, then OO ships.

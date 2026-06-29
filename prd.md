@@ -10,7 +10,176 @@
 
 - Surface artists and genres you listen to most, across short, medium, and long time horizons
 - Personal use only — single-user, no multi-tenancy
-- No database — stateless, all data fetched live from Spotify on each visit
+- ~~No database — stateless, all data fetched live from Spotify on
+  each visit~~ **(superseded)** — the Listening Trends and Rustling
+  features added a Postgres database (snapshots, stored token, recent
+  searches). The dashboard's *live* views are still fetched per visit,
+  but the app is no longer stateless.
+- **Double as a portfolio piece.** The site must present well to a
+  technical recruiter who will never log in, while the owner retains
+  full authenticated use. See **Public Portfolio Mode** below.
+
+---
+
+## Public Portfolio Mode (Recruiter-Facing)
+
+### Why this exists
+
+mccoy is, today, a login-walled single-user app. A recruiter who
+visits sees only a "Connect Spotify" button and a dead end — and
+because the Spotify app is in **development mode**, they *cannot* log
+in anyway (only ≤25 allowlisted users can authorize). Even if they
+could, they would see *their own* top artists, not the owner's, and
+Rustling would be broken for them.
+
+The goal of this mode is to make the deployed site valuable to a
+**technical recruiter who never logs in**, while the owner keeps full
+authenticated use of the real app. The primary message is **"Evan is
+a strong engineer"**; mccoy is the evidence.
+
+### The dual-surface model
+
+There is **one app** with **two states of the same UI**, never a
+separate codebase for the demo:
+
+| Visitor | What renders |
+|---|---|
+| **Logged-out** (recruiters) | Read-only **Demo** backed by the owner's stored snapshot data + a read-only **Rustle sandbox**. |
+| **Logged-in owner** (allowlisted) | The *same* views, now rendering live Spotify data, with **real Rustle** (writes + full audio) unlocked. |
+
+Logging in does not navigate to a different app — it swaps the data
+source and re-enables the write/audio paths on the components that are
+already on screen. The public experience is simply the **logged-out
+state** of the production app.
+
+### Top-level shell — tabbed Demo / About
+
+The public site is organized as two top-level tabs. **Demo loads
+first** ("show, don't tell"); **About** is one click away.
+
+```
+┌──────────────────────────────────────────────┐
+│  mccoy — Evan Appel        [Connect Spotify]  │ ← discreet owner login
+├──────────────────────────────────────────────┤
+│  [  DEMO  ]   [ ABOUT ]                        │ ← public top-level tabs
+├──────────────────────────────────────────────┤
+│  Demo:  the live read-only app (default)       │
+│  About: the engineering narrative              │
+└──────────────────────────────────────────────┘
+```
+
+- The **"Connect Spotify" button** is the owner's entry point. It sits
+  discreetly in the header on the public site; for an allowlisted
+  owner it begins the existing OAuth flow and, on success, upgrades the
+  current view to live data. For a non-allowlisted visitor it is
+  effectively decorative (Spotify will reject the authorization) — it
+  is not the recruiter's path and must not block the demo.
+- The existing **Stats / Rustle mode switcher** lives *inside* the
+  Demo tab, unchanged.
+
+### Demo tab — logged-out behavior
+
+#### Stats (read-only, real data)
+
+- Rendered from the owner's **real stored snapshots** already in
+  Postgres (the most recent snapshot per time window), not from a live
+  Spotify call and not from synthetic data.
+- **Proudly labeled as real:** a short caption states this is the
+  owner's actual Spotify listening data, surfaced through the same
+  snapshot pipeline that powers Trends — the authenticity is part of
+  the appeal and demonstrates a working data pipeline.
+- **Artists grid:** unchanged visually; reads from the snapshot rows.
+- **Trends (bump + stacked-area):** **hidden in the public demo until
+  ≥2 weekly snapshots exist.** Recruiters must never see the empty
+  "check back next week" state. Once enough history is captured, the
+  Trends sub-tab appears automatically.
+- Time-window tabs (4 Weeks / 6 Months / All Time) work, switching
+  between the stored snapshot rows for each `time_range`.
+
+#### Rustle sandbox (read-only, **album-first**)
+
+A recruiter can flip through **real** Spotify cards and hear audio,
+but cannot write anything.
+
+> **Implementation reality (discovered live):** a client-credentials
+> (app-only) token **cannot read playlist tracks** —
+> `GET /v1/playlists/{id}/items` returns `401 Valid user
+> authentication required`. So the sandbox cannot mirror the owner's
+> playlist→tracks flow. It is therefore **album-first**: album
+> search, album cards, and album-tracks reads *do* work with an app
+> token. "Crate of records" fits albums naturally. See
+> [[spotify-app-token-restrictions]].
+
+- **Auth / data source:** **live client-credentials (app-level)
+  token** — no user login required. Powers album `search` and album
+  track reads. Live search is the default and proves the pipeline is
+  real. (A small curated fallback **crate of albums** is used only if
+  the API call fails, so the demo never shows an empty stack.)
+- **Two levels:** Level 1 — album search results (cover + name);
+  Level 2 — the album's tracks (enter an album with swipe-up).
+- **No target picker.** Skipped in sandbox mode; there is no target
+  playlist to add to.
+- **Gestures:** left/right navigate; swipe-up on an album **opens**
+  it; on a track, swipe-up is **disabled / no-ops** with a subtle
+  "Saving tracks is owner-only — sign in to rustle" hint. Swipe-down
+  navigates back.
+- **Search limit:** `/v1/search` 400s on `limit > 10` for this app
+  (same cap already hit for playlist search), so album search is
+  clamped to 10.
+- **Audio: Spotify embed iframe.** Because dev-mode returns a null
+  `preview_url`, each track card plays its 30s preview through
+  Spotify's **official embed player** (no auth, reliable). Tradeoff:
+  the embed renders Spotify's own chrome rather than the fully custom
+  card audio used in owner mode. The custom cover-art card remains the
+  visual; the embed acts as the mini-player below the stack.
+- The "+N added" counter and duplicate-prevention logic are inert in
+  the sandbox (nothing is added).
+
+### About tab — engineering narrative
+
+Content that makes the case to a technical evaluator:
+
+- **Architecture / tech writeup:** the stack and the *why* — Python +
+  Plotly Dash for a fully Python web UI, the stateless live views vs.
+  the Postgres snapshot pipeline, the weekly cron design, clientside
+  callbacks + Pointer Events for Rustle gestures, the
+  client-credentials sandbox, and notable tradeoffs (e.g. running
+  against a dev-mode Spotify app).
+- **Build story / "why":** a short narrative on the motivation and
+  what was learned.
+- **Links / recruiter hooks:**
+  - **GitHub repo:** https://github.com/EvanWAppel/mccoy (public).
+  - **Resume / LinkedIn / email** contact links.
+
+### Share & SEO polish
+
+Recruiters often paste a link before clicking, so the public site
+must render a professional preview:
+
+- **Open Graph + Twitter Card meta tags:** title, description, and a
+  preview image (`og:image`).
+- A sensible `<title>` and meta description.
+- Basic SEO: the public Demo/About pages should be crawlable; the
+  authenticated owner views need not be.
+
+### Auth & scopes impact
+
+- The Stats demo needs **no Spotify auth** (reads Postgres).
+- The Rustle sandbox needs a **client-credentials token only**
+  (`SPOTIPY_CLIENT_ID` / `SPOTIPY_CLIENT_SECRET`, server-side) — no
+  user scopes, no `redirect_uri` round-trip. Credentials are never
+  exposed to the browser.
+- Owner login is unchanged: the full OAuth flow + scopes described in
+  **Authentication** and **Rustling** apply only after "Connect
+  Spotify".
+
+### Out of Scope (Portfolio Mode)
+
+- Letting non-owners run the *full* (write-enabled) app.
+- Multi-user accounts / per-visitor saved state.
+- Server-side rendering of the embed preview audio (use Spotify's
+  iframe as-is).
+- A separate marketing site or CMS — About is in-app.
 
 ---
 
@@ -47,6 +216,15 @@
 | All Time | `long_term` |
 
 ### Genre Aggregation
+
+> **Reconciliation (current reality):** Spotify's API now returns an
+> **empty `genres[]` for every artist**, so genre aggregation produces
+> nothing. The **Genres view is removed from the live UI**; the
+> component code (`components/genre_chart.py`) is preserved for revival
+> if Spotify restores the field. The spec below describes the original
+> intent and the behavior to restore. The same applies to the genre
+> stacked-area chart in the Trends tab.
+
 - Genres come from each artist object's `genres` list
 - Aggregate by simple count: how many of the top 10 artists list each genre
 - Show top 20 genres in the bar chart
@@ -349,6 +527,17 @@ exposes:
   desktop.
 
 ### Authentication & Scopes
+
+> **Reconciliation (current reality — dev-mode limits):** the Spotify
+> app is in **development mode**, which constrains owner Rustling
+> today: playlist *creation* returns 403, many `playlist_items` reads
+> return 403, the track→item key changed, and `preview_url` comes back
+> null. The owner flow degrades around these (graceful 403 handling,
+> clamped searches). The **public Rustle sandbox sidesteps all of
+> this** by using a client-credentials token for search and the
+> Spotify embed iframe for audio (see **Public Portfolio Mode**).
+> Full write/Premium-audio Rustling becomes reliable once the app is
+> moved out of dev mode (extended-quota / production approval).
 
 Rustling requires writing to playlists and (for Premium users)
 streaming full tracks. Next login forces re-consent.

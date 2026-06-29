@@ -106,10 +106,26 @@
     return slot ? slot.firstElementChild : null;
   }
 
-  // W-03: hand the resolved gesture to Dash
+  // W-03: hand the resolved gesture to Dash. The active card area names
+  // its target store (JJ: the read-only public sandbox uses its own
+  // "public-rustle-gesture"); owner cards omit it and default to
+  // "rustle-gesture".
+  function gestureStore() {
+    var area = document.querySelector('[data-rustle-card-area="true"]');
+    return (
+      (area && area.getAttribute("data-rustle-gesture-store")) ||
+      "rustle-gesture"
+    );
+  }
+
+  function isReadonly() {
+    var area = document.querySelector('[data-rustle-card-area="true"]');
+    return !!(area && area.getAttribute("data-rustle-readonly") === "true");
+  }
+
   function sendGesture(direction) {
     if (window.dash_clientside && window.dash_clientside.set_props) {
-      window.dash_clientside.set_props("rustle-gesture", {
+      window.dash_clientside.set_props(gestureStore(), {
         data: { direction: direction, ts: Date.now() },
       });
     }
@@ -147,6 +163,12 @@
     }
     var isTrack = card.classList.contains("rustle-card--track");
     if (direction === "up" && isTrack) {
+      if (isReadonly()) {
+        // JJ-05: sandbox can't save — let the server show the hint,
+        // and don't fake an "Added" stamp or fly the card away.
+        sendGesture("up");
+        return;
+      }
       if (card.querySelector(".rustle-card__badge")) {
         // Z-03: already in the target — shake, don't dispatch
         card.classList.add("rustle-card--shake");

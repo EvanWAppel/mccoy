@@ -20,6 +20,7 @@ try:
         create_playlist_form,
         no_results_state,
         error_toast,
+        embed_player,
         ALBUM_END_MESSAGE,
         SEARCH_END_MESSAGE,
         TRACK_END_MESSAGE,
@@ -417,3 +418,20 @@ class TestEndOfQueueMessages:
     def test_messages_are_distinct(self):
         msgs = {ALBUM_END_MESSAGE, SEARCH_END_MESSAGE, TRACK_END_MESSAGE}
         assert len(msgs) == 3
+
+
+class TestEmbedPlayer:
+    # JJ-01: sandbox audio uses Spotify's official embed iframe (no
+    # auth, no null preview_url problem).
+    def test_returns_iframe(self):
+        node = embed_player("abc123")
+        assert isinstance(node, html.Iframe)
+
+    def test_src_points_at_spotify_track_embed(self):
+        node = embed_player("abc123")
+        assert node.src == "https://open.spotify.com/embed/track/abc123"
+
+    def test_handles_full_uri(self):
+        # accepts a bare id or a spotify:track:ID uri
+        node = embed_player("spotify:track:xyz789")
+        assert node.src.endswith("/embed/track/xyz789")
