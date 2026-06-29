@@ -5,6 +5,8 @@ from db import (
     get_refresh_token,
     save_snapshot,
     get_snapshots,
+    get_latest_snapshot,
+    count_snapshots,
     save_recent_search,
     get_recent_searches,
     clear_recent_searches,
@@ -127,6 +129,53 @@ class TestGetSnapshots:
         # Both rows share snapshot_id=1, so should collapse to 1 snapshot with 2 artists
         assert len(result) == 1
         assert len(result[0]["artists"]) == 2
+
+
+class TestGetLatestSnapshot:
+    def test_returns_snapshot_dict_with_keys(self, mock_conn, mock_cursor):
+        from datetime import datetime, timezone
+        mock_cursor.fetchall.return_value = [
+            (1, datetime(2025, 6, 1, tzinfo=timezone.utc), "short_term",
+             1, "Radiohead", "abc", "http://img.jpg", ["art rock"]),
+            (1, datetime(2025, 6, 1, tzinfo=timezone.utc), "short_term",
+             2, "Portishead", "def", None, ["trip hop"]),
+        ]
+        with patch("db.get_connection", return_value=mock_conn):
+            result = get_latest_snapshot("short_term")
+        assert result is not None
+        assert result["snapshot_id"] == 1
+        assert "captured_at" in result
+        assert result["time_range"] == "short_term"
+        assert len(result["artists"]) == 2
+
+    def test_returns_none_when_no_rows(self, mock_conn, mock_cursor):
+        mock_cursor.fetchall.return_value = []
+        with patch("db.get_connection", return_value=mock_conn):
+            result = get_latest_snapshot("short_term")
+        assert result is None
+
+
+class TestCountSnapshots:
+    def test_returns_count(self, mock_conn, mock_cursor):
+        mock_cursor.fetchone.return_value = (3,)
+        with patch("db.get_connection", return_value=mock_conn):
+            result = count_snapshots("short_term")
+        assert result == 3
+
+    def test_returns_zero_when_none(self, mock_conn, mock_cursor):
+        mock_cursor.fetchone.return_value = (0,)
+        with patch("db.get_connection", return_value=mock_conn):
+            result = count_snapshots("short_term")
+        assert result == 0
+
+    def test_filters_by_time_range(self, mock_conn, mock_cursor):
+        mock_cursor.fetchone.return_value = (0,)
+        with patch("db.get_connection", return_value=mock_conn):
+            count_snapshots("medium_term")
+        sql, params = mock_cursor.execute.call_args[0]
+        assert "COUNT" in sql.upper()
+        assert "snapshots" in sql
+        assert params == ("medium_term",)
 
 
 class TestSaveRecentSearch:

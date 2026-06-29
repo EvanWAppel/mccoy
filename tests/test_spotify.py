@@ -5,6 +5,7 @@ from spotify import (
     get_user_profile,
     aggregate_genres,
     search_playlists,
+    search_albums,
     get_playlist_tracks,
     get_album_tracks,
     get_user_playlists,
@@ -120,6 +121,18 @@ class TestAggregateGenres:
 
 
 class TestSearchPlaylists:
+    def test_works_with_app_token_client(self, mocker):
+        # An app-token (client-credentials) client only exposes public
+        # endpoints like .search — no current_user(). search_playlists
+        # must not touch any user-only method.
+        app_sp = mocker.MagicMock(spec=["search"])
+        app_sp.search.return_value = {
+            "playlists": {"items": [], "next": None}
+        }
+        result = search_playlists(app_sp, "indie")
+        assert result == []
+        app_sp.search.assert_called_once()
+
     def test_calls_api_with_correct_args(self, mock_sp):
         mock_sp.search.return_value = {
             "playlists": {"items": [], "next": None}
@@ -129,6 +142,53 @@ class TestSearchPlaylists:
             q="indie", type="playlist", limit=10, offset=0
         )
 
+
+class TestSearchAlbums:
+    def test_calls_api_with_album_type(self, mock_sp):
+        mock_sp.search.return_value = {"albums": {"items": []}}
+        search_albums(mock_sp, "ok computer")
+        mock_sp.search.assert_called_once_with(
+            q="ok computer", type="album", limit=10, offset=0
+        )
+
+    def test_limit_capped_at_ten(self, mock_sp):
+        mock_sp.search.return_value = {"albums": {"items": []}}
+        search_albums(mock_sp, "x", limit=50)
+        _, kwargs = mock_sp.search.call_args
+        assert kwargs["limit"] == 10
+
+    def test_returns_id_name_image(self, mock_sp):
+        mock_sp.search.return_value = {
+            "albums": {"items": [
+                {"id": "al1", "name": "OK Computer",
+                 "images": [{"url": "https://example.com/a.jpg"}]},
+            ]}
+        }
+        result = search_albums(mock_sp, "ok computer")
+        assert result == [
+            {"id": "al1", "name": "OK Computer",
+             "image_url": "https://example.com/a.jpg"}
+        ]
+
+    def test_handles_missing_images_and_nulls(self, mock_sp):
+        mock_sp.search.return_value = {
+            "albums": {"items": [
+                None,
+                {"id": "al2", "name": "No Art", "images": []},
+            ]}
+        }
+        result = search_albums(mock_sp, "x")
+        assert result == [
+            {"id": "al2", "name": "No Art", "image_url": None}
+        ]
+
+    def test_works_with_app_token_client(self, mocker):
+        app_sp = mocker.MagicMock(spec=["search"])
+        app_sp.search.return_value = {"albums": {"items": []}}
+        assert search_albums(app_sp, "x") == []
+
+
+class TestSearchPlaylistsMore:
     def test_limit_capped_at_spotify_playlist_max(self, mock_sp):
         # Spotify rejects limit > 10 on type=playlist searches with
         # 400 Invalid limit (observed live, 2026-06)

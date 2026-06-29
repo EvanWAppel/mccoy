@@ -2,7 +2,7 @@ import logging
 import os
 
 import spotipy
-from spotipy.oauth2 import SpotifyOAuth
+from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +30,16 @@ def _oauth_manager() -> SpotifyOAuth:
 
 def get_auth_url() -> str:
     return _oauth_manager().get_authorize_url()
+
+
+def get_app_token_client() -> spotipy.Spotify:
+    """App-level (client-credentials) client for the public Rustle
+    sandbox: powers search + public reads with no user login."""
+    manager = SpotifyClientCredentials(
+        client_id=os.environ["SPOTIPY_CLIENT_ID"],
+        client_secret=os.environ["SPOTIPY_CLIENT_SECRET"],
+    )
+    return spotipy.Spotify(client_credentials_manager=manager)
 
 
 def handle_callback(code: str) -> dict:

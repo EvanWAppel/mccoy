@@ -50,9 +50,11 @@ def aggregate_genres(artists: list[dict]) -> list[dict]:
     ]
 
 
-# Spotify's /v1/search returns 400 "Invalid limit" for type=playlist
-# when limit > 10 (undocumented change, observed live 2026-06)
+# Spotify's /v1/search returns 400 "Invalid limit" when limit > 10
+# (undocumented change, observed live 2026-06 — applies to type=playlist
+# and, for this app, type=album too).
 PLAYLIST_SEARCH_MAX_LIMIT = 10
+SEARCH_MAX_LIMIT = 10
 
 
 def search_playlists(
@@ -62,6 +64,26 @@ def search_playlists(
     response = sp.search(q=query, type="playlist", limit=limit, offset=offset)
     out = []
     for item in response["playlists"]["items"]:
+        if item is None:
+            continue
+        images = item.get("images") or []
+        out.append({
+            "id": item["id"],
+            "name": item["name"],
+            "image_url": images[0]["url"] if images else None,
+        })
+    return out
+
+
+def search_albums(
+    sp, query: str, limit: int = SEARCH_MAX_LIMIT, offset: int = 0
+) -> list[dict]:
+    # JJ: the public sandbox is album-first. Unlike playlist /items,
+    # album search + album tracks are readable with an app-only token.
+    limit = min(limit, SEARCH_MAX_LIMIT)
+    response = sp.search(q=query, type="album", limit=limit, offset=offset)
+    out = []
+    for item in response["albums"]["items"]:
         if item is None:
             continue
         images = item.get("images") or []

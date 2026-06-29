@@ -128,6 +128,67 @@ def get_snapshots(time_range: str) -> list[dict]:
     return list(snaps.values())
 
 
+def get_latest_snapshot(time_range: str) -> dict | None:
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT s.id, s.captured_at, s.time_range,
+                       ae.rank, ae.artist_name, ae.artist_id,
+                       ae.image_url, ae.genres
+                FROM snapshots s
+                LEFT JOIN artist_entries ae ON ae.snapshot_id = s.id
+                WHERE s.id = (
+                    SELECT id FROM snapshots
+                    WHERE time_range = %s
+                    ORDER BY captured_at DESC
+                    LIMIT 1
+                )
+                ORDER BY ae.rank
+                """,
+                (time_range,),
+            )
+            rows = cur.fetchall()
+    finally:
+        conn.close()
+
+    if not rows:
+        return None
+
+    sid, captured_at, tr = rows[0][0], rows[0][1], rows[0][2]
+    snap = {
+        "snapshot_id": sid,
+        "captured_at": captured_at,
+        "time_range": tr,
+        "artists": [],
+    }
+    for row in rows:
+        _, _, _, rank, name, artist_id, image_url, genres = row
+        if rank is not None:
+            snap["artists"].append({
+                "rank": rank,
+                "name": name,
+                "artist_id": artist_id,
+                "image_url": image_url,
+                "genres": genres or [],
+            })
+    return snap
+
+
+def count_snapshots(time_range: str) -> int:
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT COUNT(*) FROM snapshots WHERE time_range = %s",
+                (time_range,),
+            )
+            return cur.fetchone()[0]
+    finally:
+        conn.close()
+
+
 def save_recent_search(user_id: str, query: str) -> None:
     conn = get_connection()
     try:

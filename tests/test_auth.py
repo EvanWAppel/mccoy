@@ -1,7 +1,12 @@
 import pytest
 import spotipy
 from unittest.mock import patch
-from auth import get_auth_url, handle_callback, get_sp_from_session
+from auth import (
+    get_auth_url,
+    handle_callback,
+    get_sp_from_session,
+    get_app_token_client,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -59,6 +64,22 @@ class TestHandleCallback:
 
         assert result == token
         mock_save.assert_called_once_with("refresh")
+
+
+class TestGetAppTokenClient:
+    def test_returns_spotipy_client(self):
+        result = get_app_token_client()
+        assert isinstance(result, spotipy.Spotify)
+
+    def test_uses_client_credentials_manager(self):
+        # App-token (client-credentials) flow: no user scopes, no
+        # redirect round-trip. Built from client id/secret only.
+        with patch("auth.SpotifyClientCredentials") as mock_ccm:
+            get_app_token_client()
+        mock_ccm.assert_called_once()
+        kwargs = mock_ccm.call_args.kwargs
+        assert kwargs["client_id"] == "test_client_id"
+        assert kwargs["client_secret"] == "test_client_secret"
 
 
 class TestGetSpFromSession:
