@@ -90,7 +90,7 @@ server.secret_key = os.environ["FLASK_SECRET_KEY"]
 # Railway knows — set PUBLIC_BASE_URL there (e.g.
 # https://mccoy.up.railway.app). Falls back to relative paths locally.
 _BASE = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
-_OG_IMAGE = f"{_BASE}/assets/icon-512.png" if _BASE else "/assets/icon-512.png"
+_OG_IMAGE = f"{_BASE}/assets/og-image.png" if _BASE else "/assets/og-image.png"
 _OG_DESC = (
     "A personal Spotify listening dashboard and crate-digging tool, "
     "built in Python by Evan Appel. Live demo — no login required."
@@ -104,7 +104,7 @@ _SEO_META = f"""
         <meta property="og:description" content="{_OG_DESC}">
         <meta property="og:image" content="{_OG_IMAGE}">
         {'<meta property="og:url" content="' + _BASE + '/">' if _BASE else ''}
-        <meta name="twitter:card" content="summary">
+        <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:title" content="{_OG_TITLE}">
         <meta name="twitter:description" content="{_OG_DESC}">
         <meta name="twitter:image" content="{_OG_IMAGE}">"""
