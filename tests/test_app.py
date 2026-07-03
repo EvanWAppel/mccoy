@@ -87,14 +87,15 @@ class TestPublicStats:
         assert _find_id(out, "public-artist-grid-inner") or \
             "Radiohead" in str(out)
 
-    def test_empty_state_when_no_snapshot(self):
+    def test_falls_back_to_demo_when_no_snapshot(self):
+        # With no real snapshot, the public grid shows deterministic
+        # demo data (never an empty state) so recruiters see content.
         with patch.object(
             app_module.db, "get_latest_snapshot", return_value=None
         ):
             out = app_module.render_public_stats("short_term")
-        assert "Radiohead" not in str(out)
-        # some non-empty placeholder is rendered
-        assert out is not None
+        assert _find_id(out, "public-artist-grid-inner")
+        assert "Radiohead" in str(out)
 
     def test_uses_requested_time_range(self):
         with patch.object(
@@ -102,6 +103,18 @@ class TestPublicStats:
         ) as mock_latest:
             app_module.render_public_stats("medium_term")
         mock_latest.assert_called_once_with("medium_term")
+
+
+class TestPublicTrends:
+    def test_falls_back_to_demo_when_no_snapshots(self):
+        # Demo provides >=2 snapshots, so a real bump chart renders
+        # instead of the "first snapshot" empty state.
+        with patch.object(
+            app_module.db, "get_snapshots", return_value=[]
+        ):
+            out = app_module.render_public_trends("trends")
+        assert out is not None
+        assert "First snapshot captured" not in str(out)
 
 
 class TestPublicRustleSandbox:
