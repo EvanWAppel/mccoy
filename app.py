@@ -13,6 +13,7 @@ from dash.exceptions import PreventUpdate
 import flask
 
 import db
+import demo_data
 from auth import (
     get_auth_url,
     handle_callback,
@@ -626,6 +627,10 @@ def render_public_trends(tab):
     except Exception as e:
         logger.warning("public trends load failed: %s", e)
         snapshots = []
+    # Fall back to deterministic demo data so the recruiter-facing
+    # chart is never empty (e.g. before the weekly cron has run).
+    if len(snapshots) < 2:
+        snapshots = demo_data.demo_snapshots("short_term")
     return render_bump_chart(snapshots, n=10)
 
 
@@ -640,11 +645,10 @@ def render_public_stats(time_range):
     except Exception as e:
         logger.warning("Could not load latest snapshot: %s", e)
         snap = None
+    # Fall back to deterministic demo data so the public grid is never
+    # empty (e.g. a fresh deploy before any snapshot exists).
     if not snap or not snap.get("artists"):
-        return html.P(
-            "No snapshot data captured for this window yet.",
-            style={"color": "#b3b3b3", "padding": "32px 0"},
-        )
+        snap = demo_data.demo_latest_snapshot(time_range)
     return html.Div(
         id="public-artist-grid-inner",
         children=render_grid(snap["artists"]),
