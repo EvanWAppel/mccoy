@@ -28,6 +28,7 @@ from spotify import (
     search_albums,
     get_playlist_tracks,
     get_album_tracks,
+    get_album_rating_tracks,
     add_track_to_playlist,
     get_playlist_track_uris,
     create_playlist,
@@ -56,6 +57,16 @@ from components.rustle import (
     ALBUM_END_MESSAGE,
     SEARCH_END_MESSAGE,
     TRACK_END_MESSAGE,
+)
+from components.rate import (
+    rate_sub_tabs,
+    rate_search_bar,
+    album_card,
+    rating_card,
+    rating_scale,
+    ratings_table,
+    RATE_SEARCH_END_MESSAGE,
+    RATE_ALBUM_END_MESSAGE,
 )
 from spotipy import SpotifyException
 
@@ -573,6 +584,35 @@ def render_page(pathname):
                 dcc.Store(id="rustle-play-uri", data=None),
                 dcc.Store(id="rustle-playback-result", data=None),
                 html.Audio(id="rustle-audio", preload="auto"),
+                # --- Rate feature ---
+                html.Div(
+                    id="rate-wrap",
+                    style={"display": "none"},
+                    children=[
+                        rate_sub_tabs(),
+                        dcc.Loading(
+                            type="circle",
+                            color="#1db954",
+                            children=html.Div(
+                                id="rate-content",
+                                style={"marginTop": "16px"},
+                            ),
+                        ),
+                    ],
+                ),
+                dcc.Store(
+                    id="rate-user-id", data=profile.get("user_id", "")
+                ),
+                dcc.Store(id="rate-view", data="search"),
+                dcc.Store(id="rate-album-queue", data=[]),
+                dcc.Store(id="rate-album-index", data=0),
+                dcc.Store(id="rate-track-queue", data=[]),
+                dcc.Store(id="rate-track-index", data=0),
+                dcc.Store(id="rate-query", data=""),
+                dcc.Store(id="rate-scores", data={}),
+                dcc.Store(id="rate-sort", data="rating"),
+                dcc.Store(id="rate-gesture", data=None),
+                dcc.Store(id="rate-error", data=None),
             ],
         ),
     ])
@@ -929,12 +969,17 @@ def update_bump_chart(n):
 @app.callback(
     Output("stats-content", "style"),
     Output("rustle-wrap", "style"),
+    Output("rate-wrap", "style"),
     Input("mode-tabs", "value"),
 )
 def toggle_mode(mode):
+    hidden = {"display": "none"}
+    shown = {"display": "block"}
     if mode == "rustle":
-        return {"display": "none"}, {"display": "block"}
-    return {"display": "block"}, {"display": "none"}
+        return hidden, shown, hidden
+    if mode == "rate":
+        return hidden, hidden, shown
+    return shown, hidden, hidden
 
 
 GESTURE_HINT = (
@@ -1689,6 +1734,301 @@ def do_premium_playback(req, device_id):
         logger.warning("start_playback failed: %s", e)
         raise PreventUpdate
     return req["uri"]
+
+
+# --- Rate callbacks ---
+#
+# Mirrors Rustle: album covers are a gesture-driven crate (search view),
+# swiping up opens an album, and each song carries a 1-10 tap scale
+# instead of an add gesture. A second sub-tab lists rated songs, sortable
+# by title, artist, year, or rating.
+
+RATE_GESTURE_HINT = (
+    "Swipe or use arrow keys — up opens the record, down starts over."
+)
+RATE_ALBUM_HINT = (
+    "Swipe left/right between songs — down goes back to the albums."
+)
+
+
+def _rate_gesture_area(children):
+    # Reuses assets/rustle.js, but writes into its own gesture store so
+    # it never collides with Rustle mode.
+    return html.Div(
+        children,
+        **{
+            "data-rustle-card-area": "true",
+            "data-rustle-gesture-store": "rate-gesture",
+        },
+    )
+
+
+def _rate_caption(text):
+    return html.P(
+        text,
+        style={"color": "#b3b3b3", "fontSize": "0.8rem", "marginTop": "8px"},
+    )
+
+
+def _rate_search_view(queue, idx, query):
+    children = [rate_search_bar(value=query or "")]
+    if not queue:
+        if query and query.strip():
+            children.append(no_results_state())
+        else:
+            children.append(
+                html.P(
+                    "Search Spotify for an album and flip through its "
+                    "covers to start rating.",
+                    style={"color": "#b3b3b3", "marginTop": "16px"},
+                )
+            )
+        return html.Div(children)
+    if idx >= len(queue):
+        children.append(
+            _rate_gesture_area([end_of_queue_card(RATE_SEARCH_END_MESSAGE)])
+        )
+        return html.Div(children)
+    idx = max(0, min(idx, len(queue) - 1))
+    children.append(
+        _rate_gesture_area(
+            card_stack([album_card(a) for a in queue[idx : idx + 4]])
+        )
+    )
+    children.append(
+        _rate_caption(f"{idx + 1} of {len(queue)} — {RATE_GESTURE_HINT}")
+    )
+    return html.Div(children)
+
+
+def _rate_album_view(queue, idx, scores):
+    scores = scores or {}
+    if not queue:
+        return _rate_gesture_area([
+            end_of_queue_card(
+                "This album has no songs. Swipe down to pick another."
+            ),
+        ])
+    if idx >= len(queue):
+        return _rate_gesture_area([
+            end_of_queue_card(RATE_ALBUM_END_MESSAGE),
+        ])
+    idx = max(0, min(idx, len(queue) - 1))
+    cards = card_stack([
+        rating_card(t, current=scores.get(t["uri"]))
+        for t in queue[idx : idx + 4]
+    ])
+    current = queue[idx]
+    return html.Div([
+        _rate_gesture_area([cards]),
+        rating_scale(current=scores.get(current["uri"])),
+        embed_player(current.get("uri", "")),
+        _rate_caption(f"{idx + 1} of {len(queue)} — {RATE_ALBUM_HINT}"),
+    ])
+
+
+@app.callback(
+    Output("rate-album-queue", "data"),
+    Output("rate-album-index", "data", allow_duplicate=True),
+    Output("rate-query", "data"),
+    Output("rate-view", "data", allow_duplicate=True),
+    Input("rate-search", "value"),
+    prevent_initial_call=True,
+)
+def run_rate_search(query):
+    if not query or not query.strip():
+        return [], 0, "", "search"
+    q = query.strip()
+    sp = get_sp_from_session(flask.session)
+    if sp is None:
+        raise PreventUpdate
+    try:
+        results = search_albums(sp, q)
+    except Exception as e:
+        logger.warning("rate search_albums failed: %s", e)
+        results = []
+    return results, 0, q, "search"
+
+
+@app.callback(
+    Output("rate-album-index", "data", allow_duplicate=True),
+    Output("rate-track-queue", "data"),
+    Output("rate-track-index", "data", allow_duplicate=True),
+    Output("rate-view", "data", allow_duplicate=True),
+    Output("rate-scores", "data", allow_duplicate=True),
+    Output("rate-error", "data", allow_duplicate=True),
+    Input("rate-gesture", "data"),
+    State("rate-view", "data"),
+    State("rate-album-queue", "data"),
+    State("rate-album-index", "data"),
+    State("rate-track-queue", "data"),
+    State("rate-track-index", "data"),
+    State("rate-user-id", "data"),
+    prevent_initial_call=True,
+)
+def handle_rate_gesture(
+    gesture, view, al_queue, al_idx, tr_queue, tr_idx, user_id,
+):
+    if not gesture or not gesture.get("direction"):
+        raise PreventUpdate
+    direction = gesture["direction"]
+
+    out = {
+        "al_idx": no_update, "tr_queue": no_update, "tr_idx": no_update,
+        "view": no_update, "scores": no_update, "error": no_update,
+    }
+
+    def ret():
+        return (
+            out["al_idx"], out["tr_queue"], out["tr_idx"], out["view"],
+            out["scores"], out["error"],
+        )
+
+    # Inside an album: L/R (and up = skip) flip songs, down goes back.
+    if view == "album":
+        if direction == "left":
+            out["tr_idx"] = max(0, tr_idx - 1)
+        elif direction in ("right", "up"):
+            if not tr_queue:
+                raise PreventUpdate
+            out["tr_idx"] = min(len(tr_queue), tr_idx + 1)
+        elif direction == "down":
+            out["view"] = "search"
+        else:
+            raise PreventUpdate
+        return ret()
+
+    # Album search results.
+    if direction == "left":
+        out["al_idx"] = max(0, al_idx - 1)
+    elif direction == "right":
+        if not al_queue:
+            raise PreventUpdate
+        out["al_idx"] = min(len(al_queue), al_idx + 1)
+    elif direction == "up":
+        if not al_queue or al_idx >= len(al_queue):
+            raise PreventUpdate
+        sp = get_sp_from_session(flask.session)
+        if sp is None:
+            raise PreventUpdate
+        try:
+            tracks = get_album_rating_tracks(sp, al_queue[al_idx]["id"])
+        except Exception as e:
+            kind = _classify_error(e)
+            logger.warning("get_album_rating_tracks failed (%s): %s", kind, e)
+            out["error"] = _error_payload(kind)
+            return ret()
+        out["tr_queue"] = tracks
+        out["tr_idx"] = 0
+        out["view"] = "album"
+        out["error"] = None
+        scores = {}
+        if user_id:
+            try:
+                scores = db.get_ratings_for_uris(
+                    user_id, [t["uri"] for t in tracks]
+                )
+            except Exception as e:
+                logger.warning("get_ratings_for_uris failed: %s", e)
+        out["scores"] = scores
+    elif direction == "down":
+        out["al_idx"] = 0
+    else:
+        raise PreventUpdate
+    return ret()
+
+
+@app.callback(
+    Output("rate-scores", "data", allow_duplicate=True),
+    Output("rate-track-index", "data", allow_duplicate=True),
+    Output("rate-error", "data", allow_duplicate=True),
+    Input({"type": "rate-score", "value": ALL}, "n_clicks"),
+    State("rate-track-queue", "data"),
+    State("rate-track-index", "data"),
+    State("rate-scores", "data"),
+    State("rate-user-id", "data"),
+    prevent_initial_call=True,
+)
+def save_song_rating(n_list, queue, idx, scores, user_id):
+    if not n_list or not any(n_list):
+        raise PreventUpdate
+    trigger = ctx.triggered_id
+    if not trigger or "value" not in trigger:
+        raise PreventUpdate
+    if not queue or idx is None or idx >= len(queue):
+        raise PreventUpdate
+    rating = trigger["value"]
+    track = queue[idx]
+    scores = dict(scores or {})
+    scores[track["uri"]] = rating
+    if user_id:
+        try:
+            db.save_rating(user_id, track, rating)
+        except Exception as e:
+            logger.warning("save_rating failed: %s", e)
+            return (
+                scores, no_update,
+                {"kind": "error", "msg": "Couldn't save that rating."},
+            )
+    # Advance to the next song once a score lands.
+    return scores, min(len(queue), idx + 1), None
+
+
+@app.callback(
+    Output("rate-sort", "data"),
+    Input({"type": "rate-sort", "value": ALL}, "n_clicks"),
+    prevent_initial_call=True,
+)
+def set_rate_sort(n_list):
+    if not n_list or not any(n_list):
+        raise PreventUpdate
+    trigger = ctx.triggered_id
+    if not trigger or "value" not in trigger:
+        raise PreventUpdate
+    return trigger["value"]
+
+
+@app.callback(
+    Output("rate-content", "children"),
+    Input("mode-tabs", "value"),
+    Input("rate-tabs", "value"),
+    Input("rate-view", "data"),
+    Input("rate-album-queue", "data"),
+    Input("rate-album-index", "data"),
+    Input("rate-track-queue", "data"),
+    Input("rate-track-index", "data"),
+    Input("rate-query", "data"),
+    Input("rate-scores", "data"),
+    Input("rate-sort", "data"),
+    Input("rate-error", "data"),
+    State("rate-user-id", "data"),
+)
+def render_rate_content(
+    mode, tab, view, al_queue, al_idx, tr_queue, tr_idx,
+    query, scores, sort_by, error, user_id,
+):
+    if mode != "rate":
+        return None
+    sp = get_sp_from_session(flask.session)
+    if sp is None:
+        return html.P("Not authenticated.", style={"color": "#b3b3b3"})
+    if tab == "rated":
+        try:
+            ratings = db.get_ratings(user_id, sort_by) if user_id else []
+        except Exception as e:
+            logger.warning("get_ratings failed: %s", e)
+            ratings = []
+        return ratings_table(ratings, sort_by)
+    if view == "album":
+        body = _rate_album_view(tr_queue, tr_idx, scores)
+    else:
+        body = _rate_search_view(al_queue, al_idx, query)
+    overlays = []
+    if error and error.get("kind") != "auth":
+        overlays.append(
+            error_toast(error.get("msg", ""), error.get("kind", "error"))
+        )
+    return html.Div([body, *overlays])
 
 
 if __name__ == "__main__":

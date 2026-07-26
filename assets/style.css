@@ -736,3 +736,135 @@ body, html {
   border-color: var(--accent);
   outline: none;
 }
+
+/* ===================================================================
+ * Rate feature — sub-tabs, 1-10 tap scale, and the rated-songs table
+ * =================================================================== */
+
+.rate-tabs {
+  display: flex !important;
+  gap: 12px;
+  border: none !important;
+  margin: 8px 0 4px;
+}
+
+.rate-tab {
+  background-color: transparent !important;
+  border: 1px solid #333 !important;
+  border-radius: 50px !important;
+  color: var(--text-secondary) !important;
+  padding: 8px 0 !important;
+  font-weight: 600 !important;
+  font-size: 0.8rem !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  cursor: pointer !important;
+}
+
+.rate-tab--selected {
+  background-color: rgba(29, 185, 84, 0.08) !important;
+  border: 2px solid var(--accent) !important;
+  color: var(--text-primary) !important;
+}
+
+.rate-card__subtitle {
+  padding: 0 14px 12px;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 1-10 tap scale */
+.rate-scale {
+  max-width: 360px;
+  margin: 16px auto 0;
+  text-align: center;
+}
+
+.rate-scale__label {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+
+.rate-scale__row {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 6px;
+}
+
+.rate-scale__btn {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 10px 0;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+
+.rate-scale__btn:hover {
+  border-color: var(--accent);
+}
+
+.rate-scale__btn--active {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+}
+
+/* Rated-songs table */
+.rate-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+
+.rate-table__row td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #262626;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.rate-table__score {
+  color: var(--accent);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.rate-table__head th {
+  padding: 0 0 8px;
+  text-align: left;
+}
+
+.rate-table__sort {
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
+  padding: 6px 8px;
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.rate-table__sort--active {
+  color: var(--accent);
+}
+
+.rate-empty {
+  padding: 48px 0;
+  text-align: center;
+}
+
+.rate-empty__msg {
+  color: var(--text-secondary);
+}

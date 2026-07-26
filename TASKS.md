@@ -668,3 +668,19 @@ HH (data + sandbox auth) ──► II (public shell + stats demo, slice) ──�
 **Parallelism plan:** HH first (one agent). II is the serial
 integration moment. After II-09 turns green, JJ / KK / LL / MM / NN
 fan out to up to five agents, then OO ships.
+
+---
+
+## Group PP — Rate feature (issue #27)
+> Owner-only, mirrors Rustle. Flip album covers → preview → tap a 1-10
+> scale to rate a song; a second sub-tab lists rated songs sortable by
+> title, artist, year, and rating.
+
+- [x] **PP-01** Migration `003_song_ratings.sql` — one row per (user, track), upsert on re-rate
+- [x] **PP-02** `db.save_rating` / `get_ratings` (whitelisted sort) / `get_ratings_for_uris`
+- [x] **PP-03** `spotify.get_album_rating_tracks` — album tracks carrying artist + release year
+- [x] **PP-04** `components/rate.py` — sub-tabs, album card, rating card, 1-10 tap scale, sortable rated-songs table
+- [x] **PP-05** `mode_switcher` gains a third "Rate" tab; `toggle_mode` shows one of three panes
+- [x] **PP-06** Rate callbacks: album search, gesture drill (reuses assets/rustle.js via its own `rate-gesture` store), save-rating scale, sort toggle, content render
+- [x] **PP-07** `tests/test_rate.py` — components, db (mocked), and spotify mapper
+- [ ] **PP-08** One-time: re-run `init_db()` against the Railway DB so `song_ratings` exists (idempotent, `IF NOT EXISTS`)

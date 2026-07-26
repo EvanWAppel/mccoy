@@ -144,6 +144,31 @@ def get_album_tracks(sp, album_id: str) -> list[dict]:
     return out
 
 
+def get_album_rating_tracks(sp, album_id: str) -> list[dict]:
+    # Like get_album_tracks, but also carries the artist and release
+    # year the Rate feature needs to store (and later sort) ratings.
+    album = sp.album(album_id)
+    images = album.get("images") or []
+    image_url = images[0]["url"] if images else None
+    artists = album.get("artists") or []
+    artist_name = artists[0]["name"] if artists else ""
+    # Spotify release_date is "YYYY", "YYYY-MM" or "YYYY-MM-DD".
+    release_date = album.get("release_date") or ""
+    year = release_date[:4] if release_date else ""
+    out = []
+    for item in album["tracks"]["items"]:
+        out.append({
+            "name": item["name"],
+            "uri": item["uri"],
+            "track_number": item["track_number"],
+            "image_url": image_url,
+            "preview_url": item.get("preview_url"),
+            "artist": artist_name,
+            "year": year,
+        })
+    return out
+
+
 def get_user_playlists(sp) -> list[dict]:
     first = sp.current_user_playlists()
     out = []
