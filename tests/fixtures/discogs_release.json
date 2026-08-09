@@ -1,0 +1,11 @@
+{
+  "id": 1234567,
+  "title": "The Real McCoy",
+  "year": 1967,
+  "artists": [{"name": "McCoy Tyner", "role": ""}],
+  "extraartists": [
+    {"name": "Joe Henderson", "role": "Tenor Saxophone"},
+    {"name": "Ron Carter", "role": "Bass"},
+    {"name": "Rudy Van Gelder", "role": "Recorded By"}
+  ]
+}

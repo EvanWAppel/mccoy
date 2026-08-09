@@ -704,27 +704,27 @@ visitors and never be empty (committed `graph.json` fallback).
 ## Group QQ — Source Client Layer (MusicBrainz + Discogs)
 > Depends on: PP-01. Run in parallel with PP schema work.
 
-- [ ] **QQ-01** Capture fixture payloads into `tests/fixtures/`: a MusicBrainz artist + release-group + recording-relations response, and a Discogs release-credits response
-- [ ] **QQ-02** Write `tests/test_netviz_sources.py` — `mb_releases_for(name)` returns normalized `[{mbid, title, year, label}]` from a mocked MB response
-- [ ] **QQ-03** Write `tests/test_netviz_sources.py` — `mb_personnel_for(release_mbid)` returns `[{mbid, name, instrument}]`
-- [ ] **QQ-04** Write `tests/test_netviz_sources.py` — `discogs_credits_for(...)` returns `[{name, role}]` from a mocked Discogs response
-- [ ] **QQ-05** Write `tests/test_netviz_sources.py` — an unresolved name returns `[]` and logs a miss (no exception raised)
-- [ ] **QQ-06** Implement `netviz/sources.py`: MusicBrainz (`musicbrainzngs`) + Discogs (`discogs_client`) clients with rate-limit sleeps and a shared normalize step
-- [ ] **QQ-07** Run `pytest tests/test_netviz_sources.py` — green
+- [x] **QQ-01** Capture fixture payloads into `tests/fixtures/`: a MusicBrainz artist + release-group + recording-relations response, and a Discogs release-credits response
+- [x] **QQ-02** Write `tests/test_netviz_sources.py` — `mb_releases_for(name)` returns normalized `[{mbid, title, year, label}]` from a mocked MB response
+- [x] **QQ-03** Write `tests/test_netviz_sources.py` — `mb_personnel_for(release_mbid)` returns `[{mbid, name, instrument}]`
+- [x] **QQ-04** Write `tests/test_netviz_sources.py` — `discogs_credits_for(...)` returns `[{name, role}]` from a mocked Discogs response
+- [x] **QQ-05** Write `tests/test_netviz_sources.py` — an unresolved name returns `[]` and logs a miss (no exception raised)
+- [x] **QQ-06** Implement `netviz/sources.py`: MusicBrainz (`musicbrainzngs`) + Discogs (`discogs_client`) clients with rate-limit sleeps and a shared normalize step
+- [x] **QQ-07** Run `pytest tests/test_netviz_sources.py` — green
 
 ---
 
 ## Group RR — Snowball Crawl / Ingest
 > Depends on: PP-07, QQ-07.
 
-- [ ] **RR-01** Create `netviz/seeds.py` — curated hard bop seed list + config constants (`NODE_CAP`, `MAX_HOPS=2`, `PER_MUSICIAN_RELEASE_CAP`, `MIN_EDGE_WEIGHT`)
-- [ ] **RR-02** Write `tests/test_netviz_crawl.py` — crawl stops at `NODE_CAP` (mocked sources)
-- [ ] **RR-03** Write `tests/test_netviz_crawl.py` — BFS admits the most-connected discovered musician first
-- [ ] **RR-04** Write `tests/test_netviz_crawl.py` — per-musician release cap is respected
-- [ ] **RR-05** Write `tests/test_netviz_crawl.py` — crawl is resumable / idempotent (re-run doesn't duplicate rows)
-- [ ] **RR-06** Implement `netviz/crawl.py` — snowball from seeds, apply bounding, write `nv_musicians` / `nv_releases` / `nv_credits`
-- [ ] **RR-07** Implement `netviz/ingest.py` — CLI (`uv run python -m netviz.ingest`) that runs the crawl then the edge build; logs progress + unresolved names
-- [ ] **RR-08** Run `pytest tests/test_netviz_crawl.py` — green
+- [x] **RR-01** Create `netviz/seeds.py` — curated hard bop seed list + config constants (`NODE_CAP`, `MAX_HOPS=2`, `PER_MUSICIAN_RELEASE_CAP`, `MIN_EDGE_WEIGHT`)
+- [x] **RR-02** Write `tests/test_netviz_crawl.py` — crawl stops at `NODE_CAP` (mocked sources)
+- [x] **RR-03** Write `tests/test_netviz_crawl.py` — BFS admits the most-connected discovered musician first
+- [x] **RR-04** Write `tests/test_netviz_crawl.py` — per-musician release cap is respected
+- [x] **RR-05** Write `tests/test_netviz_crawl.py` — crawl is resumable / idempotent (re-run doesn't duplicate rows)
+- [x] **RR-06** Implement `netviz/crawl.py` — snowball from seeds, apply bounding, write `nv_musicians` / `nv_releases` / `nv_credits`
+- [x] **RR-07** Implement `netviz/ingest.py` — CLI (`uv run python -m netviz.ingest`) that runs the crawl then the edge build; logs progress + unresolved names
+- [x] **RR-08** Run `pytest tests/test_netviz_crawl.py` — green
 
 ---
 
@@ -762,7 +762,7 @@ visitors and never be empty (committed `graph.json` fallback).
 - [x] **UU-02** Write `tests/test_network.py` — the page renders from `graph.json` when the DB is empty / the visitor is logged out
 - [x] **UU-03** Add "Network" to the public shell so logged-out visitors can view it
 - [ ] **UU-04** Apply `migrations/003_network.sql` to Railway Postgres (same enable-public-networking flow as prior migrations)
-- [ ] **UU-05** Add `DISCOGS_TOKEN` to `.env.example` and Railway env
+- [~] **UU-05** Add `DISCOGS_TOKEN` to `.env.example` (done) and Railway env (pending — needs the token set on Railway)
 - [ ] **UU-06** Merge to `main` → Railway auto-deploys; public smoke test: `/network` renders the graph logged-out
 
 ---

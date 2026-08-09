@@ -1,0 +1,11 @@
+{
+  "artist-list": [
+    {
+      "id": "mbid-mccoy-tyner",
+      "name": "McCoy Tyner",
+      "type": "Person",
+      "life-span": {"begin": "1938-12-11", "end": "2020-03-06"}
+    }
+  ],
+  "artist-count": 1
+}
