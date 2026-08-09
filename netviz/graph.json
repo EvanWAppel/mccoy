@@ -1,87 +1,1340 @@
 {
   "nodes": [
     {
-      "id": 1,
+      "id": 176,
+      "name": "Kenny Drew",
+      "era": 1950,
+      "instrument": "Piano",
+      "degree": 11
+    },
+    {
+      "id": 786,
+      "name": "Don Abney",
+      "era": null,
+      "instrument": null,
+      "degree": 6
+    },
+    {
+      "id": 790,
+      "name": "Mundell Lowe",
+      "era": null,
+      "instrument": null,
+      "degree": 6
+    },
+    {
+      "id": 792,
+      "name": "Bobby Donaldson",
+      "era": null,
+      "instrument": null,
+      "degree": 6
+    },
+    {
+      "id": 465,
+      "name": "Earl Swope",
+      "era": 1949,
+      "instrument": "Trombone",
+      "degree": 7
+    },
+    {
+      "id": 520,
+      "name": "\u00c5ke Persson",
+      "era": 1957,
+      "instrument": "Trombone",
+      "degree": 6
+    },
+    {
+      "id": 148,
+      "name": "Curtis Fuller",
+      "era": 1957,
+      "instrument": "Trombone",
+      "degree": 3
+    },
+    {
+      "id": 1037,
+      "name": "Charlie Perry",
+      "era": 1949,
+      "instrument": "Drums",
+      "degree": 3
+    },
+    {
+      "id": 184,
+      "name": "Jimmy Cleveland",
+      "era": 1955,
+      "instrument": "Trombone",
+      "degree": 13
+    },
+    {
+      "id": 273,
+      "name": "Joe Chambers",
+      "era": 1964,
+      "instrument": "Drums",
+      "degree": 2
+    },
+    {
+      "id": 51,
+      "name": "John Coltrane",
+      "era": 1958,
+      "instrument": "Tenor Saxophone",
+      "degree": 1
+    },
+    {
+      "id": 272,
+      "name": "Jack DeJohnette",
+      "era": 1980,
+      "instrument": "Drums",
+      "degree": 3
+    },
+    {
+      "id": 70,
+      "name": "J.J. Johnson",
+      "era": 1949,
+      "instrument": "Trombone",
+      "degree": 24
+    },
+    {
+      "id": 874,
+      "name": "Helen Humes",
+      "era": 1945,
+      "instrument": null,
+      "degree": 2
+    },
+    {
+      "id": 1683,
+      "name": "Danny Bank",
+      "era": 1958,
+      "instrument": "Baritone Saxophone",
+      "degree": 3
+    },
+    {
+      "id": 509,
+      "name": "Sonny Stitt",
+      "era": 1951,
+      "instrument": "Performer",
+      "degree": 14
+    },
+    {
+      "id": 1811,
+      "name": "Tommy Flanagan",
+      "era": 1973,
+      "instrument": "Piano",
+      "degree": 2
+    },
+    {
+      "id": 2038,
+      "name": "Cannonball Legacy Band",
+      "era": 2002,
+      "instrument": null,
+      "degree": 4
+    },
+    {
+      "id": 390,
+      "name": "Julius Watkins",
+      "era": 1958,
+      "instrument": "French Horn",
+      "degree": 2
+    },
+    {
+      "id": 269,
+      "name": "Ron Carter",
+      "era": 1960,
+      "instrument": "Bass",
+      "degree": 6
+    },
+    {
+      "id": 1594,
+      "name": "Frank Hooks",
+      "era": 1949,
+      "instrument": "Trombone",
+      "degree": 4
+    },
+    {
+      "id": 876,
+      "name": "Jay McShann's Trio",
+      "era": 1945,
+      "instrument": null,
+      "degree": 2
+    },
+    {
+      "id": 117,
+      "name": "Herbie Hancock",
+      "era": 1962,
+      "instrument": "Piano",
+      "degree": 7
+    },
+    {
+      "id": 43,
+      "name": "Doug Watkins",
+      "era": 1956,
+      "instrument": "Bass",
+      "degree": 14
+    },
+    {
+      "id": 2115,
+      "name": "Leroy Williams",
+      "era": 1989,
+      "instrument": "Drums",
+      "degree": 3
+    },
+    {
+      "id": 57,
+      "name": "Miles Davis",
+      "era": 1946,
+      "instrument": "Performer",
+      "degree": 9
+    },
+    {
+      "id": 19,
+      "name": "Lou Donaldson",
+      "era": 1952,
+      "instrument": "Saxophone",
+      "degree": 11
+    },
+    {
+      "id": 506,
+      "name": "Milt Jackson",
+      "era": 1952,
+      "instrument": "Performer",
+      "degree": 14
+    },
+    {
+      "id": 266,
+      "name": "James Spaulding",
+      "era": 1964,
+      "instrument": "Alto Saxophone",
+      "degree": 2
+    },
+    {
+      "id": 91,
+      "name": "Bobby Timmons",
+      "era": 1957,
+      "instrument": "Piano",
+      "degree": 3
+    },
+    {
+      "id": 29,
+      "name": "Charlie Parker",
+      "era": 1945,
+      "instrument": "Written-By",
+      "degree": 6
+    },
+    {
+      "id": 4,
       "name": "Art Blakey",
+      "era": 1948,
+      "instrument": "Drums",
+      "degree": 30
+    },
+    {
+      "id": 181,
+      "name": "John Williams",
+      "era": 1955,
+      "instrument": "Piano",
+      "degree": 8
+    },
+    {
+      "id": 201,
+      "name": "Art Blakey & The Jazz Messengers",
+      "era": 1948,
+      "instrument": null,
+      "degree": 8
+    },
+    {
+      "id": 6,
+      "name": "Ernest Thompson",
+      "era": 1948,
+      "instrument": "Baritone Saxophone",
+      "degree": 14
+    },
+    {
+      "id": 241,
+      "name": "Frank Foster",
       "era": 1954,
-      "instrument": "drums",
+      "instrument": "Tenor Saxophone",
+      "degree": 2
+    },
+    {
+      "id": 13,
+      "name": "Art Simmons",
+      "era": 1949,
+      "instrument": "Piano",
+      "degree": 6
+    },
+    {
+      "id": 487,
+      "name": "Dizzy Gillespie",
+      "era": 1945,
+      "instrument": "Piano",
+      "degree": 12
+    },
+    {
+      "id": 458,
+      "name": "Terry Gibbs' New Jazz Stars",
+      "era": 1949,
+      "instrument": null,
       "degree": 7
     },
     {
       "id": 2,
-      "name": "Horace Silver",
-      "era": 1952,
-      "instrument": "piano",
-      "degree": 2
+      "name": "James Moody",
+      "era": 1949,
+      "instrument": "Tenor Saxophone",
+      "degree": 29
     },
     {
-      "id": 3,
-      "name": "Clifford Brown",
-      "era": 1953,
-      "instrument": "trumpet",
-      "degree": 1
+      "id": 75,
+      "name": "Richie Powell",
+      "era": 1954,
+      "instrument": "Piano",
+      "degree": 12
     },
     {
-      "id": 4,
-      "name": "Lee Morgan",
-      "era": 1956,
-      "instrument": "trumpet",
-      "degree": 6
+      "id": 128,
+      "name": "Wynton Kelly",
+      "era": 1951,
+      "instrument": "Piano",
+      "degree": 11
     },
     {
-      "id": 5,
-      "name": "Hank Mobley",
+      "id": 595,
+      "name": "Bill Perkins",
       "era": 1955,
-      "instrument": "saxophone",
+      "instrument": null,
       "degree": 4
     },
     {
-      "id": 6,
-      "name": "Wayne Shorter",
-      "era": 1959,
-      "instrument": "saxophone",
-      "degree": 3
+      "id": 142,
+      "name": "Hank Jones",
+      "era": 1946,
+      "instrument": "Piano",
+      "degree": 9
     },
     {
-      "id": 7,
-      "name": "Kenny Dorham",
+      "id": 534,
+      "name": "Phil Woods",
+      "era": 1956,
+      "instrument": "Alto Saxophone",
+      "degree": 6
+    },
+    {
+      "id": 152,
+      "name": "Specs Wright",
+      "era": 1954,
+      "instrument": "Drums",
+      "degree": 2
+    },
+    {
+      "id": 2044,
+      "name": "Jeremy Pelt",
+      "era": 2002,
+      "instrument": "Trumpet",
+      "degree": 4
+    },
+    {
+      "id": 597,
+      "name": "Chico Hamilton",
+      "era": 1950,
+      "instrument": "Drums",
+      "degree": 7
+    },
+    {
+      "id": 1449,
+      "name": "Eugene Wright",
+      "era": 1954,
+      "instrument": "Bass",
+      "degree": 2
+    },
+    {
+      "id": 1098,
+      "name": "Frank Blinkal",
+      "era": 2004,
+      "instrument": "Guitar",
+      "degree": 7
+    },
+    {
+      "id": 787,
+      "name": "Jimmy Raney",
+      "era": 1949,
+      "instrument": "Guitar",
+      "degree": 9
+    },
+    {
+      "id": 47,
+      "name": "Donald Byrd",
+      "era": 1955,
+      "instrument": "Trumpet",
+      "degree": 14
+    },
+    {
+      "id": 177,
+      "name": "Cannonball Adderley",
+      "era": 1955,
+      "instrument": "Alto Saxophone",
+      "degree": 8
+    },
+    {
+      "id": 18,
+      "name": "Clifford Brown",
       "era": 1953,
-      "instrument": "trumpet",
+      "instrument": "Trumpet",
+      "degree": 18
+    },
+    {
+      "id": 110,
+      "name": "Ronnie Mathews",
+      "era": 1963,
+      "instrument": "Piano",
+      "degree": 1
+    },
+    {
+      "id": 2127,
+      "name": "Ben Riley",
+      "era": 1990,
+      "instrument": "Drums",
+      "degree": 1
+    },
+    {
+      "id": 557,
+      "name": "Elmo Hope",
+      "era": 1956,
+      "instrument": "Piano",
+      "degree": 5
+    },
+    {
+      "id": 788,
+      "name": "Oscar Pettiford",
+      "era": 1951,
+      "instrument": "Bass",
+      "degree": 9
+    },
+    {
+      "id": 513,
+      "name": "Harold Land",
+      "era": 1954,
+      "instrument": "Tenor Saxophone",
+      "degree": 11
+    },
+    {
+      "id": 101,
+      "name": "Jerome Richardson",
+      "era": 1955,
+      "instrument": "Tenor Saxophone",
+      "degree": 8
+    },
+    {
+      "id": 69,
+      "name": "Jimmy Heath",
+      "era": 1954,
+      "instrument": "Tenor Saxophone",
       "degree": 3
     },
     {
-      "id": 8,
-      "name": "Sonny Rollins",
-      "era": 1951,
-      "instrument": "saxophone",
-      "degree": 2
+      "id": 1044,
+      "name": "Larry Bunker",
+      "era": 1953,
+      "instrument": "Drums",
+      "degree": 1
     },
     {
-      "id": 9,
-      "name": "Freddie Hubbard",
+      "id": 1242,
+      "name": "Frank Wess",
       "era": 1958,
-      "instrument": "trumpet",
-      "degree": 2
+      "instrument": null,
+      "degree": 5
     },
     {
-      "id": 10,
-      "name": "Joe Henderson",
-      "era": 1963,
-      "instrument": "saxophone",
-      "degree": 2
+      "id": 689,
+      "name": "Keter Betts",
+      "era": 1954,
+      "instrument": "Bass",
+      "degree": 10
+    },
+    {
+      "id": 1445,
+      "name": "Brew Moore",
+      "era": 1950,
+      "instrument": "Tenor Saxophone",
+      "degree": 5
+    },
+    {
+      "id": 44,
+      "name": "Art Taylor",
+      "era": 1952,
+      "instrument": "Drums",
+      "degree": 24
     },
     {
       "id": 11,
-      "name": "Bobby Timmons",
-      "era": 1956,
-      "instrument": "piano",
+      "name": "Clarence Terry",
+      "era": 1949,
+      "instrument": "Drums",
+      "degree": 6
+    },
+    {
+      "id": 1384,
+      "name": "Les Spann",
+      "era": 2001,
+      "instrument": "Guitar",
+      "degree": 1
+    },
+    {
+      "id": 2043,
+      "name": "Rick Germanson",
+      "era": 2002,
+      "instrument": "Piano",
+      "degree": 4
+    },
+    {
+      "id": 1447,
+      "name": "Howard McGhee",
+      "era": 1950,
+      "instrument": "Trumpet",
+      "degree": 5
+    },
+    {
+      "id": 1987,
+      "name": "Frances Wayne",
+      "era": 1952,
+      "instrument": "Vocals",
+      "degree": 1
+    },
+    {
+      "id": 676,
+      "name": "Gerald Wiggins",
+      "era": 1950,
+      "instrument": "Piano",
+      "degree": 3
+    },
+    {
+      "id": 1094,
+      "name": "Buddy Guy",
+      "era": 2004,
+      "instrument": null,
+      "degree": 7
+    },
+    {
+      "id": 778,
+      "name": "John Jenkins",
+      "era": 1960,
+      "instrument": "Alto Saxophone",
+      "degree": 1
+    },
+    {
+      "id": 279,
+      "name": "Grachan Moncur III",
+      "era": 1980,
+      "instrument": "Trombone",
+      "degree": 3
+    },
+    {
+      "id": 9,
+      "name": "Tommy Potter",
+      "era": 1949,
+      "instrument": "Bass",
+      "degree": 24
+    },
+    {
+      "id": 95,
+      "name": "Wilbur Ware",
+      "era": 1957,
+      "instrument": "Bass",
+      "degree": 12
+    },
+    {
+      "id": 687,
+      "name": "Herb Geller",
+      "era": 1954,
+      "instrument": "Alto Saxophone",
+      "degree": 10
+    },
+    {
+      "id": 1951,
+      "name": "Tony Purrone",
+      "era": 1995,
+      "instrument": "Electric Guitar",
+      "degree": 1
+    },
+    {
+      "id": 519,
+      "name": "Hacke Bj\u00f6rksten",
+      "era": 1957,
+      "instrument": "Tenor Saxophone",
+      "degree": 6
+    },
+    {
+      "id": 302,
+      "name": "Roy Haynes",
+      "era": 1953,
+      "instrument": "Drums",
       "degree": 2
     },
     {
-      "id": 12,
-      "name": "Curtis Fuller",
+      "id": 21,
+      "name": "Horace Silver",
+      "era": 1952,
+      "instrument": "Performer",
+      "degree": 15
+    },
+    {
+      "id": 521,
+      "name": "Rolf Ericson",
       "era": 1957,
-      "instrument": "trombone",
+      "instrument": "Trumpet",
+      "degree": 6
+    },
+    {
+      "id": 3,
+      "name": "Kenny Dorham",
+      "era": 1948,
+      "instrument": "Trumpet",
+      "degree": 22
+    },
+    {
+      "id": 1593,
+      "name": "Sandy Scott",
+      "era": 1949,
+      "instrument": "Tenor Saxophone",
+      "degree": 4
+    },
+    {
+      "id": 165,
+      "name": "Elvin Jones",
+      "era": 1957,
+      "instrument": "Performer",
+      "degree": 7
+    },
+    {
+      "id": 820,
+      "name": "Roger Gu\u00e9rin",
+      "era": 1951,
+      "instrument": "Trumpet",
+      "degree": 4
+    },
+    {
+      "id": 67,
+      "name": "Kenny Clarke",
+      "era": 1950,
+      "instrument": "Drums",
+      "degree": 36
+    },
+    {
+      "id": 90,
+      "name": "\"Philly\" Joe Jones",
+      "era": 1957,
+      "instrument": "Drums",
+      "degree": 6
+    },
+    {
+      "id": 783,
+      "name": "Ed Blackwell",
+      "era": 1997,
+      "instrument": "Drums",
+      "degree": 1
+    },
+    {
+      "id": 598,
+      "name": "Jim Hall",
+      "era": 1955,
+      "instrument": "Guitar",
+      "degree": 4
+    },
+    {
+      "id": 277,
+      "name": "McCoy Tyner",
+      "era": 1960,
+      "instrument": "Piano",
+      "degree": 2
+    },
+    {
+      "id": 469,
+      "name": "Terry Gibbs",
+      "era": 1949,
+      "instrument": "Vibraphone",
+      "degree": 7
+    },
+    {
+      "id": 118,
+      "name": "Wayne Shorter",
+      "era": 1960,
+      "instrument": "Tenor Saxophone",
+      "degree": 6
+    },
+    {
+      "id": 488,
+      "name": "Bud Powell",
+      "era": 1946,
+      "instrument": "Piano",
+      "degree": 16
+    },
+    {
+      "id": 1101,
+      "name": "Jason Moynihan",
+      "era": 2004,
+      "instrument": "Tenor Saxophone",
+      "degree": 7
+    },
+    {
+      "id": 463,
+      "name": "George Wallington",
+      "era": 1949,
+      "instrument": "Piano",
+      "degree": 7
+    },
+    {
+      "id": 46,
+      "name": "Hank Mobley",
+      "era": 1955,
+      "instrument": "Tenor Saxophone",
+      "degree": 11
+    },
+    {
+      "id": 719,
+      "name": "Clifford Brown And Max Roach",
+      "era": 1955,
+      "instrument": null,
+      "degree": 5
+    },
+    {
+      "id": 53,
+      "name": "Sonny Rollins",
+      "era": 1949,
+      "instrument": "Tenor Saxophone",
+      "degree": 13
+    },
+    {
+      "id": 1476,
+      "name": "Duke Jordan",
+      "era": 1975,
+      "instrument": "Piano",
+      "degree": 1
+    },
+    {
+      "id": 423,
+      "name": "Red Garland",
+      "era": 1956,
+      "instrument": "Piano",
+      "degree": 3
+    },
+    {
+      "id": 442,
+      "name": "Mal Waldron",
+      "era": 1957,
+      "instrument": "Piano",
+      "degree": 8
+    },
+    {
+      "id": 12,
+      "name": "Al Haig",
+      "era": 1945,
+      "instrument": "Piano",
+      "degree": 16
+    },
+    {
+      "id": 657,
+      "name": "Nat Peck",
+      "era": 1950,
+      "instrument": "Trombone",
+      "degree": 3
+    },
+    {
+      "id": 234,
+      "name": "Ernie Henry",
+      "era": 1960,
+      "instrument": "Alto Saxophone",
+      "degree": 4
+    },
+    {
+      "id": 654,
+      "name": "Hubert Fol",
+      "era": 1950,
+      "instrument": "Alto Saxophone",
+      "degree": 1
+    },
+    {
+      "id": 33,
+      "name": "Percy Heath",
+      "era": 1952,
+      "instrument": "Bass",
+      "degree": 14
+    },
+    {
+      "id": 696,
+      "name": "Maynard Ferguson",
+      "era": 1954,
+      "instrument": "Trumpet",
+      "degree": 10
+    },
+    {
+      "id": 2095,
+      "name": "Andrew Cyrille",
+      "era": 2004,
+      "instrument": null,
+      "degree": 1
+    },
+    {
+      "id": 185,
+      "name": "Nat Adderley",
+      "era": 1955,
+      "instrument": "Trumpet",
+      "degree": 8
+    },
+    {
+      "id": 130,
+      "name": "Barry Harris",
+      "era": 1965,
+      "instrument": "Performer",
+      "degree": 6
+    },
+    {
+      "id": 486,
+      "name": "Bird",
+      "era": 1953,
+      "instrument": null,
+      "degree": 3
+    },
+    {
+      "id": 819,
+      "name": "Raymond Fol",
+      "era": 1950,
+      "instrument": "Piano",
+      "degree": 4
+    },
+    {
+      "id": 817,
+      "name": "Pierre Michelot",
+      "era": 1951,
+      "instrument": "Bass",
+      "degree": 4
+    },
+    {
+      "id": 1274,
+      "name": "Jackie McLean Quintet",
+      "era": 1956,
+      "instrument": null,
+      "degree": 5
+    },
+    {
+      "id": 462,
+      "name": "Shadow Wilson",
+      "era": 1949,
+      "instrument": "Drums",
+      "degree": 7
+    },
+    {
+      "id": 92,
+      "name": "Pepper Adams",
+      "era": 1957,
+      "instrument": "Saxophone",
+      "degree": 4
+    },
+    {
+      "id": 1825,
+      "name": "George Wallington Quintet",
+      "era": 1957,
+      "instrument": null,
+      "degree": 2
+    },
+    {
+      "id": 784,
+      "name": "Clifford Jordan",
+      "era": 1960,
+      "instrument": "Tenor Saxophone",
+      "degree": 1
+    },
+    {
+      "id": 1064,
+      "name": "Orlando Wright",
+      "era": 1947,
+      "instrument": "Tenor Saxophone",
+      "degree": 7
+    },
+    {
+      "id": 73,
+      "name": "George Morrow",
+      "era": 1954,
+      "instrument": "Bass",
+      "degree": 13
+    },
+    {
+      "id": 875,
+      "name": "Bill Doggett's Octet",
+      "era": 1945,
+      "instrument": null,
+      "degree": 2
+    },
+    {
+      "id": 88,
+      "name": "Lee Morgan",
+      "era": 1957,
+      "instrument": "Trumpet",
+      "degree": 12
+    },
+    {
+      "id": 1255,
+      "name": "Kenny Burrell",
+      "era": 1958,
+      "instrument": "Guitar",
+      "degree": 1
+    },
+    {
+      "id": 420,
+      "name": "The Red Garland Trio",
+      "era": 1956,
+      "instrument": "Performer",
+      "degree": 3
+    },
+    {
+      "id": 461,
+      "name": "Leonard Gaskin",
+      "era": 1949,
+      "instrument": "Bass",
+      "degree": 7
+    },
+    {
+      "id": 1688,
+      "name": "Benny Powell",
+      "era": 1973,
+      "instrument": "Trombone",
+      "degree": 2
+    },
+    {
+      "id": 15,
+      "name": "Orlando Wright",
+      "era": 1948,
+      "instrument": "Tenor Saxophone",
+      "degree": 8
+    },
+    {
+      "id": 48,
+      "name": "Stan Getz",
+      "era": 1946,
+      "instrument": null,
+      "degree": 12
+    },
+    {
+      "id": 691,
+      "name": "Junior Mance",
+      "era": 1954,
+      "instrument": "Piano",
+      "degree": 10
+    },
+    {
+      "id": 468,
+      "name": "Shorty Rogers",
+      "era": 1949,
+      "instrument": "Trumpet",
+      "degree": 7
+    },
+    {
+      "id": 1243,
+      "name": "Teddy Charles",
+      "era": 1958,
+      "instrument": "Piano",
+      "degree": 5
+    },
+    {
+      "id": 251,
+      "name": "Jimmy Cobb",
+      "era": 1960,
+      "instrument": "Performer",
+      "degree": 4
+    },
+    {
+      "id": 1100,
+      "name": "Mark Messner",
+      "era": 2004,
+      "instrument": "Stage Manager",
+      "degree": 7
+    },
+    {
+      "id": 204,
+      "name": "Edmund Gregory",
+      "era": 1948,
+      "instrument": "Alto Saxophone",
+      "degree": 8
+    },
+    {
+      "id": 5,
+      "name": "Sahib Shihab",
+      "era": 1952,
+      "instrument": "Alto Saxophone",
+      "degree": 16
+    },
+    {
+      "id": 686,
+      "name": "Dinah Washington",
+      "era": 1954,
+      "instrument": null,
+      "degree": 10
+    },
+    {
+      "id": 785,
+      "name": "Don Cherry",
+      "era": 1997,
+      "instrument": "Trumpet",
+      "degree": 1
+    },
+    {
+      "id": 537,
+      "name": "Al Cohn",
+      "era": 1985,
+      "instrument": null,
+      "degree": 3
+    },
+    {
+      "id": 1370,
+      "name": "Akira Tana",
+      "era": 1995,
+      "instrument": "Musician",
+      "degree": 1
+    },
+    {
+      "id": 89,
+      "name": "Paul Chambers",
+      "era": 1955,
+      "instrument": "Bass",
+      "degree": 28
+    },
+    {
+      "id": 31,
+      "name": "Gigi Gryce",
+      "era": 1953,
+      "instrument": "Performer",
+      "degree": 9
+    },
+    {
+      "id": 1369,
+      "name": "Rufus Reid",
+      "era": 1995,
+      "instrument": "Musician",
+      "degree": 1
+    },
+    {
+      "id": 14,
+      "name": "Walter Bishop, Jr.",
+      "era": 1948,
+      "instrument": "Piano",
+      "degree": 16
+    },
+    {
+      "id": 109,
+      "name": "Billy Higgins",
+      "era": 1924,
+      "instrument": "Drums",
+      "degree": 5
+    },
+    {
+      "id": 1097,
+      "name": "Jerry Porter",
+      "era": 2004,
+      "instrument": "Drums",
+      "degree": 7
+    },
+    {
+      "id": 339,
+      "name": "Kenny Barron",
+      "era": 1980,
+      "instrument": "Piano",
+      "degree": 1
+    },
+    {
+      "id": 301,
+      "name": "Bill Evans",
+      "era": 1961,
+      "instrument": "Piano",
+      "degree": 1
+    },
+    {
+      "id": 7,
+      "name": "Alvin Banks",
+      "era": 1949,
+      "instrument": "Bass",
+      "degree": 8
+    },
+    {
+      "id": 1099,
+      "name": "Tony Z",
+      "era": 2004,
+      "instrument": "Organ",
+      "degree": 7
+    },
+    {
+      "id": 432,
+      "name": "Clark Terry",
+      "era": 1954,
+      "instrument": "Trumpet",
+      "degree": 10
+    },
+    {
+      "id": 20,
+      "name": "Curly Russell",
+      "era": 1945,
+      "instrument": "Performer",
+      "degree": 29
+    },
+    {
+      "id": 1,
+      "name": "Max Roach",
+      "era": 1945,
+      "instrument": "Drums",
+      "degree": 39
+    },
+    {
+      "id": 962,
+      "name": "Reuben Phillips",
+      "era": 1946,
+      "instrument": "Alto Saxophone",
+      "degree": 1
+    },
+    {
+      "id": 517,
+      "name": "Joe Harris",
+      "era": 1952,
+      "instrument": "Drums",
+      "degree": 7
+    },
+    {
+      "id": 106,
+      "name": "Louis Hayes",
+      "era": 1956,
+      "instrument": "Drums",
+      "degree": 4
+    },
+    {
+      "id": 178,
+      "name": "Cecil Payne",
+      "era": 1953,
+      "instrument": "Baritone Saxophone",
+      "degree": 11
+    },
+    {
+      "id": 8,
+      "name": "Laverne Barker",
+      "era": 1946,
+      "instrument": "Bass",
+      "degree": 14
+    },
+    {
+      "id": 1181,
+      "name": "Milt Jackson Quintet",
+      "era": 1952,
+      "instrument": null,
+      "degree": 5
+    },
+    {
+      "id": 162,
+      "name": "Ray Brown",
+      "era": 1952,
+      "instrument": "Bass",
+      "degree": 7
+    },
+    {
+      "id": 132,
+      "name": "Freddie Hubbard",
+      "era": 1960,
+      "instrument": "Performer",
+      "degree": 6
+    },
+    {
+      "id": 1095,
+      "name": "Jodi Tack",
+      "era": 2004,
+      "instrument": "Art Direction",
+      "degree": 7
+    },
+    {
+      "id": 262,
+      "name": "Cedar Walton",
+      "era": 1961,
+      "instrument": "Piano",
+      "degree": 2
+    },
+    {
+      "id": 1466,
+      "name": "Addison Farmer",
+      "era": 1958,
+      "instrument": "Bass",
+      "degree": 2
+    },
+    {
+      "id": 114,
+      "name": "Reggie Workman",
+      "era": 1966,
+      "instrument": "Bass",
+      "degree": 4
+    },
+    {
+      "id": 818,
+      "name": "Pierre Lemarchand",
+      "era": 1951,
+      "instrument": "Drums",
+      "degree": 4
+    },
+    {
+      "id": 1042,
+      "name": "Bob Enevoldsen",
+      "era": 1953,
+      "instrument": "Bass",
+      "degree": 1
+    },
+    {
+      "id": 518,
+      "name": "Freddie Redd",
+      "era": 1957,
+      "instrument": "Piano",
+      "degree": 6
+    },
+    {
+      "id": 1299,
+      "name": "Kai Winding",
+      "era": 1954,
+      "instrument": null,
+      "degree": 1
+    },
+    {
+      "id": 830,
+      "name": "Al Hall",
+      "era": 1952,
+      "instrument": "Bass",
+      "degree": 6
+    },
+    {
+      "id": 98,
+      "name": "Benny Golson",
+      "era": 1959,
+      "instrument": "Tenor Saxophone",
+      "degree": 1
+    },
+    {
+      "id": 286,
+      "name": "Sam Jones",
+      "era": 1960,
+      "instrument": "Bass",
+      "degree": 4
+    },
+    {
+      "id": 564,
+      "name": "George Duvivier",
+      "era": 1958,
+      "instrument": "Bass",
+      "degree": 1
+    },
+    {
+      "id": 72,
+      "name": "Neal Hefti",
+      "era": 1952,
+      "instrument": "Arranged By",
+      "degree": 5
+    },
+    {
+      "id": 37,
+      "name": "Gene Ramey",
+      "era": 1949,
+      "instrument": "Bass",
+      "degree": 3
+    },
+    {
+      "id": 1820,
+      "name": "Teddy Kotick",
+      "era": 1956,
+      "instrument": "Bass",
+      "degree": 2
+    },
+    {
+      "id": 1605,
+      "name": "The Gerald Wiggins Trio",
+      "era": 1950,
+      "instrument": null,
+      "degree": 3
+    },
+    {
+      "id": 516,
+      "name": "Stig Gabrielsson",
+      "era": 1957,
+      "instrument": "Baritone Saxophone",
+      "degree": 6
+    },
+    {
+      "id": 1375,
+      "name": "Buddy Catlett",
+      "era": 2001,
+      "instrument": "Bass",
+      "degree": 1
+    },
+    {
+      "id": 1241,
+      "name": "Thad Jones",
+      "era": 1958,
+      "instrument": null,
+      "degree": 5
+    },
+    {
+      "id": 111,
+      "name": "Joe Henderson",
+      "era": 1963,
+      "instrument": "Saxophone",
+      "degree": 1
+    },
+    {
+      "id": 16,
+      "name": "Howard Bowe",
+      "era": 1948,
+      "instrument": "Trombone",
+      "degree": 13
+    },
+    {
+      "id": 1588,
+      "name": "Marshall Allen",
+      "era": 1949,
+      "instrument": "Alto Saxophone",
+      "degree": 6
+    },
+    {
+      "id": 62,
+      "name": "John Lewis",
+      "era": 1949,
+      "instrument": "Performer",
+      "degree": 20
+    },
+    {
+      "id": 123,
+      "name": "Art Farmer",
+      "era": 1957,
+      "instrument": "Trumpet",
+      "degree": 3
+    },
+    {
+      "id": 1418,
+      "name": "Lee Abrams",
+      "era": 1951,
+      "instrument": "Drums",
+      "degree": 2
+    },
+    {
+      "id": 157,
+      "name": "Jackie McLean",
+      "era": 1954,
+      "instrument": "Alto Saxophone",
+      "degree": 10
+    },
+    {
+      "id": 2039,
+      "name": "Vincent Herring",
+      "era": 2002,
+      "instrument": "Alto Saxophone",
+      "degree": 4
+    },
+    {
+      "id": 434,
+      "name": "Johnny Griffin",
+      "era": 1960,
+      "instrument": "Tenor Saxophone",
+      "degree": 1
+    },
+    {
+      "id": 1420,
+      "name": "Franklin Skeete",
+      "era": 1951,
+      "instrument": "Bass",
       "degree": 2
     }
   ],
@@ -89,9 +1342,21 @@
     {
       "source": 1,
       "target": 2,
-      "weight": 3,
+      "weight": 4,
       "sample_releases": [
-        "Horace Silver and the Jazz Messengers"
+        "New Sounds",
+        "Prince Albert",
+        "Bird - Diz - Bud - Max"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 3,
+      "weight": 4,
+      "sample_releases": [
+        "New Sounds",
+        "Prince Albert",
+        "Elysses / Cuddles"
       ]
     },
     {
@@ -99,8 +1364,9 @@
       "target": 4,
       "weight": 4,
       "sample_releases": [
-        "Moanin'",
-        "A Night in Tunisia"
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions",
+        "Modern Jazz Trombones Volume Two"
       ]
     },
     {
@@ -108,40 +1374,83 @@
       "target": 5,
       "weight": 2,
       "sample_releases": [
-        "The Jazz Messengers"
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
       ]
     },
     {
       "source": 1,
       "target": 6,
-      "weight": 3,
+      "weight": 2,
       "sample_releases": [
-        "Mosaic",
-        "Free for All"
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
       ]
     },
     {
       "source": 1,
-      "target": 7,
+      "target": 8,
       "weight": 2,
       "sample_releases": [
-        "A Night at Birdland"
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
       ]
     },
     {
       "source": 1,
-      "target": 11,
-      "weight": 2,
+      "target": 9,
+      "weight": 4,
       "sample_releases": [
-        "Moanin'"
+        "New Sounds",
+        "Prince Albert",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
       ]
     },
     {
       "source": 1,
       "target": 12,
+      "weight": 3,
+      "sample_releases": [
+        "New Sounds",
+        "Prince Albert",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 14,
       "weight": 2,
       "sample_releases": [
-        "Mosaic"
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 16,
+      "weight": 2,
+      "sample_releases": [
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 3,
+      "weight": 3,
+      "sample_releases": [
+        "New Sounds",
+        "Prince Albert",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 4,
+      "weight": 2,
+      "sample_releases": [
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
       ]
     },
     {
@@ -149,7 +1458,183 @@
       "target": 5,
       "weight": 2,
       "sample_releases": [
-        "6 Pieces of Silver"
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 6,
+      "weight": 2,
+      "sample_releases": [
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 7,
+      "weight": 5,
+      "sample_releases": [
+        "New Sounds",
+        "New Sounds From France ",
+        "Just Moody / Star Dust"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 8,
+      "weight": 2,
+      "sample_releases": [
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 9,
+      "weight": 3,
+      "sample_releases": [
+        "New Sounds",
+        "Prince Albert",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 11,
+      "weight": 4,
+      "sample_releases": [
+        "New Sounds",
+        "New Sounds From France ",
+        "Just Moody / Star Dust"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 12,
+      "weight": 3,
+      "sample_releases": [
+        "New Sounds",
+        "Prince Albert",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 13,
+      "weight": 4,
+      "sample_releases": [
+        "New Sounds",
+        "New Sounds From France ",
+        "Just Moody / Star Dust"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 14,
+      "weight": 2,
+      "sample_releases": [
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 16,
+      "weight": 2,
+      "sample_releases": [
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 3,
+      "target": 4,
+      "weight": 4,
+      "sample_releases": [
+        "New Sounds",
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 3,
+      "target": 5,
+      "weight": 2,
+      "sample_releases": [
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 3,
+      "target": 6,
+      "weight": 4,
+      "sample_releases": [
+        "New Sounds",
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 3,
+      "target": 8,
+      "weight": 4,
+      "sample_releases": [
+        "New Sounds",
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 3,
+      "target": 9,
+      "weight": 3,
+      "sample_releases": [
+        "New Sounds",
+        "Prince Albert",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 3,
+      "target": 12,
+      "weight": 3,
+      "sample_releases": [
+        "New Sounds",
+        "Prince Albert",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 3,
+      "target": 14,
+      "weight": 4,
+      "sample_releases": [
+        "New Sounds",
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 3,
+      "target": 15,
+      "weight": 3,
+      "sample_releases": [
+        "New Sounds",
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 3,
+      "target": 16,
+      "weight": 4,
+      "sample_releases": [
+        "New Sounds",
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
       ]
     },
     {
@@ -157,24 +1642,38 @@
       "target": 5,
       "weight": 2,
       "sample_releases": [
-        "Peckin' Time"
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
       ]
     },
     {
       "source": 4,
       "target": 6,
-      "weight": 3,
+      "weight": 4,
       "sample_releases": [
-        "Search for the New Land",
-        "The Sidewinder"
+        "New Sounds",
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
       ]
     },
     {
       "source": 4,
-      "target": 11,
-      "weight": 2,
+      "target": 8,
+      "weight": 4,
       "sample_releases": [
-        "Moanin'"
+        "New Sounds",
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 4,
+      "target": 9,
+      "weight": 6,
+      "sample_releases": [
+        "New Sounds",
+        "Dig / My Old Flame",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
       ]
     },
     {
@@ -182,15 +1681,103 @@
       "target": 12,
       "weight": 2,
       "sample_releases": [
-        "Mosaic"
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
       ]
     },
     {
       "source": 4,
-      "target": 10,
+      "target": 14,
+      "weight": 7,
+      "sample_releases": [
+        "New Sounds",
+        "Dig / My Old Flame",
+        "Musa's Vision / The Thin Man"
+      ]
+    },
+    {
+      "source": 4,
+      "target": 15,
+      "weight": 3,
+      "sample_releases": [
+        "New Sounds",
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 4,
+      "target": 16,
+      "weight": 4,
+      "sample_releases": [
+        "New Sounds",
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 5,
+      "target": 6,
       "weight": 2,
       "sample_releases": [
-        "The Sidewinder"
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 5,
+      "target": 8,
+      "weight": 2,
+      "sample_releases": [
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 5,
+      "target": 9,
+      "weight": 3,
+      "sample_releases": [
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions",
+        "Four Altos"
+      ]
+    },
+    {
+      "source": 5,
+      "target": 12,
+      "weight": 2,
+      "sample_releases": [
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 5,
+      "target": 14,
+      "weight": 2,
+      "sample_releases": [
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 5,
+      "target": 16,
+      "weight": 2,
+      "sample_releases": [
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 6,
+      "target": 8,
+      "weight": 4,
+      "sample_releases": [
+        "New Sounds",
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
       ]
     },
     {
@@ -198,39 +1785,5926 @@
       "target": 9,
       "weight": 2,
       "sample_releases": [
-        "Free for All"
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
       ]
     },
     {
-      "source": 9,
-      "target": 10,
+      "source": 6,
+      "target": 12,
       "weight": 2,
       "sample_releases": [
-        "Breaking Point"
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 6,
+      "target": 14,
+      "weight": 4,
+      "sample_releases": [
+        "New Sounds",
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 6,
+      "target": 15,
+      "weight": 3,
+      "sample_releases": [
+        "New Sounds",
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 6,
+      "target": 16,
+      "weight": 4,
+      "sample_releases": [
+        "New Sounds",
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
       ]
     },
     {
       "source": 7,
-      "target": 5,
-      "weight": 2,
+      "target": 11,
+      "weight": 4,
       "sample_releases": [
-        "'Round About Midnight at the Cafe Bohemia"
+        "New Sounds",
+        "New Sounds From France ",
+        "Just Moody / Star Dust"
+      ]
+    },
+    {
+      "source": 7,
+      "target": 13,
+      "weight": 4,
+      "sample_releases": [
+        "New Sounds",
+        "New Sounds From France ",
+        "Just Moody / Star Dust"
       ]
     },
     {
       "source": 8,
-      "target": 3,
+      "target": 9,
       "weight": 2,
       "sample_releases": [
-        "Sonny Rollins Plus 4"
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 8,
+      "target": 12,
+      "weight": 2,
+      "sample_releases": [
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 8,
+      "target": 14,
+      "weight": 4,
+      "sample_releases": [
+        "New Sounds",
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 8,
+      "target": 15,
+      "weight": 3,
+      "sample_releases": [
+        "New Sounds",
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 8,
+      "target": 16,
+      "weight": 4,
+      "sample_releases": [
+        "New Sounds",
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 9,
+      "target": 12,
+      "weight": 5,
+      "sample_releases": [
+        "New Sounds",
+        "Prince Albert",
+        "Bird At St. Nick's - Volume 3"
+      ]
+    },
+    {
+      "source": 9,
+      "target": 14,
+      "weight": 5,
+      "sample_releases": [
+        "New Sounds",
+        "Dig / My Old Flame",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 9,
+      "target": 16,
+      "weight": 2,
+      "sample_releases": [
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 11,
+      "target": 13,
+      "weight": 5,
+      "sample_releases": [
+        "New Sounds",
+        "New Sounds From France ",
+        "Just Moody / Star Dust"
+      ]
+    },
+    {
+      "source": 12,
+      "target": 14,
+      "weight": 3,
+      "sample_releases": [
+        "New Sounds",
+        "Perkins / Hope / Haig / Bishop",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 12,
+      "target": 16,
+      "weight": 2,
+      "sample_releases": [
+        "New Sounds",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 14,
+      "target": 15,
+      "weight": 3,
+      "sample_releases": [
+        "New Sounds",
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 14,
+      "target": 16,
+      "weight": 4,
+      "sample_releases": [
+        "New Sounds",
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 15,
+      "target": 16,
+      "weight": 3,
+      "sample_releases": [
+        "New Sounds",
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 4,
+      "target": 18,
+      "weight": 3,
+      "sample_releases": [
+        "Wee-Dot",
+        "Now's The Time",
+        "Hymn Of The Orient / Easy Living"
+      ]
+    },
+    {
+      "source": 4,
+      "target": 19,
+      "weight": 3,
+      "sample_releases": [
+        "Wee-Dot",
+        "Now's The Time",
+        "Sweet Juice / The Best Things In Life Are Free"
+      ]
+    },
+    {
+      "source": 4,
+      "target": 20,
+      "weight": 4,
+      "sample_releases": [
+        "Wee-Dot",
+        "Now's The Time",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 4,
+      "target": 21,
+      "weight": 7,
+      "sample_releases": [
+        "Wee-Dot",
+        "Now's The Time",
+        "Safari / Thou Swell"
+      ]
+    },
+    {
+      "source": 18,
+      "target": 19,
+      "weight": 2,
+      "sample_releases": [
+        "Wee-Dot",
+        "Now's The Time"
+      ]
+    },
+    {
+      "source": 18,
+      "target": 20,
+      "weight": 2,
+      "sample_releases": [
+        "Wee-Dot",
+        "Now's The Time"
+      ]
+    },
+    {
+      "source": 18,
+      "target": 21,
+      "weight": 2,
+      "sample_releases": [
+        "Wee-Dot",
+        "Now's The Time"
+      ]
+    },
+    {
+      "source": 19,
+      "target": 20,
+      "weight": 2,
+      "sample_releases": [
+        "Wee-Dot",
+        "Now's The Time"
+      ]
+    },
+    {
+      "source": 19,
+      "target": 21,
+      "weight": 5,
+      "sample_releases": [
+        "Wee-Dot",
+        "Now's The Time",
+        "Roccus / Cheek To Cheek"
+      ]
+    },
+    {
+      "source": 20,
+      "target": 21,
+      "weight": 2,
+      "sample_releases": [
+        "Wee-Dot",
+        "Now's The Time"
+      ]
+    },
+    {
+      "source": 20,
+      "target": 29,
+      "weight": 5,
+      "sample_releases": [
+        "Now's The Time",
+        "Bird - Diz - Bud - Max",
+        "Salt Peanuts / Hot House"
+      ]
+    },
+    {
+      "source": 4,
+      "target": 31,
+      "weight": 2,
+      "sample_releases": [
+        "Gigi Gryce",
+        "Hymn Of The Orient / Easy Living"
+      ]
+    },
+    {
+      "source": 4,
+      "target": 33,
+      "weight": 5,
+      "sample_releases": [
+        "Gigi Gryce",
+        "Opus De Funk / Day In Day Out",
+        "Hymn Of The Orient / Easy Living"
+      ]
+    },
+    {
+      "source": 31,
+      "target": 33,
+      "weight": 3,
+      "sample_releases": [
+        "Gigi Gryce",
+        "Hymn Of The Orient / Easy Living",
+        "When Farmer Met Gryce "
+      ]
+    },
+    {
+      "source": 21,
+      "target": 37,
+      "weight": 3,
+      "sample_releases": [
+        "Safari / Thou Swell",
+        "Roccus / Cheek To Cheek",
+        "Things We Did Last Summer / Lou's Blues"
+      ]
+    },
+    {
+      "source": 21,
+      "target": 33,
+      "weight": 3,
+      "sample_releases": [
+        "Opus De Funk / Day In Day Out",
+        "Sweet Juice / The Best Things In Life Are Free",
+        "When Farmer Met Gryce "
+      ]
+    },
+    {
+      "source": 21,
+      "target": 43,
+      "weight": 3,
+      "sample_releases": [
+        "The Night Has A Thousand Eyes ",
+        "Base On Balls / Stella-Wise",
+        "Enchantment"
+      ]
+    },
+    {
+      "source": 21,
+      "target": 44,
+      "weight": 4,
+      "sample_releases": [
+        "The Night Has A Thousand Eyes ",
+        "Roccus / Cheek To Cheek",
+        "Things We Did Last Summer / Lou's Blues"
+      ]
+    },
+    {
+      "source": 21,
+      "target": 46,
+      "weight": 4,
+      "sample_releases": [
+        "The Night Has A Thousand Eyes ",
+        "Base On Balls / Stella-Wise",
+        "Enchantment"
+      ]
+    },
+    {
+      "source": 21,
+      "target": 47,
+      "weight": 4,
+      "sample_releases": [
+        "The Night Has A Thousand Eyes ",
+        "Hear Me Talkin' To Ya",
+        "Enchantment"
+      ]
+    },
+    {
+      "source": 43,
+      "target": 44,
+      "weight": 6,
+      "sample_releases": [
+        "The Night Has A Thousand Eyes ",
+        "Hard Bop",
+        "After Hours"
+      ]
+    },
+    {
+      "source": 43,
+      "target": 46,
+      "weight": 4,
+      "sample_releases": [
+        "The Night Has A Thousand Eyes ",
+        "Base On Balls / Stella-Wise",
+        "Hard Bop"
+      ]
+    },
+    {
+      "source": 43,
+      "target": 47,
+      "weight": 6,
+      "sample_releases": [
+        "The Night Has A Thousand Eyes ",
+        "Hard Bop",
+        "Enchantment"
+      ]
+    },
+    {
+      "source": 44,
+      "target": 46,
+      "weight": 3,
+      "sample_releases": [
+        "The Night Has A Thousand Eyes ",
+        "Hard Bop",
+        "Oscalypso / Hugore"
+      ]
+    },
+    {
+      "source": 44,
+      "target": 47,
+      "weight": 8,
+      "sample_releases": [
+        "The Night Has A Thousand Eyes ",
+        "Hard Bop",
+        "Lights Out"
+      ]
+    },
+    {
+      "source": 46,
+      "target": 47,
+      "weight": 3,
+      "sample_releases": [
+        "The Night Has A Thousand Eyes ",
+        "Hard Bop",
+        "Enchantment"
+      ]
+    },
+    {
+      "source": 21,
+      "target": 48,
+      "weight": 2,
+      "sample_releases": [
+        "Potter's Luck / Split Kick",
+        "Modern Jazz"
+      ]
+    },
+    {
+      "source": 4,
+      "target": 53,
+      "weight": 5,
+      "sample_releases": [
+        "Modern Jazz",
+        "Dig / My Old Flame",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 4,
+      "target": 57,
+      "weight": 5,
+      "sample_releases": [
+        "Modern Jazz",
+        "Dig / My Old Flame",
+        "Miles Davis In A Blue Mood"
+      ]
+    },
+    {
+      "source": 48,
+      "target": 53,
+      "weight": 2,
+      "sample_releases": [
+        "Modern Jazz",
+        "Elysses / Cuddles"
+      ]
+    },
+    {
+      "source": 53,
+      "target": 57,
+      "weight": 4,
+      "sample_releases": [
+        "Modern Jazz",
+        "Dig / My Old Flame",
+        "Miles Davis In A Blue Mood"
+      ]
+    },
+    {
+      "source": 4,
+      "target": 62,
+      "weight": 3,
+      "sample_releases": [
+        "Hymn Of The Orient / Easy Living",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions",
+        "Modern Jazz Trombones Volume Two"
+      ]
+    },
+    {
+      "source": 18,
+      "target": 33,
+      "weight": 2,
+      "sample_releases": [
+        "Hymn Of The Orient / Easy Living",
+        "Capri / Turnpike"
+      ]
+    },
+    {
+      "source": 18,
+      "target": 62,
+      "weight": 2,
+      "sample_releases": [
+        "Hymn Of The Orient / Easy Living",
+        "Capri / Turnpike"
+      ]
+    },
+    {
+      "source": 33,
+      "target": 62,
+      "weight": 8,
+      "sample_releases": [
+        "Hymn Of The Orient / Easy Living",
+        "Capri / Turnpike",
+        "Love Me Or Leave Me / I Can't Get Started"
+      ]
+    },
+    {
+      "source": 33,
+      "target": 67,
+      "weight": 8,
+      "sample_releases": [
+        "Capri / Turnpike",
+        "The Modern Jazz Quartet 2",
+        "Kenny Clarke"
+      ]
+    },
+    {
+      "source": 33,
+      "target": 69,
+      "weight": 3,
+      "sample_releases": [
+        "Capri / Turnpike",
+        "The Jazz Master Class Series From NYU",
+        "Ray's Idea / I Waited For You"
+      ]
+    },
+    {
+      "source": 33,
+      "target": 70,
+      "weight": 2,
+      "sample_releases": [
+        "Capri / Turnpike",
+        "Ray's Idea / I Waited For You"
+      ]
+    },
+    {
+      "source": 62,
+      "target": 67,
+      "weight": 7,
+      "sample_releases": [
+        "Capri / Turnpike",
+        "Bird - Diz - Bud - Max",
+        "The Modern Jazz Quartet 2"
+      ]
+    },
+    {
+      "source": 62,
+      "target": 70,
+      "weight": 4,
+      "sample_releases": [
+        "Capri / Turnpike",
+        "Elysses / Cuddles",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 67,
+      "target": 70,
+      "weight": 6,
+      "sample_releases": [
+        "Capri / Turnpike",
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1"
+      ]
+    },
+    {
+      "source": 69,
+      "target": 70,
+      "weight": 2,
+      "sample_releases": [
+        "Capri / Turnpike",
+        "Ray's Idea / I Waited For You"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 18,
+      "weight": 8,
+      "sample_releases": [
+        "Clifford Brown With Strings",
+        "Portraits By Clifford Brown",
+        "Plus 4"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 72,
+      "weight": 2,
+      "sample_releases": [
+        "Clifford Brown With Strings",
+        "Portraits By Clifford Brown"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 73,
+      "weight": 9,
+      "sample_releases": [
+        "Clifford Brown With Strings",
+        "Portraits By Clifford Brown",
+        "Plus 4"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 75,
+      "weight": 8,
+      "sample_releases": [
+        "Clifford Brown With Strings",
+        "Portraits By Clifford Brown",
+        "Plus 4"
+      ]
+    },
+    {
+      "source": 18,
+      "target": 72,
+      "weight": 2,
+      "sample_releases": [
+        "Clifford Brown With Strings",
+        "Portraits By Clifford Brown"
+      ]
+    },
+    {
+      "source": 18,
+      "target": 73,
+      "weight": 8,
+      "sample_releases": [
+        "Clifford Brown With Strings",
+        "Portraits By Clifford Brown",
+        "Plus 4"
+      ]
+    },
+    {
+      "source": 18,
+      "target": 75,
+      "weight": 8,
+      "sample_releases": [
+        "Clifford Brown With Strings",
+        "Portraits By Clifford Brown",
+        "Plus 4"
+      ]
+    },
+    {
+      "source": 72,
+      "target": 73,
+      "weight": 2,
+      "sample_releases": [
+        "Clifford Brown With Strings",
+        "Portraits By Clifford Brown"
+      ]
+    },
+    {
+      "source": 72,
+      "target": 75,
+      "weight": 2,
+      "sample_releases": [
+        "Clifford Brown With Strings",
+        "Portraits By Clifford Brown"
+      ]
+    },
+    {
+      "source": 73,
+      "target": 75,
+      "weight": 8,
+      "sample_releases": [
+        "Clifford Brown With Strings",
+        "Portraits By Clifford Brown",
+        "Plus 4"
+      ]
+    },
+    {
+      "source": 88,
+      "target": 89,
+      "weight": 3,
+      "sample_releases": [
+        "A Night In Tunisia",
+        "Introducing Wayne Shorter",
+        "The Vee Jay Years"
+      ]
+    },
+    {
+      "source": 88,
+      "target": 90,
+      "weight": 2,
+      "sample_releases": [
+        "A Night In Tunisia",
+        "Gaza Strip / Reggie Of Chester"
+      ]
+    },
+    {
+      "source": 88,
+      "target": 91,
+      "weight": 2,
+      "sample_releases": [
+        "A Night In Tunisia",
+        "Music To Stop Driving Us Crazy"
+      ]
+    },
+    {
+      "source": 89,
+      "target": 90,
+      "weight": 6,
+      "sample_releases": [
+        "A Night In Tunisia",
+        "The Changing Scene",
+        "Cruisin' The Rhythm Sections"
+      ]
+    },
+    {
+      "source": 89,
+      "target": 91,
+      "weight": 2,
+      "sample_releases": [
+        "A Night In Tunisia",
+        "Oscalypso / Hugore"
+      ]
+    },
+    {
+      "source": 89,
+      "target": 92,
+      "weight": 2,
+      "sample_releases": [
+        "A Night In Tunisia",
+        "Ping Pong Beer / November Afternoon"
+      ]
+    },
+    {
+      "source": 90,
+      "target": 92,
+      "weight": 2,
+      "sample_releases": [
+        "A Night In Tunisia",
+        "Ping Pong Beer / November Afternoon"
+      ]
+    },
+    {
+      "source": 90,
+      "target": 95,
+      "weight": 2,
+      "sample_releases": [
+        "Gaza Strip / Reggie Of Chester",
+        "Cruisin' The Rhythm Sections"
+      ]
+    },
+    {
+      "source": 4,
+      "target": 88,
+      "weight": 2,
+      "sample_releases": [
+        "Music To Stop Driving Us Crazy",
+        "The Vee Jay Years"
+      ]
+    },
+    {
+      "source": 91,
+      "target": 98,
+      "weight": 2,
+      "sample_releases": [
+        "Music To Stop Driving Us Crazy",
+        "Blues March / Moanin'"
+      ]
+    },
+    {
+      "source": 88,
+      "target": 109,
+      "weight": 2,
+      "sample_releases": [
+        "The Rumproller",
+        "Search For The New Land"
+      ]
+    },
+    {
+      "source": 109,
+      "target": 110,
+      "weight": 2,
+      "sample_releases": [
+        "The Rumproller",
+        "Dark Before The Dawn"
+      ]
+    },
+    {
+      "source": 88,
+      "target": 114,
+      "weight": 2,
+      "sample_releases": [
+        "Search For The New Land",
+        "The Best Of Wayne Shorter - The Blue Note Years"
+      ]
+    },
+    {
+      "source": 88,
+      "target": 117,
+      "weight": 2,
+      "sample_releases": [
+        "Search For The New Land",
+        "The Best Of Wayne Shorter - The Blue Note Years"
+      ]
+    },
+    {
+      "source": 88,
+      "target": 118,
+      "weight": 4,
+      "sample_releases": [
+        "Search For The New Land",
+        "Introducing Wayne Shorter",
+        "The Vee Jay Years"
+      ]
+    },
+    {
+      "source": 114,
+      "target": 117,
+      "weight": 2,
+      "sample_releases": [
+        "Search For The New Land",
+        "The Best Of Wayne Shorter - The Blue Note Years"
+      ]
+    },
+    {
+      "source": 114,
+      "target": 118,
+      "weight": 2,
+      "sample_releases": [
+        "Search For The New Land",
+        "The Best Of Wayne Shorter - The Blue Note Years"
+      ]
+    },
+    {
+      "source": 117,
+      "target": 118,
+      "weight": 2,
+      "sample_releases": [
+        "Search For The New Land",
+        "The Best Of Wayne Shorter - The Blue Note Years"
+      ]
+    },
+    {
+      "source": 4,
+      "target": 46,
+      "weight": 2,
+      "sample_releases": [
+        "Base On Balls / Stella-Wise",
+        "Remember / Dig Dis"
+      ]
+    },
+    {
+      "source": 21,
+      "target": 123,
+      "weight": 3,
+      "sample_releases": [
+        "Base On Balls / Stella-Wise",
+        "Speculation",
+        "When Farmer Met Gryce "
+      ]
+    },
+    {
+      "source": 4,
+      "target": 89,
+      "weight": 2,
+      "sample_releases": [
+        "Remember / Dig Dis",
+        "The Vee Jay Years"
+      ]
+    },
+    {
+      "source": 4,
+      "target": 128,
+      "weight": 2,
+      "sample_releases": [
+        "Remember / Dig Dis",
+        "The Vee Jay Years"
+      ]
+    },
+    {
+      "source": 46,
+      "target": 89,
+      "weight": 5,
+      "sample_releases": [
+        "Remember / Dig Dis",
+        "The Turnaround",
+        "The Changing Scene"
+      ]
+    },
+    {
+      "source": 89,
+      "target": 128,
+      "weight": 6,
+      "sample_releases": [
+        "Remember / Dig Dis",
+        "Introducing Wayne Shorter",
+        "The Vee Jay Years"
+      ]
+    },
+    {
+      "source": 46,
+      "target": 130,
+      "weight": 2,
+      "sample_releases": [
+        "The Turnaround",
+        "Hard Bop"
+      ]
+    },
+    {
+      "source": 46,
+      "target": 132,
+      "weight": 2,
+      "sample_releases": [
+        "The Turnaround",
+        "The Changing Scene"
+      ]
+    },
+    {
+      "source": 89,
+      "target": 132,
+      "weight": 3,
+      "sample_releases": [
+        "The Turnaround",
+        "The Changing Scene",
+        "The Blues And The Abstract Truth #1"
+      ]
+    },
+    {
+      "source": 44,
+      "target": 67,
+      "weight": 2,
+      "sample_releases": [
+        "Hard Bop",
+        "When Farmer Met Gryce "
+      ]
+    },
+    {
+      "source": 44,
+      "target": 142,
+      "weight": 2,
+      "sample_releases": [
+        "Hard Bop",
+        "All-Star Sextets"
+      ]
+    },
+    {
+      "source": 46,
+      "target": 67,
+      "weight": 2,
+      "sample_releases": [
+        "Hard Bop",
+        "Groovin'"
+      ]
+    },
+    {
+      "source": 46,
+      "target": 88,
+      "weight": 2,
+      "sample_releases": [
+        "Hard Bop",
+        "Monday Night At Birdland / Life Is A Many Splendored Gig"
+      ]
+    },
+    {
+      "source": 47,
+      "target": 67,
+      "weight": 2,
+      "sample_releases": [
+        "Hard Bop",
+        "Hear Me Talkin' To Ya"
+      ]
+    },
+    {
+      "source": 67,
+      "target": 142,
+      "weight": 5,
+      "sample_releases": [
+        "Hard Bop",
+        "Bird - Diz - Bud - Max",
+        "Jazz Studio 1"
+      ]
+    },
+    {
+      "source": 46,
+      "target": 148,
+      "weight": 2,
+      "sample_releases": [
+        "Monday Night At Birdland / Life Is A Many Splendored Gig",
+        "Oscalypso / Hugore"
+      ]
+    },
+    {
+      "source": 88,
+      "target": 148,
+      "weight": 2,
+      "sample_releases": [
+        "Monday Night At Birdland / Life Is A Many Splendored Gig",
+        "The Best Of Wayne Shorter - The Blue Note Years"
+      ]
+    },
+    {
+      "source": 4,
+      "target": 157,
+      "weight": 3,
+      "sample_releases": [
+        "Dig / My Old Flame",
+        "Miles Davis In A Blue Mood",
+        "With Sonny Rollins Volume Two"
+      ]
+    },
+    {
+      "source": 9,
+      "target": 53,
+      "weight": 4,
+      "sample_releases": [
+        "Dig / My Old Flame",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions",
+        "Miles Davis In A Blue Mood"
+      ]
+    },
+    {
+      "source": 9,
+      "target": 57,
+      "weight": 3,
+      "sample_releases": [
+        "Dig / My Old Flame",
+        "Miles Davis In A Blue Mood",
+        "With Sonny Rollins Volume Two"
+      ]
+    },
+    {
+      "source": 9,
+      "target": 157,
+      "weight": 3,
+      "sample_releases": [
+        "Dig / My Old Flame",
+        "Miles Davis In A Blue Mood",
+        "With Sonny Rollins Volume Two"
+      ]
+    },
+    {
+      "source": 14,
+      "target": 53,
+      "weight": 4,
+      "sample_releases": [
+        "Dig / My Old Flame",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions",
+        "Miles Davis In A Blue Mood"
+      ]
+    },
+    {
+      "source": 14,
+      "target": 57,
+      "weight": 3,
+      "sample_releases": [
+        "Dig / My Old Flame",
+        "Miles Davis In A Blue Mood",
+        "With Sonny Rollins Volume Two"
+      ]
+    },
+    {
+      "source": 14,
+      "target": 157,
+      "weight": 3,
+      "sample_releases": [
+        "Dig / My Old Flame",
+        "Miles Davis In A Blue Mood",
+        "With Sonny Rollins Volume Two"
+      ]
+    },
+    {
+      "source": 53,
+      "target": 157,
+      "weight": 3,
+      "sample_releases": [
+        "Dig / My Old Flame",
+        "Miles Davis In A Blue Mood",
+        "With Sonny Rollins Volume Two"
+      ]
+    },
+    {
+      "source": 57,
+      "target": 157,
+      "weight": 3,
+      "sample_releases": [
+        "Dig / My Old Flame",
+        "Miles Davis In A Blue Mood",
+        "With Sonny Rollins Volume Two"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 53,
+      "weight": 4,
+      "sample_releases": [
+        "Plus 4",
+        "Tour De Force",
+        "Elysses / Cuddles"
+      ]
+    },
+    {
+      "source": 53,
+      "target": 73,
+      "weight": 2,
+      "sample_releases": [
+        "Plus 4",
+        "Tour De Force"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 176,
+      "weight": 3,
+      "sample_releases": [
+        "Tour De Force",
+        "I'll Remember April / Fuguetta",
+        "Howard McGhee - Introducing The Kenny Drew Trio"
+      ]
+    },
+    {
+      "source": 67,
+      "target": 89,
+      "weight": 4,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1",
+        "Hear Me Talkin' To Ya"
+      ]
+    },
+    {
+      "source": 67,
+      "target": 101,
+      "weight": 2,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1"
+      ]
+    },
+    {
+      "source": 67,
+      "target": 177,
+      "weight": 3,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1",
+        "Hear Me Talkin' To Ya"
+      ]
+    },
+    {
+      "source": 67,
+      "target": 178,
+      "weight": 3,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1",
+        "The Ernie Wilkins - Kenny Clarke Septet Vol. 1"
+      ]
+    },
+    {
+      "source": 67,
+      "target": 181,
+      "weight": 2,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1"
+      ]
+    },
+    {
+      "source": 67,
+      "target": 184,
+      "weight": 4,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1",
+        "Here Comes Frank Foster / George Wallington Showcase"
+      ]
+    },
+    {
+      "source": 67,
+      "target": 185,
+      "weight": 3,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1",
+        "Hear Me Talkin' To Ya"
+      ]
+    },
+    {
+      "source": 70,
+      "target": 89,
+      "weight": 3,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1",
+        "Groovin'"
+      ]
+    },
+    {
+      "source": 70,
+      "target": 101,
+      "weight": 2,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1"
+      ]
+    },
+    {
+      "source": 70,
+      "target": 177,
+      "weight": 2,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1"
+      ]
+    },
+    {
+      "source": 70,
+      "target": 178,
+      "weight": 3,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1",
+        "New Trends Of Jazz (Vol. II)"
+      ]
+    },
+    {
+      "source": 70,
+      "target": 181,
+      "weight": 2,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1"
+      ]
+    },
+    {
+      "source": 70,
+      "target": 184,
+      "weight": 2,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1"
+      ]
+    },
+    {
+      "source": 70,
+      "target": 185,
+      "weight": 2,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1"
+      ]
+    },
+    {
+      "source": 89,
+      "target": 101,
+      "weight": 2,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1"
+      ]
+    },
+    {
+      "source": 89,
+      "target": 177,
+      "weight": 3,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1",
+        "Hear Me Talkin' To Ya"
+      ]
+    },
+    {
+      "source": 89,
+      "target": 178,
+      "weight": 2,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1"
+      ]
+    },
+    {
+      "source": 89,
+      "target": 181,
+      "weight": 2,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1"
+      ]
+    },
+    {
+      "source": 89,
+      "target": 184,
+      "weight": 2,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1"
+      ]
+    },
+    {
+      "source": 89,
+      "target": 185,
+      "weight": 3,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1",
+        "Hear Me Talkin' To Ya"
+      ]
+    },
+    {
+      "source": 101,
+      "target": 177,
+      "weight": 2,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1"
+      ]
+    },
+    {
+      "source": 101,
+      "target": 178,
+      "weight": 2,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1"
+      ]
+    },
+    {
+      "source": 101,
+      "target": 181,
+      "weight": 2,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1"
+      ]
+    },
+    {
+      "source": 101,
+      "target": 184,
+      "weight": 3,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1",
+        "Complete 1958-1962 Recordings"
+      ]
+    },
+    {
+      "source": 101,
+      "target": 185,
+      "weight": 2,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1"
+      ]
+    },
+    {
+      "source": 177,
+      "target": 178,
+      "weight": 2,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1"
+      ]
+    },
+    {
+      "source": 177,
+      "target": 181,
+      "weight": 2,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1"
+      ]
+    },
+    {
+      "source": 177,
+      "target": 184,
+      "weight": 2,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1"
+      ]
+    },
+    {
+      "source": 177,
+      "target": 185,
+      "weight": 3,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1",
+        "Hear Me Talkin' To Ya"
+      ]
+    },
+    {
+      "source": 178,
+      "target": 181,
+      "weight": 2,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1"
+      ]
+    },
+    {
+      "source": 178,
+      "target": 184,
+      "weight": 2,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1"
+      ]
+    },
+    {
+      "source": 178,
+      "target": 185,
+      "weight": 2,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1"
+      ]
+    },
+    {
+      "source": 181,
+      "target": 184,
+      "weight": 2,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1"
+      ]
+    },
+    {
+      "source": 181,
+      "target": 185,
+      "weight": 2,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1"
+      ]
+    },
+    {
+      "source": 184,
+      "target": 185,
+      "weight": 2,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley",
+        "Julian \"Cannonball\" Adderley - Vol. 1"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 67,
+      "weight": 3,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley - Vol. 1",
+        "Bird - Diz - Bud - Max",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 70,
+      "weight": 7,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley - Vol. 1",
+        "Elysses / Cuddles",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 178,
+      "weight": 2,
+      "sample_releases": [
+        "Julian \"Cannonball\" Adderley - Vol. 1",
+        "New Trends Of Jazz (Vol. II)"
+      ]
+    },
+    {
+      "source": 3,
+      "target": 201,
+      "weight": 2,
+      "sample_releases": [
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 3,
+      "target": 204,
+      "weight": 2,
+      "sample_releases": [
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 4,
+      "target": 201,
+      "weight": 2,
+      "sample_releases": [
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 4,
+      "target": 204,
+      "weight": 2,
+      "sample_releases": [
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 6,
+      "target": 201,
+      "weight": 2,
+      "sample_releases": [
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 6,
+      "target": 204,
+      "weight": 2,
+      "sample_releases": [
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 8,
+      "target": 201,
+      "weight": 2,
+      "sample_releases": [
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 8,
+      "target": 204,
+      "weight": 2,
+      "sample_releases": [
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 14,
+      "target": 201,
+      "weight": 2,
+      "sample_releases": [
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 14,
+      "target": 204,
+      "weight": 2,
+      "sample_releases": [
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 15,
+      "target": 201,
+      "weight": 2,
+      "sample_releases": [
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 15,
+      "target": 204,
+      "weight": 2,
+      "sample_releases": [
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 16,
+      "target": 201,
+      "weight": 2,
+      "sample_releases": [
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 16,
+      "target": 204,
+      "weight": 2,
+      "sample_releases": [
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 201,
+      "target": 204,
+      "weight": 2,
+      "sample_releases": [
+        "Musa's Vision / The Thin Man",
+        "Groove Street / Bop Alley"
+      ]
+    },
+    {
+      "source": 3,
+      "target": 44,
+      "weight": 2,
+      "sample_releases": [
+        "The Swingers",
+        "Kenny Dorham & Friends"
+      ]
+    },
+    {
+      "source": 3,
+      "target": 95,
+      "weight": 2,
+      "sample_releases": [
+        "The Swingers",
+        "Kenny Dorham & Friends"
+      ]
+    },
+    {
+      "source": 3,
+      "target": 176,
+      "weight": 2,
+      "sample_releases": [
+        "The Swingers",
+        "Kenny Dorham & Friends"
+      ]
+    },
+    {
+      "source": 3,
+      "target": 234,
+      "weight": 2,
+      "sample_releases": [
+        "The Swingers",
+        "Kenny Dorham & Friends"
+      ]
+    },
+    {
+      "source": 44,
+      "target": 95,
+      "weight": 2,
+      "sample_releases": [
+        "The Swingers",
+        "Kenny Dorham & Friends"
+      ]
+    },
+    {
+      "source": 44,
+      "target": 176,
+      "weight": 2,
+      "sample_releases": [
+        "The Swingers",
+        "Kenny Dorham & Friends"
+      ]
+    },
+    {
+      "source": 44,
+      "target": 234,
+      "weight": 2,
+      "sample_releases": [
+        "The Swingers",
+        "Kenny Dorham & Friends"
+      ]
+    },
+    {
+      "source": 95,
+      "target": 176,
+      "weight": 2,
+      "sample_releases": [
+        "The Swingers",
+        "Kenny Dorham & Friends"
+      ]
+    },
+    {
+      "source": 95,
+      "target": 234,
+      "weight": 3,
+      "sample_releases": [
+        "The Swingers",
+        "Kenny Dorham & Friends",
+        "Cruisin' The Rhythm Sections"
+      ]
+    },
+    {
+      "source": 176,
+      "target": 234,
+      "weight": 2,
+      "sample_releases": [
+        "The Swingers",
+        "Kenny Dorham & Friends"
+      ]
+    },
+    {
+      "source": 88,
+      "target": 128,
+      "weight": 2,
+      "sample_releases": [
+        "Introducing Wayne Shorter",
+        "The Vee Jay Years"
+      ]
+    },
+    {
+      "source": 88,
+      "target": 251,
+      "weight": 2,
+      "sample_releases": [
+        "Introducing Wayne Shorter",
+        "The Vee Jay Years"
+      ]
+    },
+    {
+      "source": 89,
+      "target": 118,
+      "weight": 3,
+      "sample_releases": [
+        "Introducing Wayne Shorter",
+        "The Vee Jay Years",
+        "Alternate Takes Of Introducing Wayne Shorter & Go"
+      ]
+    },
+    {
+      "source": 89,
+      "target": 251,
+      "weight": 3,
+      "sample_releases": [
+        "Introducing Wayne Shorter",
+        "The Vee Jay Years",
+        "Walkin' / All Blues"
+      ]
+    },
+    {
+      "source": 118,
+      "target": 128,
+      "weight": 2,
+      "sample_releases": [
+        "Introducing Wayne Shorter",
+        "The Vee Jay Years"
+      ]
+    },
+    {
+      "source": 118,
+      "target": 251,
+      "weight": 2,
+      "sample_releases": [
+        "Introducing Wayne Shorter",
+        "The Vee Jay Years"
+      ]
+    },
+    {
+      "source": 128,
+      "target": 251,
+      "weight": 3,
+      "sample_releases": [
+        "Introducing Wayne Shorter",
+        "The Vee Jay Years",
+        "Walkin' / All Blues"
+      ]
+    },
+    {
+      "source": 117,
+      "target": 269,
+      "weight": 2,
+      "sample_releases": [
+        "The Best Of Wayne Shorter - The Blue Note Years",
+        "Foresight"
+      ]
+    },
+    {
+      "source": 117,
+      "target": 272,
+      "weight": 2,
+      "sample_releases": [
+        "The Best Of Wayne Shorter - The Blue Note Years",
+        "Foresight"
+      ]
+    },
+    {
+      "source": 117,
+      "target": 277,
+      "weight": 2,
+      "sample_releases": [
+        "The Best Of Wayne Shorter - The Blue Note Years",
+        "Herbie Hancock / McCoy Tyner"
+      ]
+    },
+    {
+      "source": 117,
+      "target": 279,
+      "weight": 2,
+      "sample_releases": [
+        "The Best Of Wayne Shorter - The Blue Note Years",
+        "Foresight"
+      ]
+    },
+    {
+      "source": 132,
+      "target": 266,
+      "weight": 2,
+      "sample_releases": [
+        "The Best Of Wayne Shorter - The Blue Note Years",
+        "Blue Frenzy"
+      ]
+    },
+    {
+      "source": 132,
+      "target": 273,
+      "weight": 2,
+      "sample_releases": [
+        "The Best Of Wayne Shorter - The Blue Note Years",
+        "Blue Frenzy"
+      ]
+    },
+    {
+      "source": 132,
+      "target": 277,
+      "weight": 3,
+      "sample_releases": [
+        "The Best Of Wayne Shorter - The Blue Note Years",
+        "One Mint Julep",
+        "The Changing Scene"
+      ]
+    },
+    {
+      "source": 266,
+      "target": 273,
+      "weight": 2,
+      "sample_releases": [
+        "The Best Of Wayne Shorter - The Blue Note Years",
+        "Blue Frenzy"
+      ]
+    },
+    {
+      "source": 269,
+      "target": 272,
+      "weight": 2,
+      "sample_releases": [
+        "The Best Of Wayne Shorter - The Blue Note Years",
+        "Foresight"
+      ]
+    },
+    {
+      "source": 269,
+      "target": 279,
+      "weight": 2,
+      "sample_releases": [
+        "The Best Of Wayne Shorter - The Blue Note Years",
+        "Foresight"
+      ]
+    },
+    {
+      "source": 272,
+      "target": 279,
+      "weight": 2,
+      "sample_releases": [
+        "The Best Of Wayne Shorter - The Blue Note Years",
+        "Foresight"
+      ]
+    },
+    {
+      "source": 90,
+      "target": 132,
+      "weight": 2,
+      "sample_releases": [
+        "The Changing Scene",
+        "Cry Me Not / Osie Mae"
+      ]
+    },
+    {
+      "source": 89,
+      "target": 301,
+      "weight": 3,
+      "sample_releases": [
+        "The Blues And The Abstract Truth #1",
+        "Ping Pong Beer / November Afternoon",
+        "All-Star Sextets"
+      ]
+    },
+    {
+      "source": 111,
+      "target": 269,
+      "weight": 2,
+      "sample_releases": [
+        "Black Miracle",
+        "Foresight"
+      ]
+    },
+    {
+      "source": 44,
+      "target": 89,
+      "weight": 5,
+      "sample_releases": [
+        "Blue Red, Part 1 / Blue Red, Part 2",
+        "Red Garland's Piano",
+        "After Hours"
+      ]
+    },
+    {
+      "source": 44,
+      "target": 420,
+      "weight": 2,
+      "sample_releases": [
+        "Blue Red, Part 1 / Blue Red, Part 2",
+        "Red Garland's Piano"
+      ]
+    },
+    {
+      "source": 44,
+      "target": 423,
+      "weight": 2,
+      "sample_releases": [
+        "Blue Red, Part 1 / Blue Red, Part 2",
+        "Red Garland's Piano"
+      ]
+    },
+    {
+      "source": 89,
+      "target": 420,
+      "weight": 2,
+      "sample_releases": [
+        "Blue Red, Part 1 / Blue Red, Part 2",
+        "Red Garland's Piano"
+      ]
+    },
+    {
+      "source": 89,
+      "target": 423,
+      "weight": 2,
+      "sample_releases": [
+        "Blue Red, Part 1 / Blue Red, Part 2",
+        "Red Garland's Piano"
+      ]
+    },
+    {
+      "source": 420,
+      "target": 423,
+      "weight": 2,
+      "sample_releases": [
+        "Blue Red, Part 1 / Blue Red, Part 2",
+        "Red Garland's Piano"
+      ]
+    },
+    {
+      "source": 90,
+      "target": 128,
+      "weight": 2,
+      "sample_releases": [
+        "Cruisin' The Rhythm Sections",
+        "Action"
+      ]
+    },
+    {
+      "source": 95,
+      "target": 434,
+      "weight": 2,
+      "sample_releases": [
+        "Cruisin' The Rhythm Sections",
+        "The Chicago Sound"
+      ]
+    },
+    {
+      "source": 47,
+      "target": 89,
+      "weight": 2,
+      "sample_releases": [
+        "Ping Pong Beer / November Afternoon",
+        "Hear Me Talkin' To Ya"
+      ]
+    },
+    {
+      "source": 89,
+      "target": 442,
+      "weight": 2,
+      "sample_releases": [
+        "Ping Pong Beer / November Afternoon",
+        "After Hours"
+      ]
+    },
+    {
+      "source": 92,
+      "target": 442,
+      "weight": 3,
+      "sample_releases": [
+        "Ping Pong Beer / November Afternoon",
+        "The Best Of Charlie Mingus",
+        "Modern Jazz Survey 2 / Baritones & French Horns"
+      ]
+    },
+    {
+      "source": 51,
+      "target": 89,
+      "weight": 2,
+      "sample_releases": [
+        "Walkin' / All Blues",
+        "Kenny Burrell, John Coltrane"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 20,
+      "weight": 8,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Bird - Diz - Bud - Max",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 62,
+      "weight": 4,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Bird - Diz - Bud - Max",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 461,
+      "weight": 3,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions",
+        "New Trends Of Jazz (Vol. II)"
+      ]
+    },
+    {
+      "source": 3,
+      "target": 20,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 3,
+      "target": 53,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 3,
+      "target": 62,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 3,
+      "target": 70,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 3,
+      "target": 461,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 20,
+      "target": 48,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 20,
+      "target": 53,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 20,
+      "target": 62,
+      "weight": 3,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Bird - Diz - Bud - Max",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 20,
+      "target": 70,
+      "weight": 4,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions",
+        "I'll Remember April / Fuguetta"
+      ]
+    },
+    {
+      "source": 20,
+      "target": 458,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 20,
+      "target": 461,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 20,
+      "target": 462,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 20,
+      "target": 463,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 20,
+      "target": 465,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 20,
+      "target": 468,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 20,
+      "target": 469,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 48,
+      "target": 458,
+      "weight": 3,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle",
+        "Afternoon In Paris / Cuddles"
+      ]
+    },
+    {
+      "source": 48,
+      "target": 462,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 48,
+      "target": 463,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 48,
+      "target": 465,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 48,
+      "target": 468,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 48,
+      "target": 469,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 53,
+      "target": 62,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 53,
+      "target": 70,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 53,
+      "target": 461,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 62,
+      "target": 461,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 70,
+      "target": 461,
+      "weight": 3,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions",
+        "New Trends Of Jazz (Vol. II)"
+      ]
+    },
+    {
+      "source": 458,
+      "target": 462,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 458,
+      "target": 463,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 458,
+      "target": 465,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 458,
+      "target": 468,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 458,
+      "target": 469,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 462,
+      "target": 463,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 462,
+      "target": 465,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 462,
+      "target": 468,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 462,
+      "target": 469,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 463,
+      "target": 465,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 463,
+      "target": 468,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 463,
+      "target": 469,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 465,
+      "target": 468,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 465,
+      "target": 469,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 468,
+      "target": 469,
+      "weight": 2,
+      "sample_releases": [
+        "Elysses / Cuddles",
+        "Michelle"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 486,
+      "weight": 3,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max (Vol. 2)",
+        "Bird - Diz - Bud - Max Vol. 1",
+        "Bird - Diz - Bud - Max"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 487,
+      "weight": 4,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max (Vol. 2)",
+        "Bird - Diz - Bud - Max Vol. 1",
+        "Bird - Diz - Bud - Max"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 488,
+      "weight": 6,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max (Vol. 2)",
+        "Bird - Diz - Bud - Max Vol. 1",
+        "Bird - Diz - Bud - Max"
+      ]
+    },
+    {
+      "source": 486,
+      "target": 487,
+      "weight": 3,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max (Vol. 2)",
+        "Bird - Diz - Bud - Max Vol. 1",
+        "Bird - Diz - Bud - Max"
+      ]
+    },
+    {
+      "source": 486,
+      "target": 488,
+      "weight": 3,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max (Vol. 2)",
+        "Bird - Diz - Bud - Max Vol. 1",
+        "Bird - Diz - Bud - Max"
+      ]
+    },
+    {
+      "source": 487,
+      "target": 488,
+      "weight": 4,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max (Vol. 2)",
+        "Bird - Diz - Bud - Max Vol. 1",
+        "Bird - Diz - Bud - Max"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 29,
+      "weight": 3,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "What More Can A Woman Do? / I'd Rather Have A Memory Than A Dream",
+        "How High The Moon / Ko Ko"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 57,
+      "weight": 3,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "How High The Moon / Ko Ko",
+        "Lee Konitz with Miles Davis"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 506,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 509,
+      "weight": 3,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions",
+        "Modern Jazz Trombones Volume Two"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 20,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 62,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 67,
+      "weight": 3,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "New Sounds In Modern Music - Volume 5",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 142,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "New Sounds In Modern Music - Volume 5"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 162,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "New Sounds In Modern Music - Volume 5"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 487,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "New Sounds In Modern Music - Volume 5"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 488,
+      "weight": 3,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "New Sounds In Modern Music - Volume 5",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 506,
+      "weight": 3,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "New Sounds In Modern Music - Volume 5",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 509,
+      "weight": 3,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "New Sounds In Modern Music - Volume 5",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 20,
+      "target": 57,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "How High The Moon / Ko Ko"
+      ]
+    },
+    {
+      "source": 20,
+      "target": 67,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 20,
+      "target": 487,
+      "weight": 3,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "Salt Peanuts / Hot House",
+        "How High The Moon / Ko Ko"
+      ]
+    },
+    {
+      "source": 20,
+      "target": 488,
+      "weight": 3,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions",
+        "Dexter Digs In / Long, Tall, Dexter"
+      ]
+    },
+    {
+      "source": 20,
+      "target": 506,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 20,
+      "target": 509,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 29,
+      "target": 57,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "How High The Moon / Ko Ko"
+      ]
+    },
+    {
+      "source": 29,
+      "target": 487,
+      "weight": 3,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "Salt Peanuts / Hot House",
+        "How High The Moon / Ko Ko"
+      ]
+    },
+    {
+      "source": 29,
+      "target": 488,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "The Master Saxes - Club Convert Vol.1 : 48/61"
+      ]
+    },
+    {
+      "source": 57,
+      "target": 487,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "How High The Moon / Ko Ko"
+      ]
+    },
+    {
+      "source": 62,
+      "target": 488,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 62,
+      "target": 506,
+      "weight": 6,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "The Modern Jazz Quartet 2",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 62,
+      "target": 509,
+      "weight": 3,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions",
+        "Modern Jazz Trombones Volume Two"
+      ]
+    },
+    {
+      "source": 67,
+      "target": 162,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "New Sounds In Modern Music - Volume 5"
+      ]
+    },
+    {
+      "source": 67,
+      "target": 487,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "New Sounds In Modern Music - Volume 5"
+      ]
+    },
+    {
+      "source": 67,
+      "target": 488,
+      "weight": 3,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "New Sounds In Modern Music - Volume 5",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 67,
+      "target": 506,
+      "weight": 8,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "The Modern Jazz Quartet 2",
+        "Kenny Clarke"
+      ]
+    },
+    {
+      "source": 67,
+      "target": 509,
+      "weight": 3,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "New Sounds In Modern Music - Volume 5",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 142,
+      "target": 162,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "New Sounds In Modern Music - Volume 5"
+      ]
+    },
+    {
+      "source": 142,
+      "target": 487,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "New Sounds In Modern Music - Volume 5"
+      ]
+    },
+    {
+      "source": 142,
+      "target": 488,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "New Sounds In Modern Music - Volume 5"
+      ]
+    },
+    {
+      "source": 142,
+      "target": 506,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "New Sounds In Modern Music - Volume 5"
+      ]
+    },
+    {
+      "source": 142,
+      "target": 509,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "New Sounds In Modern Music - Volume 5"
+      ]
+    },
+    {
+      "source": 162,
+      "target": 487,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "New Sounds In Modern Music - Volume 5"
+      ]
+    },
+    {
+      "source": 162,
+      "target": 488,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "New Sounds In Modern Music - Volume 5"
+      ]
+    },
+    {
+      "source": 162,
+      "target": 506,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "New Sounds In Modern Music - Volume 5"
+      ]
+    },
+    {
+      "source": 162,
+      "target": 509,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "New Sounds In Modern Music - Volume 5"
+      ]
+    },
+    {
+      "source": 487,
+      "target": 506,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "New Sounds In Modern Music - Volume 5"
+      ]
+    },
+    {
+      "source": 487,
+      "target": 509,
+      "weight": 2,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "New Sounds In Modern Music - Volume 5"
+      ]
+    },
+    {
+      "source": 488,
+      "target": 506,
+      "weight": 3,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "New Sounds In Modern Music - Volume 5",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 488,
+      "target": 509,
+      "weight": 3,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "New Sounds In Modern Music - Volume 5",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 506,
+      "target": 509,
+      "weight": 3,
+      "sample_releases": [
+        "Bird - Diz - Bud - Max",
+        "New Sounds In Modern Music - Volume 5",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 513,
+      "weight": 5,
+      "sample_releases": [
+        "Mildama",
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 18,
+      "target": 513,
+      "weight": 5,
+      "sample_releases": [
+        "Mildama",
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 73,
+      "target": 513,
+      "weight": 5,
+      "sample_releases": [
+        "Mildama",
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 75,
+      "target": 513,
+      "weight": 5,
+      "sample_releases": [
+        "Mildama",
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 9,
+      "target": 516,
+      "weight": 3,
+      "sample_releases": [
+        "Tommy Potter Sextet",
+        "Tommy Potter Sextet",
+        "Don't Blame Me"
+      ]
+    },
+    {
+      "source": 9,
+      "target": 517,
+      "weight": 3,
+      "sample_releases": [
+        "Tommy Potter Sextet",
+        "Tommy Potter Sextet",
+        "Don't Blame Me"
+      ]
+    },
+    {
+      "source": 9,
+      "target": 518,
+      "weight": 3,
+      "sample_releases": [
+        "Tommy Potter Sextet",
+        "Tommy Potter Sextet",
+        "Don't Blame Me"
+      ]
+    },
+    {
+      "source": 9,
+      "target": 519,
+      "weight": 3,
+      "sample_releases": [
+        "Tommy Potter Sextet",
+        "Tommy Potter Sextet",
+        "Don't Blame Me"
+      ]
+    },
+    {
+      "source": 9,
+      "target": 520,
+      "weight": 3,
+      "sample_releases": [
+        "Tommy Potter Sextet",
+        "Tommy Potter Sextet",
+        "Don't Blame Me"
+      ]
+    },
+    {
+      "source": 9,
+      "target": 521,
+      "weight": 3,
+      "sample_releases": [
+        "Tommy Potter Sextet",
+        "Tommy Potter Sextet",
+        "Don't Blame Me"
+      ]
+    },
+    {
+      "source": 516,
+      "target": 517,
+      "weight": 3,
+      "sample_releases": [
+        "Tommy Potter Sextet",
+        "Tommy Potter Sextet",
+        "Don't Blame Me"
+      ]
+    },
+    {
+      "source": 516,
+      "target": 518,
+      "weight": 3,
+      "sample_releases": [
+        "Tommy Potter Sextet",
+        "Tommy Potter Sextet",
+        "Don't Blame Me"
+      ]
+    },
+    {
+      "source": 516,
+      "target": 519,
+      "weight": 3,
+      "sample_releases": [
+        "Tommy Potter Sextet",
+        "Tommy Potter Sextet",
+        "Don't Blame Me"
+      ]
+    },
+    {
+      "source": 516,
+      "target": 520,
+      "weight": 3,
+      "sample_releases": [
+        "Tommy Potter Sextet",
+        "Tommy Potter Sextet",
+        "Don't Blame Me"
+      ]
+    },
+    {
+      "source": 516,
+      "target": 521,
+      "weight": 3,
+      "sample_releases": [
+        "Tommy Potter Sextet",
+        "Tommy Potter Sextet",
+        "Don't Blame Me"
+      ]
+    },
+    {
+      "source": 517,
+      "target": 518,
+      "weight": 3,
+      "sample_releases": [
+        "Tommy Potter Sextet",
+        "Tommy Potter Sextet",
+        "Don't Blame Me"
+      ]
+    },
+    {
+      "source": 517,
+      "target": 519,
+      "weight": 3,
+      "sample_releases": [
+        "Tommy Potter Sextet",
+        "Tommy Potter Sextet",
+        "Don't Blame Me"
+      ]
+    },
+    {
+      "source": 517,
+      "target": 520,
+      "weight": 3,
+      "sample_releases": [
+        "Tommy Potter Sextet",
+        "Tommy Potter Sextet",
+        "Don't Blame Me"
+      ]
+    },
+    {
+      "source": 517,
+      "target": 521,
+      "weight": 3,
+      "sample_releases": [
+        "Tommy Potter Sextet",
+        "Tommy Potter Sextet",
+        "Don't Blame Me"
+      ]
+    },
+    {
+      "source": 518,
+      "target": 519,
+      "weight": 3,
+      "sample_releases": [
+        "Tommy Potter Sextet",
+        "Tommy Potter Sextet",
+        "Don't Blame Me"
+      ]
+    },
+    {
+      "source": 518,
+      "target": 520,
+      "weight": 3,
+      "sample_releases": [
+        "Tommy Potter Sextet",
+        "Tommy Potter Sextet",
+        "Don't Blame Me"
+      ]
+    },
+    {
+      "source": 518,
+      "target": 521,
+      "weight": 3,
+      "sample_releases": [
+        "Tommy Potter Sextet",
+        "Tommy Potter Sextet",
+        "Don't Blame Me"
+      ]
+    },
+    {
+      "source": 519,
+      "target": 520,
+      "weight": 3,
+      "sample_releases": [
+        "Tommy Potter Sextet",
+        "Tommy Potter Sextet",
+        "Don't Blame Me"
+      ]
+    },
+    {
+      "source": 519,
+      "target": 521,
+      "weight": 3,
+      "sample_releases": [
+        "Tommy Potter Sextet",
+        "Tommy Potter Sextet",
+        "Don't Blame Me"
+      ]
+    },
+    {
+      "source": 520,
+      "target": 521,
+      "weight": 3,
+      "sample_releases": [
+        "Tommy Potter Sextet",
+        "Tommy Potter Sextet",
+        "Don't Blame Me"
+      ]
+    },
+    {
+      "source": 9,
+      "target": 302,
+      "weight": 2,
+      "sample_releases": [
+        "Bird At St. Nick's - Volume 3",
+        "Piano Moderns"
+      ]
+    },
+    {
+      "source": 12,
+      "target": 29,
+      "weight": 2,
+      "sample_releases": [
+        "Bird At St. Nick's - Volume 3",
+        "Salt Peanuts / Hot House"
+      ]
+    },
+    {
+      "source": 12,
+      "target": 302,
+      "weight": 2,
+      "sample_releases": [
+        "Bird At St. Nick's - Volume 3",
+        "Piano Moderns"
+      ]
+    },
+    {
+      "source": 9,
+      "target": 534,
+      "weight": 2,
+      "sample_releases": [
+        "Directly From The Half Note",
+        "Four Altos"
+      ]
+    },
+    {
+      "source": 44,
+      "target": 564,
+      "weight": 2,
+      "sample_releases": [
+        "Stone Blues \u2022 Looking Ahead \u2022 Honi Gordon Sings",
+        "Bud Powell With George Duvivier & Art Taylor"
+      ]
+    },
+    {
+      "source": 33,
+      "target": 595,
+      "weight": 2,
+      "sample_releases": [
+        "Love Me Or Leave Me / I Can't Get Started",
+        "Grand Encounter"
+      ]
+    },
+    {
+      "source": 33,
+      "target": 597,
+      "weight": 2,
+      "sample_releases": [
+        "Love Me Or Leave Me / I Can't Get Started",
+        "Grand Encounter"
+      ]
+    },
+    {
+      "source": 33,
+      "target": 598,
+      "weight": 2,
+      "sample_releases": [
+        "Love Me Or Leave Me / I Can't Get Started",
+        "Grand Encounter"
+      ]
+    },
+    {
+      "source": 62,
+      "target": 595,
+      "weight": 3,
+      "sample_releases": [
+        "Love Me Or Leave Me / I Can't Get Started",
+        "Grand Encounter",
+        "Grand Encounter"
+      ]
+    },
+    {
+      "source": 62,
+      "target": 597,
+      "weight": 2,
+      "sample_releases": [
+        "Love Me Or Leave Me / I Can't Get Started",
+        "Grand Encounter"
+      ]
+    },
+    {
+      "source": 62,
+      "target": 598,
+      "weight": 3,
+      "sample_releases": [
+        "Love Me Or Leave Me / I Can't Get Started",
+        "Grand Encounter",
+        "The John Lewis Piano Vol. 2"
+      ]
+    },
+    {
+      "source": 595,
+      "target": 597,
+      "weight": 2,
+      "sample_releases": [
+        "Love Me Or Leave Me / I Can't Get Started",
+        "Grand Encounter"
+      ]
+    },
+    {
+      "source": 595,
+      "target": 598,
+      "weight": 2,
+      "sample_releases": [
+        "Love Me Or Leave Me / I Can't Get Started",
+        "Grand Encounter"
+      ]
+    },
+    {
+      "source": 597,
+      "target": 598,
+      "weight": 2,
+      "sample_releases": [
+        "Love Me Or Leave Me / I Can't Get Started",
+        "Grand Encounter"
+      ]
+    },
+    {
+      "source": 33,
+      "target": 506,
+      "weight": 5,
+      "sample_releases": [
+        "The Modern Jazz Quartet 2",
+        "Kenny Clarke",
+        "Tahiti / What's New"
+      ]
+    },
+    {
+      "source": 654,
+      "target": 657,
+      "weight": 2,
+      "sample_releases": [
+        "Iambic Pentameter / Robbin's Nest",
+        "Delooney / In The Anna"
+      ]
+    },
+    {
+      "source": 67,
+      "target": 241,
+      "weight": 2,
+      "sample_releases": [
+        "Jazz Studio 1",
+        "Here Comes Frank Foster / George Wallington Showcase"
+      ]
+    },
+    {
+      "source": 21,
+      "target": 67,
+      "weight": 4,
+      "sample_releases": [
+        "Hear Me Talkin' To Ya",
+        "Groovin'",
+        "Speculation"
+      ]
+    },
+    {
+      "source": 21,
+      "target": 89,
+      "weight": 2,
+      "sample_releases": [
+        "Hear Me Talkin' To Ya",
+        "Groovin'"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 432,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 686,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 687,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 689,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 691,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 696,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 18,
+      "target": 432,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 18,
+      "target": 686,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 18,
+      "target": 687,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 18,
+      "target": 689,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 18,
+      "target": 691,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 18,
+      "target": 696,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 73,
+      "target": 432,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 73,
+      "target": 686,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 73,
+      "target": 687,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 73,
+      "target": 689,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 73,
+      "target": 691,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 73,
+      "target": 696,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 75,
+      "target": 432,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 75,
+      "target": 686,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 75,
+      "target": 687,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 75,
+      "target": 689,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 75,
+      "target": 691,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 75,
+      "target": 696,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 432,
+      "target": 513,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 432,
+      "target": 686,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 432,
+      "target": 687,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 432,
+      "target": 689,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 432,
+      "target": 691,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 432,
+      "target": 696,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 513,
+      "target": 686,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 513,
+      "target": 687,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 513,
+      "target": 689,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 513,
+      "target": 691,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 513,
+      "target": 696,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 686,
+      "target": 687,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 686,
+      "target": 689,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 686,
+      "target": 691,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 686,
+      "target": 696,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 687,
+      "target": 689,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 687,
+      "target": 691,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 687,
+      "target": 696,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 689,
+      "target": 691,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 689,
+      "target": 696,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 691,
+      "target": 696,
+      "weight": 2,
+      "sample_releases": [
+        "Guest Session Featuring Dinah Washington",
+        "Guest In The House"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 719,
+      "weight": 2,
+      "sample_releases": [
+        "Brown And Roach Incorporated",
+        "Sweet Clifford"
+      ]
+    },
+    {
+      "source": 18,
+      "target": 719,
+      "weight": 2,
+      "sample_releases": [
+        "Brown And Roach Incorporated",
+        "Sweet Clifford"
+      ]
+    },
+    {
+      "source": 73,
+      "target": 719,
+      "weight": 2,
+      "sample_releases": [
+        "Brown And Roach Incorporated",
+        "Sweet Clifford"
+      ]
+    },
+    {
+      "source": 75,
+      "target": 719,
+      "weight": 2,
+      "sample_releases": [
+        "Brown And Roach Incorporated",
+        "Sweet Clifford"
+      ]
+    },
+    {
+      "source": 513,
+      "target": 719,
+      "weight": 2,
+      "sample_releases": [
+        "Brown And Roach Incorporated",
+        "Sweet Clifford"
+      ]
+    },
+    {
+      "source": 4,
+      "target": 165,
+      "weight": 2,
+      "sample_releases": [
+        "Soulful Drum Battles",
+        "Art Blakey And Elvin Jones"
+      ]
+    },
+    {
+      "source": 783,
+      "target": 785,
+      "weight": 2,
+      "sample_releases": [
+        "Super Bass",
+        "Interpretations Of Monk Vol. 1"
+      ]
+    },
+    {
+      "source": 67,
+      "target": 95,
+      "weight": 3,
+      "sample_releases": [
+        "Sing Or Play",
+        "Sing Or Play",
+        "Sing Or Play"
+      ]
+    },
+    {
+      "source": 67,
+      "target": 786,
+      "weight": 3,
+      "sample_releases": [
+        "Sing Or Play",
+        "Sing Or Play",
+        "Sing Or Play"
+      ]
+    },
+    {
+      "source": 67,
+      "target": 787,
+      "weight": 3,
+      "sample_releases": [
+        "Sing Or Play",
+        "Sing Or Play",
+        "Sing Or Play"
+      ]
+    },
+    {
+      "source": 67,
+      "target": 788,
+      "weight": 5,
+      "sample_releases": [
+        "Sing Or Play",
+        "Sing Or Play",
+        "Sing Or Play"
+      ]
+    },
+    {
+      "source": 67,
+      "target": 790,
+      "weight": 3,
+      "sample_releases": [
+        "Sing Or Play",
+        "Sing Or Play",
+        "Sing Or Play"
+      ]
+    },
+    {
+      "source": 67,
+      "target": 792,
+      "weight": 3,
+      "sample_releases": [
+        "Sing Or Play",
+        "Sing Or Play",
+        "Sing Or Play"
+      ]
+    },
+    {
+      "source": 95,
+      "target": 786,
+      "weight": 3,
+      "sample_releases": [
+        "Sing Or Play",
+        "Sing Or Play",
+        "Sing Or Play"
+      ]
+    },
+    {
+      "source": 95,
+      "target": 787,
+      "weight": 3,
+      "sample_releases": [
+        "Sing Or Play",
+        "Sing Or Play",
+        "Sing Or Play"
+      ]
+    },
+    {
+      "source": 95,
+      "target": 788,
+      "weight": 3,
+      "sample_releases": [
+        "Sing Or Play",
+        "Sing Or Play",
+        "Sing Or Play"
+      ]
+    },
+    {
+      "source": 95,
+      "target": 790,
+      "weight": 3,
+      "sample_releases": [
+        "Sing Or Play",
+        "Sing Or Play",
+        "Sing Or Play"
+      ]
+    },
+    {
+      "source": 95,
+      "target": 792,
+      "weight": 3,
+      "sample_releases": [
+        "Sing Or Play",
+        "Sing Or Play",
+        "Sing Or Play"
+      ]
+    },
+    {
+      "source": 786,
+      "target": 787,
+      "weight": 3,
+      "sample_releases": [
+        "Sing Or Play",
+        "Sing Or Play",
+        "Sing Or Play"
+      ]
+    },
+    {
+      "source": 786,
+      "target": 788,
+      "weight": 3,
+      "sample_releases": [
+        "Sing Or Play",
+        "Sing Or Play",
+        "Sing Or Play"
+      ]
+    },
+    {
+      "source": 786,
+      "target": 790,
+      "weight": 3,
+      "sample_releases": [
+        "Sing Or Play",
+        "Sing Or Play",
+        "Sing Or Play"
+      ]
+    },
+    {
+      "source": 786,
+      "target": 792,
+      "weight": 3,
+      "sample_releases": [
+        "Sing Or Play",
+        "Sing Or Play",
+        "Sing Or Play"
+      ]
+    },
+    {
+      "source": 787,
+      "target": 788,
+      "weight": 3,
+      "sample_releases": [
+        "Sing Or Play",
+        "Sing Or Play",
+        "Sing Or Play"
+      ]
+    },
+    {
+      "source": 787,
+      "target": 790,
+      "weight": 3,
+      "sample_releases": [
+        "Sing Or Play",
+        "Sing Or Play",
+        "Sing Or Play"
+      ]
+    },
+    {
+      "source": 787,
+      "target": 792,
+      "weight": 3,
+      "sample_releases": [
+        "Sing Or Play",
+        "Sing Or Play",
+        "Sing Or Play"
+      ]
+    },
+    {
+      "source": 788,
+      "target": 790,
+      "weight": 3,
+      "sample_releases": [
+        "Sing Or Play",
+        "Sing Or Play",
+        "Sing Or Play"
+      ]
+    },
+    {
+      "source": 788,
+      "target": 792,
+      "weight": 3,
+      "sample_releases": [
+        "Sing Or Play",
+        "Sing Or Play",
+        "Sing Or Play"
+      ]
+    },
+    {
+      "source": 790,
+      "target": 792,
+      "weight": 3,
+      "sample_releases": [
+        "Sing Or Play",
+        "Sing Or Play",
+        "Sing Or Play"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 817,
+      "weight": 2,
+      "sample_releases": [
+        "I Cover The Waterfront / Moody's Mode",
+        "Bird Song / This Is Always"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 818,
+      "weight": 2,
+      "sample_releases": [
+        "I Cover The Waterfront / Moody's Mode",
+        "Bird Song / This Is Always"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 819,
+      "weight": 3,
+      "sample_releases": [
+        "I Cover The Waterfront / Moody's Mode",
+        "Bird Song / This Is Always",
+        "Delooney / In The Anna"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 820,
+      "weight": 2,
+      "sample_releases": [
+        "I Cover The Waterfront / Moody's Mode",
+        "Bird Song / This Is Always"
+      ]
+    },
+    {
+      "source": 817,
+      "target": 818,
+      "weight": 2,
+      "sample_releases": [
+        "I Cover The Waterfront / Moody's Mode",
+        "Bird Song / This Is Always"
+      ]
+    },
+    {
+      "source": 817,
+      "target": 819,
+      "weight": 2,
+      "sample_releases": [
+        "I Cover The Waterfront / Moody's Mode",
+        "Bird Song / This Is Always"
+      ]
+    },
+    {
+      "source": 817,
+      "target": 820,
+      "weight": 3,
+      "sample_releases": [
+        "I Cover The Waterfront / Moody's Mode",
+        "Bird Song / This Is Always",
+        "Blues March / Moanin'"
+      ]
+    },
+    {
+      "source": 818,
+      "target": 819,
+      "weight": 2,
+      "sample_releases": [
+        "I Cover The Waterfront / Moody's Mode",
+        "Bird Song / This Is Always"
+      ]
+    },
+    {
+      "source": 818,
+      "target": 820,
+      "weight": 2,
+      "sample_releases": [
+        "I Cover The Waterfront / Moody's Mode",
+        "Bird Song / This Is Always"
+      ]
+    },
+    {
+      "source": 819,
+      "target": 820,
+      "weight": 2,
+      "sample_releases": [
+        "I Cover The Waterfront / Moody's Mode",
+        "Bird Song / This Is Always"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 830,
+      "weight": 2,
+      "sample_releases": [
+        "New Sounds In Modern Music - Volume 5",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 67,
+      "target": 830,
+      "weight": 2,
+      "sample_releases": [
+        "New Sounds In Modern Music - Volume 5",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 142,
+      "target": 517,
+      "weight": 2,
+      "sample_releases": [
+        "New Sounds In Modern Music - Volume 5",
+        "Complete 1958-1962 Recordings"
+      ]
+    },
+    {
+      "source": 488,
+      "target": 830,
+      "weight": 2,
+      "sample_releases": [
+        "New Sounds In Modern Music - Volume 5",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 506,
+      "target": 830,
+      "weight": 2,
+      "sample_releases": [
+        "New Sounds In Modern Music - Volume 5",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 509,
+      "target": 830,
+      "weight": 2,
+      "sample_releases": [
+        "New Sounds In Modern Music - Volume 5",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 657,
+      "weight": 2,
+      "sample_releases": [
+        "New Sounds From France ",
+        "Delooney / In The Anna"
       ]
     },
     {
       "source": 7,
-      "target": 8,
+      "target": 657,
       "weight": 2,
       "sample_releases": [
-        "Kenny Dorham Quintet"
+        "New Sounds From France ",
+        "Delooney / In The Anna"
+      ]
+    },
+    {
+      "source": 874,
+      "target": 875,
+      "weight": 2,
+      "sample_releases": [
+        "Unlucky Woman / McShann's Boogie-Blues",
+        "Unlucky Woman / McShann's Boogie-Blues"
+      ]
+    },
+    {
+      "source": 874,
+      "target": 876,
+      "weight": 2,
+      "sample_releases": [
+        "Unlucky Woman / McShann's Boogie-Blues",
+        "Unlucky Woman / McShann's Boogie-Blues"
+      ]
+    },
+    {
+      "source": 875,
+      "target": 876,
+      "weight": 2,
+      "sample_releases": [
+        "Unlucky Woman / McShann's Boogie-Blues",
+        "Unlucky Woman / McShann's Boogie-Blues"
+      ]
+    },
+    {
+      "source": 6,
+      "target": 830,
+      "weight": 2,
+      "sample_releases": [
+        "Sings The Blues",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 8,
+      "target": 962,
+      "weight": 2,
+      "sample_releases": [
+        "I'm So Lonesome I Could Cry / I Don't Know What I'd Do Without You",
+        "Manhattan 3:00 A.M."
+      ]
+    },
+    {
+      "source": 12,
+      "target": 20,
+      "weight": 2,
+      "sample_releases": [
+        "Salt Peanuts / Hot House",
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions"
+      ]
+    },
+    {
+      "source": 12,
+      "target": 48,
+      "weight": 2,
+      "sample_releases": [
+        "Bopelbath / Pinhead",
+        "Skull Buster / Ante-Room"
+      ]
+    },
+    {
+      "source": 12,
+      "target": 787,
+      "weight": 2,
+      "sample_releases": [
+        "Bopelbath / Pinhead",
+        "Skull Buster / Ante-Room"
+      ]
+    },
+    {
+      "source": 12,
+      "target": 1037,
+      "weight": 2,
+      "sample_releases": [
+        "Bopelbath / Pinhead",
+        "Skull Buster / Ante-Room"
+      ]
+    },
+    {
+      "source": 48,
+      "target": 787,
+      "weight": 2,
+      "sample_releases": [
+        "Bopelbath / Pinhead",
+        "Skull Buster / Ante-Room"
+      ]
+    },
+    {
+      "source": 48,
+      "target": 1037,
+      "weight": 2,
+      "sample_releases": [
+        "Bopelbath / Pinhead",
+        "Skull Buster / Ante-Room"
+      ]
+    },
+    {
+      "source": 787,
+      "target": 1037,
+      "weight": 2,
+      "sample_releases": [
+        "Bopelbath / Pinhead",
+        "Skull Buster / Ante-Room"
+      ]
+    },
+    {
+      "source": 1042,
+      "target": 1044,
+      "weight": 2,
+      "sample_releases": [
+        "How About You / Sanders Meanders",
+        " Best From The West Vol. 1 Modern Sounds From California A Musical Blind Fold Test / Best From The West Vol. 2 Modern Sounds From California A Musical Blindfold Test"
+      ]
+    },
+    {
+      "source": 1064,
+      "target": 1094,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1064,
+      "target": 1095,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1064,
+      "target": 1097,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1064,
+      "target": 1098,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1064,
+      "target": 1099,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1064,
+      "target": 1100,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1064,
+      "target": 1101,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1094,
+      "target": 1095,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1094,
+      "target": 1097,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1094,
+      "target": 1098,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1094,
+      "target": 1099,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1094,
+      "target": 1100,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1094,
+      "target": 1101,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1095,
+      "target": 1097,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1095,
+      "target": 1098,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1095,
+      "target": 1099,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1095,
+      "target": 1100,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1095,
+      "target": 1101,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1097,
+      "target": 1098,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1097,
+      "target": 1099,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1097,
+      "target": 1100,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1097,
+      "target": 1101,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1098,
+      "target": 1099,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1098,
+      "target": 1100,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1098,
+      "target": 1101,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1099,
+      "target": 1100,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1099,
+      "target": 1101,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 1100,
+      "target": 1101,
+      "weight": 2,
+      "sample_releases": [
+        "Live At Legends - January 9, 2004",
+        "Live At Legends - January 10, 2004"
+      ]
+    },
+    {
+      "source": 4,
+      "target": 70,
+      "weight": 4,
+      "sample_releases": [
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions",
+        "Modern Jazz Trombones Volume Two",
+        "Howard McGhee - Introducing The Kenny Drew Trio"
+      ]
+    },
+    {
+      "source": 4,
+      "target": 509,
+      "weight": 2,
+      "sample_releases": [
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions",
+        "Modern Jazz Trombones Volume Two"
+      ]
+    },
+    {
+      "source": 5,
+      "target": 390,
+      "weight": 3,
+      "sample_releases": [
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions",
+        "Modern Jazz Survey 2 / Baritones & French Horns",
+        "Early Byrd"
+      ]
+    },
+    {
+      "source": 9,
+      "target": 62,
+      "weight": 2,
+      "sample_releases": [
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions",
+        "Modern Jazz Trombones Volume Two"
+      ]
+    },
+    {
+      "source": 9,
+      "target": 70,
+      "weight": 2,
+      "sample_releases": [
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions",
+        "Modern Jazz Trombones Volume Two"
+      ]
+    },
+    {
+      "source": 9,
+      "target": 509,
+      "weight": 2,
+      "sample_releases": [
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions",
+        "Modern Jazz Trombones Volume Two"
+      ]
+    },
+    {
+      "source": 70,
+      "target": 488,
+      "weight": 2,
+      "sample_releases": [
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions",
+        "New Trends Of Jazz (Vol. II)"
+      ]
+    },
+    {
+      "source": 70,
+      "target": 509,
+      "weight": 2,
+      "sample_releases": [
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions",
+        "Modern Jazz Trombones Volume Two"
+      ]
+    },
+    {
+      "source": 461,
+      "target": 488,
+      "weight": 2,
+      "sample_releases": [
+        "The Complete Savoy Recordings - Plus Other Small Group Sessions",
+        "New Trends Of Jazz (Vol. II)"
+      ]
+    },
+    {
+      "source": 19,
+      "target": 37,
+      "weight": 2,
+      "sample_releases": [
+        "Roccus / Cheek To Cheek",
+        "Things We Did Last Summer / Lou's Blues"
+      ]
+    },
+    {
+      "source": 19,
+      "target": 44,
+      "weight": 2,
+      "sample_releases": [
+        "Roccus / Cheek To Cheek",
+        "Things We Did Last Summer / Lou's Blues"
+      ]
+    },
+    {
+      "source": 37,
+      "target": 44,
+      "weight": 2,
+      "sample_releases": [
+        "Roccus / Cheek To Cheek",
+        "Things We Did Last Summer / Lou's Blues"
+      ]
+    },
+    {
+      "source": 19,
+      "target": 33,
+      "weight": 4,
+      "sample_releases": [
+        "Tahiti / What's New",
+        "Lillie / Bags' Groove",
+        "Don't Get Around Much Any More / On The Scene"
+      ]
+    },
+    {
+      "source": 19,
+      "target": 62,
+      "weight": 3,
+      "sample_releases": [
+        "Tahiti / What's New",
+        "Lillie / Bags' Groove",
+        "Don't Get Around Much Any More / On The Scene"
+      ]
+    },
+    {
+      "source": 19,
+      "target": 67,
+      "weight": 3,
+      "sample_releases": [
+        "Tahiti / What's New",
+        "Lillie / Bags' Groove",
+        "Don't Get Around Much Any More / On The Scene"
+      ]
+    },
+    {
+      "source": 19,
+      "target": 506,
+      "weight": 3,
+      "sample_releases": [
+        "Tahiti / What's New",
+        "Lillie / Bags' Groove",
+        "Don't Get Around Much Any More / On The Scene"
+      ]
+    },
+    {
+      "source": 19,
+      "target": 1181,
+      "weight": 3,
+      "sample_releases": [
+        "Tahiti / What's New",
+        "Lillie / Bags' Groove",
+        "Don't Get Around Much Any More / On The Scene"
+      ]
+    },
+    {
+      "source": 33,
+      "target": 1181,
+      "weight": 3,
+      "sample_releases": [
+        "Tahiti / What's New",
+        "Lillie / Bags' Groove",
+        "Don't Get Around Much Any More / On The Scene"
+      ]
+    },
+    {
+      "source": 62,
+      "target": 1181,
+      "weight": 3,
+      "sample_releases": [
+        "Tahiti / What's New",
+        "Lillie / Bags' Groove",
+        "Don't Get Around Much Any More / On The Scene"
+      ]
+    },
+    {
+      "source": 67,
+      "target": 1181,
+      "weight": 3,
+      "sample_releases": [
+        "Tahiti / What's New",
+        "Lillie / Bags' Groove",
+        "Don't Get Around Much Any More / On The Scene"
+      ]
+    },
+    {
+      "source": 506,
+      "target": 1181,
+      "weight": 3,
+      "sample_releases": [
+        "Tahiti / What's New",
+        "Lillie / Bags' Groove",
+        "Don't Get Around Much Any More / On The Scene"
+      ]
+    },
+    {
+      "source": 43,
+      "target": 165,
+      "weight": 2,
+      "sample_releases": [
+        "Olio",
+        "After Hours"
+      ]
+    },
+    {
+      "source": 43,
+      "target": 442,
+      "weight": 4,
+      "sample_releases": [
+        "Olio",
+        "The Best Of Charlie Mingus",
+        "After Hours"
+      ]
+    },
+    {
+      "source": 43,
+      "target": 1241,
+      "weight": 2,
+      "sample_releases": [
+        "Olio",
+        "After Hours"
+      ]
+    },
+    {
+      "source": 43,
+      "target": 1242,
+      "weight": 2,
+      "sample_releases": [
+        "Olio",
+        "After Hours"
+      ]
+    },
+    {
+      "source": 43,
+      "target": 1243,
+      "weight": 3,
+      "sample_releases": [
+        "Olio",
+        "After Hours",
+        "Modern Jazz Survey 2 / Baritones & French Horns"
+      ]
+    },
+    {
+      "source": 165,
+      "target": 442,
+      "weight": 2,
+      "sample_releases": [
+        "Olio",
+        "After Hours"
+      ]
+    },
+    {
+      "source": 165,
+      "target": 1241,
+      "weight": 2,
+      "sample_releases": [
+        "Olio",
+        "After Hours"
+      ]
+    },
+    {
+      "source": 165,
+      "target": 1242,
+      "weight": 2,
+      "sample_releases": [
+        "Olio",
+        "After Hours"
+      ]
+    },
+    {
+      "source": 165,
+      "target": 1243,
+      "weight": 2,
+      "sample_releases": [
+        "Olio",
+        "After Hours"
+      ]
+    },
+    {
+      "source": 442,
+      "target": 1241,
+      "weight": 2,
+      "sample_releases": [
+        "Olio",
+        "After Hours"
+      ]
+    },
+    {
+      "source": 442,
+      "target": 1242,
+      "weight": 2,
+      "sample_releases": [
+        "Olio",
+        "After Hours"
+      ]
+    },
+    {
+      "source": 442,
+      "target": 1243,
+      "weight": 3,
+      "sample_releases": [
+        "Olio",
+        "After Hours",
+        "Modern Jazz Survey 2 / Baritones & French Horns"
+      ]
+    },
+    {
+      "source": 1241,
+      "target": 1242,
+      "weight": 2,
+      "sample_releases": [
+        "Olio",
+        "After Hours"
+      ]
+    },
+    {
+      "source": 1241,
+      "target": 1243,
+      "weight": 2,
+      "sample_releases": [
+        "Olio",
+        "After Hours"
+      ]
+    },
+    {
+      "source": 1242,
+      "target": 1243,
+      "weight": 2,
+      "sample_releases": [
+        "Olio",
+        "After Hours"
+      ]
+    },
+    {
+      "source": 43,
+      "target": 92,
+      "weight": 2,
+      "sample_releases": [
+        "The Best Of Charlie Mingus",
+        "Modern Jazz Survey 2 / Baritones & French Horns"
+      ]
+    },
+    {
+      "source": 43,
+      "target": 157,
+      "weight": 4,
+      "sample_releases": [
+        "The Best Of Charlie Mingus",
+        "Lights Out",
+        "Lights Out Vol. 1"
+      ]
+    },
+    {
+      "source": 43,
+      "target": 89,
+      "weight": 2,
+      "sample_releases": [
+        "After Hours",
+        "Four Classic Albums"
+      ]
+    },
+    {
+      "source": 89,
+      "target": 1255,
+      "weight": 3,
+      "sample_releases": [
+        "After Hours",
+        "Action",
+        "Kenny Burrell, John Coltrane"
+      ]
+    },
+    {
+      "source": 43,
+      "target": 557,
+      "weight": 3,
+      "sample_releases": [
+        "Lights Out",
+        "Lights Out Vol. 1",
+        "Lights Out Vol. 2"
+      ]
+    },
+    {
+      "source": 43,
+      "target": 1274,
+      "weight": 3,
+      "sample_releases": [
+        "Lights Out",
+        "Lights Out Vol. 1",
+        "Lights Out Vol. 2"
+      ]
+    },
+    {
+      "source": 44,
+      "target": 157,
+      "weight": 3,
+      "sample_releases": [
+        "Lights Out",
+        "Lights Out Vol. 1",
+        "Lights Out Vol. 2"
+      ]
+    },
+    {
+      "source": 44,
+      "target": 557,
+      "weight": 3,
+      "sample_releases": [
+        "Lights Out",
+        "Lights Out Vol. 1",
+        "Lights Out Vol. 2"
+      ]
+    },
+    {
+      "source": 44,
+      "target": 1274,
+      "weight": 3,
+      "sample_releases": [
+        "Lights Out",
+        "Lights Out Vol. 1",
+        "Lights Out Vol. 2"
+      ]
+    },
+    {
+      "source": 47,
+      "target": 157,
+      "weight": 3,
+      "sample_releases": [
+        "Lights Out",
+        "Lights Out Vol. 1",
+        "Lights Out Vol. 2"
+      ]
+    },
+    {
+      "source": 47,
+      "target": 557,
+      "weight": 3,
+      "sample_releases": [
+        "Lights Out",
+        "Lights Out Vol. 1",
+        "Lights Out Vol. 2"
+      ]
+    },
+    {
+      "source": 47,
+      "target": 1274,
+      "weight": 3,
+      "sample_releases": [
+        "Lights Out",
+        "Lights Out Vol. 1",
+        "Lights Out Vol. 2"
+      ]
+    },
+    {
+      "source": 157,
+      "target": 557,
+      "weight": 3,
+      "sample_releases": [
+        "Lights Out",
+        "Lights Out Vol. 1",
+        "Lights Out Vol. 2"
+      ]
+    },
+    {
+      "source": 157,
+      "target": 1274,
+      "weight": 3,
+      "sample_releases": [
+        "Lights Out",
+        "Lights Out Vol. 1",
+        "Lights Out Vol. 2"
+      ]
+    },
+    {
+      "source": 557,
+      "target": 1274,
+      "weight": 3,
+      "sample_releases": [
+        "Lights Out",
+        "Lights Out Vol. 1",
+        "Lights Out Vol. 2"
+      ]
+    },
+    {
+      "source": 178,
+      "target": 488,
+      "weight": 2,
+      "sample_releases": [
+        "New Trends Of Jazz (Vol. II)",
+        "The Master Saxes - Club Convert Vol.1 : 48/61"
+      ]
+    },
+    {
+      "source": 70,
+      "target": 1299,
+      "weight": 2,
+      "sample_releases": [
+        "Jay & Kai Vol. 3",
+        "Jay & Kai Vol. 2"
+      ]
+    },
+    {
+      "source": 1369,
+      "target": 1370,
+      "weight": 2,
+      "sample_releases": [
+        "Blue Skies",
+        "The Professor"
+      ]
+    },
+    {
+      "source": 184,
+      "target": 390,
+      "weight": 2,
+      "sample_releases": [
+        "Complete 1958-1962 Recordings",
+        "Early Byrd"
+      ]
+    },
+    {
+      "source": 1375,
+      "target": 1384,
+      "weight": 2,
+      "sample_releases": [
+        "Complete 1958-1962 Recordings",
+        "South American Cookin' / The Magnificent Trombone Of Curtis Fuller"
+      ]
+    },
+    {
+      "source": 109,
+      "target": 262,
+      "weight": 3,
+      "sample_releases": [
+        "Cedar Walton Plays",
+        "Willow Weep for Me / Book's Bossa",
+        "Willow Weep for Me / Book's Bossa"
+      ]
+    },
+    {
+      "source": 109,
+      "target": 269,
+      "weight": 3,
+      "sample_releases": [
+        "Cedar Walton Plays",
+        "Willow Weep for Me / Book's Bossa",
+        "Willow Weep for Me / Book's Bossa"
+      ]
+    },
+    {
+      "source": 262,
+      "target": 269,
+      "weight": 4,
+      "sample_releases": [
+        "Cedar Walton Plays",
+        "Willow Weep for Me / Book's Bossa",
+        "Willow Weep for Me / Book's Bossa"
+      ]
+    },
+    {
+      "source": 128,
+      "target": 1418,
+      "weight": 3,
+      "sample_releases": [
+        "Born To Be Blue / Where Or When",
+        "Summertime / Crazy He Calls Me",
+        "Blue Moon / Goodbye"
+      ]
+    },
+    {
+      "source": 128,
+      "target": 1420,
+      "weight": 2,
+      "sample_releases": [
+        "Summertime / Crazy He Calls Me",
+        "Blue Moon / Goodbye"
+      ]
+    },
+    {
+      "source": 1418,
+      "target": 1420,
+      "weight": 2,
+      "sample_releases": [
+        "Summertime / Crazy He Calls Me",
+        "Blue Moon / Goodbye"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 1445,
+      "weight": 2,
+      "sample_releases": [
+        "I'll Remember April / Fuguetta",
+        "Howard McGhee - Introducing The Kenny Drew Trio"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 1447,
+      "weight": 2,
+      "sample_releases": [
+        "I'll Remember April / Fuguetta",
+        "Howard McGhee - Introducing The Kenny Drew Trio"
+      ]
+    },
+    {
+      "source": 20,
+      "target": 176,
+      "weight": 2,
+      "sample_releases": [
+        "I'll Remember April / Fuguetta",
+        "Howard McGhee - Introducing The Kenny Drew Trio"
+      ]
+    },
+    {
+      "source": 20,
+      "target": 1445,
+      "weight": 2,
+      "sample_releases": [
+        "I'll Remember April / Fuguetta",
+        "Howard McGhee - Introducing The Kenny Drew Trio"
+      ]
+    },
+    {
+      "source": 20,
+      "target": 1447,
+      "weight": 2,
+      "sample_releases": [
+        "I'll Remember April / Fuguetta",
+        "Howard McGhee - Introducing The Kenny Drew Trio"
+      ]
+    },
+    {
+      "source": 70,
+      "target": 176,
+      "weight": 2,
+      "sample_releases": [
+        "I'll Remember April / Fuguetta",
+        "Howard McGhee - Introducing The Kenny Drew Trio"
+      ]
+    },
+    {
+      "source": 70,
+      "target": 1445,
+      "weight": 2,
+      "sample_releases": [
+        "I'll Remember April / Fuguetta",
+        "Howard McGhee - Introducing The Kenny Drew Trio"
+      ]
+    },
+    {
+      "source": 70,
+      "target": 1447,
+      "weight": 2,
+      "sample_releases": [
+        "I'll Remember April / Fuguetta",
+        "Howard McGhee - Introducing The Kenny Drew Trio"
+      ]
+    },
+    {
+      "source": 176,
+      "target": 1445,
+      "weight": 2,
+      "sample_releases": [
+        "I'll Remember April / Fuguetta",
+        "Howard McGhee - Introducing The Kenny Drew Trio"
+      ]
+    },
+    {
+      "source": 176,
+      "target": 1447,
+      "weight": 2,
+      "sample_releases": [
+        "I'll Remember April / Fuguetta",
+        "Howard McGhee - Introducing The Kenny Drew Trio"
+      ]
+    },
+    {
+      "source": 1445,
+      "target": 1447,
+      "weight": 2,
+      "sample_releases": [
+        "I'll Remember April / Fuguetta",
+        "Howard McGhee - Introducing The Kenny Drew Trio"
+      ]
+    },
+    {
+      "source": 152,
+      "target": 176,
+      "weight": 2,
+      "sample_releases": [
+        "The Ideation Of Kenny Drew Album #3",
+        "The Modernity Of Kenny Drew"
+      ]
+    },
+    {
+      "source": 152,
+      "target": 1449,
+      "weight": 2,
+      "sample_releases": [
+        "The Ideation Of Kenny Drew Album #3",
+        "The Modernity Of Kenny Drew"
+      ]
+    },
+    {
+      "source": 176,
+      "target": 1449,
+      "weight": 2,
+      "sample_releases": [
+        "The Ideation Of Kenny Drew Album #3",
+        "The Modernity Of Kenny Drew"
+      ]
+    },
+    {
+      "source": 5,
+      "target": 442,
+      "weight": 2,
+      "sample_releases": [
+        "Modern Jazz Survey 2 / Baritones & French Horns",
+        "Four Altos"
+      ]
+    },
+    {
+      "source": 5,
+      "target": 1466,
+      "weight": 2,
+      "sample_releases": [
+        "Modern Jazz Survey 2 / Baritones & French Horns",
+        "All-Star Sextets"
+      ]
+    },
+    {
+      "source": 178,
+      "target": 1476,
+      "weight": 2,
+      "sample_releases": [
+        "Movie Jazz",
+        "Stop And Listen To ... Cecil Payne"
+      ]
+    },
+    {
+      "source": 5,
+      "target": 534,
+      "weight": 2,
+      "sample_releases": [
+        "Four Altos",
+        "All-Star Sextets"
+      ]
+    },
+    {
+      "source": 5,
+      "target": 44,
+      "weight": 2,
+      "sample_releases": [
+        "All-Star Sextets",
+        "Early Byrd"
+      ]
+    },
+    {
+      "source": 5,
+      "target": 788,
+      "weight": 2,
+      "sample_releases": [
+        "All-Star Sextets",
+        "Standards"
+      ]
+    },
+    {
+      "source": 44,
+      "target": 534,
+      "weight": 2,
+      "sample_releases": [
+        "All-Star Sextets",
+        "Jazz For The Carriage Trade, Vol. 1"
+      ]
+    },
+    {
+      "source": 44,
+      "target": 1466,
+      "weight": 2,
+      "sample_releases": [
+        "All-Star Sextets",
+        "When Farmer Met Gryce "
+      ]
+    },
+    {
+      "source": 778,
+      "target": 784,
+      "weight": 2,
+      "sample_releases": [
+        "All-Star Sextets",
+        "Cliff's Edge / Princess"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 1588,
+      "weight": 2,
+      "sample_releases": [
+        "Hot House",
+        "Delooney / In The Anna"
+      ]
+    },
+    {
+      "source": 7,
+      "target": 1588,
+      "weight": 2,
+      "sample_releases": [
+        "Hot House",
+        "Delooney / In The Anna"
+      ]
+    },
+    {
+      "source": 11,
+      "target": 1588,
+      "weight": 2,
+      "sample_releases": [
+        "Hot House",
+        "Oo-Pa-Ba-Da / In My Solitude"
+      ]
+    },
+    {
+      "source": 11,
+      "target": 1593,
+      "weight": 2,
+      "sample_releases": [
+        "Hot House",
+        "Oo-Pa-Ba-Da / In My Solitude"
+      ]
+    },
+    {
+      "source": 11,
+      "target": 1594,
+      "weight": 2,
+      "sample_releases": [
+        "Hot House",
+        "Oo-Pa-Ba-Da / In My Solitude"
+      ]
+    },
+    {
+      "source": 13,
+      "target": 1588,
+      "weight": 2,
+      "sample_releases": [
+        "Hot House",
+        "Oo-Pa-Ba-Da / In My Solitude"
+      ]
+    },
+    {
+      "source": 13,
+      "target": 1593,
+      "weight": 2,
+      "sample_releases": [
+        "Hot House",
+        "Oo-Pa-Ba-Da / In My Solitude"
+      ]
+    },
+    {
+      "source": 13,
+      "target": 1594,
+      "weight": 2,
+      "sample_releases": [
+        "Hot House",
+        "Oo-Pa-Ba-Da / In My Solitude"
+      ]
+    },
+    {
+      "source": 1588,
+      "target": 1593,
+      "weight": 2,
+      "sample_releases": [
+        "Hot House",
+        "Oo-Pa-Ba-Da / In My Solitude"
+      ]
+    },
+    {
+      "source": 1588,
+      "target": 1594,
+      "weight": 2,
+      "sample_releases": [
+        "Hot House",
+        "Oo-Pa-Ba-Da / In My Solitude"
+      ]
+    },
+    {
+      "source": 1593,
+      "target": 1594,
+      "weight": 2,
+      "sample_releases": [
+        "Hot House",
+        "Oo-Pa-Ba-Da / In My Solitude"
+      ]
+    },
+    {
+      "source": 7,
+      "target": 597,
+      "weight": 2,
+      "sample_releases": [
+        "Coffee Time / Wiggin' With Wig",
+        "Limehouse Blues / By The River Sainte Marie"
+      ]
+    },
+    {
+      "source": 7,
+      "target": 676,
+      "weight": 2,
+      "sample_releases": [
+        "Coffee Time / Wiggin' With Wig",
+        "Limehouse Blues / By The River Sainte Marie"
+      ]
+    },
+    {
+      "source": 7,
+      "target": 1605,
+      "weight": 2,
+      "sample_releases": [
+        "Coffee Time / Wiggin' With Wig",
+        "Limehouse Blues / By The River Sainte Marie"
+      ]
+    },
+    {
+      "source": 597,
+      "target": 676,
+      "weight": 2,
+      "sample_releases": [
+        "Coffee Time / Wiggin' With Wig",
+        "Limehouse Blues / By The River Sainte Marie"
+      ]
+    },
+    {
+      "source": 597,
+      "target": 1605,
+      "weight": 2,
+      "sample_releases": [
+        "Coffee Time / Wiggin' With Wig",
+        "Limehouse Blues / By The River Sainte Marie"
+      ]
+    },
+    {
+      "source": 676,
+      "target": 1605,
+      "weight": 2,
+      "sample_releases": [
+        "Coffee Time / Wiggin' With Wig",
+        "Limehouse Blues / By The River Sainte Marie"
+      ]
+    },
+    {
+      "source": 67,
+      "target": 1683,
+      "weight": 2,
+      "sample_releases": [
+        "Here Comes Frank Foster / George Wallington Showcase",
+        "Speculation"
+      ]
+    },
+    {
+      "source": 184,
+      "target": 788,
+      "weight": 2,
+      "sample_releases": [
+        "Here Comes Frank Foster / George Wallington Showcase",
+        "Speculation"
+      ]
+    },
+    {
+      "source": 184,
+      "target": 1683,
+      "weight": 2,
+      "sample_releases": [
+        "Here Comes Frank Foster / George Wallington Showcase",
+        "Speculation"
+      ]
+    },
+    {
+      "source": 184,
+      "target": 1688,
+      "weight": 2,
+      "sample_releases": [
+        "Here Comes Frank Foster / George Wallington Showcase",
+        "Early Byrd"
+      ]
+    },
+    {
+      "source": 788,
+      "target": 1683,
+      "weight": 2,
+      "sample_releases": [
+        "Here Comes Frank Foster / George Wallington Showcase",
+        "Speculation"
+      ]
+    },
+    {
+      "source": 21,
+      "target": 31,
+      "weight": 2,
+      "sample_releases": [
+        "Speculation",
+        "When Farmer Met Gryce "
+      ]
+    },
+    {
+      "source": 31,
+      "target": 67,
+      "weight": 2,
+      "sample_releases": [
+        "Speculation",
+        "When Farmer Met Gryce "
+      ]
+    },
+    {
+      "source": 31,
+      "target": 123,
+      "weight": 2,
+      "sample_releases": [
+        "Speculation",
+        "When Farmer Met Gryce "
+      ]
+    },
+    {
+      "source": 31,
+      "target": 184,
+      "weight": 2,
+      "sample_releases": [
+        "Speculation",
+        "Early Byrd"
+      ]
+    },
+    {
+      "source": 67,
+      "target": 123,
+      "weight": 2,
+      "sample_releases": [
+        "Speculation",
+        "When Farmer Met Gryce "
+      ]
+    },
+    {
+      "source": 31,
+      "target": 44,
+      "weight": 3,
+      "sample_releases": [
+        "When Farmer Met Gryce ",
+        "Don Byrd - Gigi Gryce",
+        "Early Byrd"
+      ]
+    },
+    {
+      "source": 31,
+      "target": 47,
+      "weight": 2,
+      "sample_releases": [
+        "Don Byrd - Gigi Gryce",
+        "Early Byrd"
+      ]
+    },
+    {
+      "source": 31,
+      "target": 128,
+      "weight": 2,
+      "sample_releases": [
+        "Don Byrd - Gigi Gryce",
+        "Early Byrd"
+      ]
+    },
+    {
+      "source": 44,
+      "target": 128,
+      "weight": 2,
+      "sample_releases": [
+        "Don Byrd - Gigi Gryce",
+        "Early Byrd"
+      ]
+    },
+    {
+      "source": 47,
+      "target": 128,
+      "weight": 2,
+      "sample_releases": [
+        "Don Byrd - Gigi Gryce",
+        "Early Byrd"
+      ]
+    },
+    {
+      "source": 1688,
+      "target": 1811,
+      "weight": 2,
+      "sample_releases": [
+        "Early Byrd",
+        "The Professor"
+      ]
+    },
+    {
+      "source": 47,
+      "target": 534,
+      "weight": 4,
+      "sample_releases": [
+        "The Young Bloods",
+        "Jazz For The Carriage Trade, Vol. 2",
+        "Jazz For The Carriage Trade, Vol. 3"
+      ]
+    },
+    {
+      "source": 47,
+      "target": 1820,
+      "weight": 2,
+      "sample_releases": [
+        "The Young Bloods",
+        "Jazz For The Carriage Trade, Vol. 1"
+      ]
+    },
+    {
+      "source": 534,
+      "target": 1820,
+      "weight": 2,
+      "sample_releases": [
+        "The Young Bloods",
+        "Jazz For The Carriage Trade, Vol. 1"
+      ]
+    },
+    {
+      "source": 47,
+      "target": 1825,
+      "weight": 3,
+      "sample_releases": [
+        "Jazz For The Carriage Trade, Vol. 2",
+        "Jazz For The Carriage Trade, Vol. 3",
+        "Jazz For The Carriage Trade, Vol. 1"
+      ]
+    },
+    {
+      "source": 534,
+      "target": 1825,
+      "weight": 3,
+      "sample_releases": [
+        "Jazz For The Carriage Trade, Vol. 2",
+        "Jazz For The Carriage Trade, Vol. 3",
+        "Jazz For The Carriage Trade, Vol. 1"
+      ]
+    },
+    {
+      "source": 69,
+      "target": 1951,
+      "weight": 2,
+      "sample_releases": [
+        "You Or Me",
+        "The Professor"
+      ]
+    },
+    {
+      "source": 109,
+      "target": 286,
+      "weight": 2,
+      "sample_releases": [
+        "The Professor",
+        "The Best Of Bobby Timmons & His Soul Piano"
+      ]
+    },
+    {
+      "source": 148,
+      "target": 1811,
+      "weight": 2,
+      "sample_releases": [
+        "The Professor",
+        "South American Cookin' / The Magnificent Trombone Of Curtis Fuller"
+      ]
+    },
+    {
+      "source": 72,
+      "target": 1987,
+      "weight": 3,
+      "sample_releases": [
+        "Lonesome And Blue / Why Not?",
+        "Do You Care? / Siboney ",
+        "Stormy Weather / I Just Couldn't Take It Baby "
+      ]
+    },
+    {
+      "source": 106,
+      "target": 2038,
+      "weight": 2,
+      "sample_releases": [
+        "Dreamin' Of Cannonball",
+        "Maximum Firepower"
+      ]
+    },
+    {
+      "source": 106,
+      "target": 2039,
+      "weight": 2,
+      "sample_releases": [
+        "Dreamin' Of Cannonball",
+        "Maximum Firepower"
+      ]
+    },
+    {
+      "source": 106,
+      "target": 2043,
+      "weight": 2,
+      "sample_releases": [
+        "Dreamin' Of Cannonball",
+        "Maximum Firepower"
+      ]
+    },
+    {
+      "source": 106,
+      "target": 2044,
+      "weight": 2,
+      "sample_releases": [
+        "Dreamin' Of Cannonball",
+        "Maximum Firepower"
+      ]
+    },
+    {
+      "source": 2038,
+      "target": 2039,
+      "weight": 2,
+      "sample_releases": [
+        "Dreamin' Of Cannonball",
+        "Maximum Firepower"
+      ]
+    },
+    {
+      "source": 2038,
+      "target": 2043,
+      "weight": 2,
+      "sample_releases": [
+        "Dreamin' Of Cannonball",
+        "Maximum Firepower"
+      ]
+    },
+    {
+      "source": 2038,
+      "target": 2044,
+      "weight": 2,
+      "sample_releases": [
+        "Dreamin' Of Cannonball",
+        "Maximum Firepower"
+      ]
+    },
+    {
+      "source": 2039,
+      "target": 2043,
+      "weight": 2,
+      "sample_releases": [
+        "Dreamin' Of Cannonball",
+        "Maximum Firepower"
+      ]
+    },
+    {
+      "source": 2039,
+      "target": 2044,
+      "weight": 2,
+      "sample_releases": [
+        "Dreamin' Of Cannonball",
+        "Maximum Firepower"
+      ]
+    },
+    {
+      "source": 2043,
+      "target": 2044,
+      "weight": 2,
+      "sample_releases": [
+        "Dreamin' Of Cannonball",
+        "Maximum Firepower"
+      ]
+    },
+    {
+      "source": 114,
+      "target": 2095,
+      "weight": 3,
+      "sample_releases": [
+        "Reflections",
+        "Witch's Scream",
+        "Embracing The Unknown"
+      ]
+    },
+    {
+      "source": 130,
+      "target": 339,
+      "weight": 2,
+      "sample_releases": [
+        "Anniversary",
+        "Piano-Bass Duets, The Complete Sessions"
+      ]
+    },
+    {
+      "source": 130,
+      "target": 537,
+      "weight": 3,
+      "sample_releases": [
+        "Anniversary",
+        "The Complete Al Cohn / Barry Harris Quartets, Vol. 2 - No Problem",
+        "The Complete Al Cohn / Barry Harris Quartets, Vol. 1 - Play It Now"
+      ]
+    },
+    {
+      "source": 130,
+      "target": 286,
+      "weight": 2,
+      "sample_releases": [
+        "The Complete Al Cohn / Barry Harris Quartets, Vol. 2 - No Problem",
+        "The Complete Al Cohn / Barry Harris Quartets, Vol. 1 - Play It Now"
+      ]
+    },
+    {
+      "source": 130,
+      "target": 2115,
+      "weight": 2,
+      "sample_releases": [
+        "The Complete Al Cohn / Barry Harris Quartets, Vol. 2 - No Problem",
+        "The Complete Al Cohn / Barry Harris Quartets, Vol. 1 - Play It Now"
+      ]
+    },
+    {
+      "source": 286,
+      "target": 537,
+      "weight": 2,
+      "sample_releases": [
+        "The Complete Al Cohn / Barry Harris Quartets, Vol. 2 - No Problem",
+        "The Complete Al Cohn / Barry Harris Quartets, Vol. 1 - Play It Now"
+      ]
+    },
+    {
+      "source": 286,
+      "target": 2115,
+      "weight": 2,
+      "sample_releases": [
+        "The Complete Al Cohn / Barry Harris Quartets, Vol. 2 - No Problem",
+        "The Complete Al Cohn / Barry Harris Quartets, Vol. 1 - Play It Now"
+      ]
+    },
+    {
+      "source": 537,
+      "target": 2115,
+      "weight": 2,
+      "sample_releases": [
+        "The Complete Al Cohn / Barry Harris Quartets, Vol. 2 - No Problem",
+        "The Complete Al Cohn / Barry Harris Quartets, Vol. 1 - Play It Now"
+      ]
+    },
+    {
+      "source": 130,
+      "target": 2127,
+      "weight": 2,
+      "sample_releases": [
+        "Reflections",
+        "Interpretations Of Monk Vol. 1"
+      ]
+    },
+    {
+      "source": 165,
+      "target": 241,
+      "weight": 2,
+      "sample_releases": [
+        "Heavy Sounds",
+        "Electric Byrd / That Healin' Feelin' / Love Call / Coalition"
       ]
     }
   ]

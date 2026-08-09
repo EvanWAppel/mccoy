@@ -758,7 +758,7 @@ visitors and never be empty (committed `graph.json` fallback).
 ## Group UU — Demo Fallback & Deployment
 > Depends on: RR-08, TT-08.
 
-- [ ] **UU-01** Run the ingest once against a local DB, then export the graph to committed `netviz/graph.json` (the never-empty demo)
+- [x] **UU-01** Run the ingest once against a local DB, then export the graph to committed `netviz/graph.json` (the never-empty demo)
 - [x] **UU-02** Write `tests/test_network.py` — the page renders from `graph.json` when the DB is empty / the visitor is logged out
 - [x] **UU-03** Add "Network" to the public shell so logged-out visitors can view it
 - [ ] **UU-04** Apply `migrations/003_network.sql` to Railway Postgres (same enable-public-networking flow as prior migrations)

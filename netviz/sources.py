@@ -8,6 +8,7 @@ misses are logged, never silently dropped.
 
 import logging
 import os
+import re
 import time
 
 import discogs_client
@@ -133,9 +134,26 @@ _NON_PERFORMER_ROLES = {
 }
 
 
+# Discogs disambiguates same-named artists with a trailing " (N)".
+_DISAMBIG_RE = re.compile(r"\s*\(\d+\)$")
+
+
+def _clean_name(name: str) -> str:
+    """Strip Discogs' numeric disambiguation suffix, e.g. 'Paul Chambers (3)'."""
+    return _DISAMBIG_RE.sub("", name or "").strip()
+
+
 def _clean_role(role: str) -> str:
-    """First listed instrument from a Discogs role string."""
-    return role.split(",")[0].strip() if role else ""
+    """First listed instrument, minus Discogs' bracketed notes.
+
+    'Recorded By [Recording By]' -> 'Recorded By';
+    'Bass [Acoustic]' -> 'Bass'; 'Piano, Celeste' -> 'Piano'.
+    """
+    if not role:
+        return ""
+    first = role.split(",")[0]
+    first = re.sub(r"\s*\[.*?\]", "", first)
+    return first.strip()
 
 
 def _is_performer(role: str) -> bool:
@@ -183,7 +201,9 @@ def discogs_personnel_for(release_id, client=None) -> list[dict]:
     """
     client = client or _get_discogs_client()
     try:
-        data = client.release(release_id).data
+        release = client.release(release_id)
+        release.refresh()  # .data is lazy — force the full fetch
+        data = release.data
     except Exception as exc:  # unresolved / network / rate-limit
         logger.info("Discogs: could not fetch release %s: %s", release_id, exc)
         return []
@@ -205,7 +225,7 @@ def discogs_personnel_for(release_id, client=None) -> list[dict]:
         personnel.append(
             {
                 "discogs_id": discogs_id,
-                "name": artist.get("name", ""),
+                "name": _clean_name(artist.get("name", "")),
                 "instrument": _clean_role(role) or None,
             }
         )
