@@ -1,0 +1,23 @@
+{
+  "release": {
+    "id": "mbid-real-mccoy",
+    "title": "The Real McCoy",
+    "artist-relation-list": [
+      {
+        "type": "instrument",
+        "artist": {"id": "mbid-mccoy-tyner", "name": "McCoy Tyner"},
+        "attribute-list": ["piano"]
+      },
+      {
+        "type": "instrument",
+        "artist": {"id": "mbid-joe-henderson", "name": "Joe Henderson"},
+        "attribute-list": ["tenor saxophone"]
+      },
+      {
+        "type": "instrument",
+        "artist": {"id": "mbid-elvin-jones", "name": "Elvin Jones"},
+        "attribute-list": ["drums (drum set)"]
+      }
+    ]
+  }
+}

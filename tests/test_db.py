@@ -1,5 +1,4 @@
-import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 from db import (
     save_refresh_token,
     get_refresh_token,
@@ -12,18 +11,7 @@ from db import (
     clear_recent_searches,
 )
 
-
-@pytest.fixture
-def mock_conn():
-    conn = MagicMock()
-    conn.cursor.return_value.__enter__ = lambda s: s
-    conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
-    return conn
-
-
-@pytest.fixture
-def mock_cursor(mock_conn):
-    return mock_conn.cursor.return_value
+# mock_conn / mock_cursor fixtures live in conftest.py
 
 
 class TestSaveRefreshToken:

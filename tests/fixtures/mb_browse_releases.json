@@ -1,0 +1,21 @@
+{
+  "release-list": [
+    {
+      "id": "mbid-real-mccoy",
+      "title": "The Real McCoy",
+      "date": "1967-04-21",
+      "label-info-list": [
+        {"label": {"id": "lbl-blue-note", "name": "Blue Note"}}
+      ]
+    },
+    {
+      "id": "mbid-tender-moments",
+      "title": "Tender Moments",
+      "date": "1967",
+      "label-info-list": [
+        {"label": {"id": "lbl-blue-note", "name": "Blue Note"}}
+      ]
+    }
+  ],
+  "release-count": 2
+}

@@ -1,4 +1,19 @@
+from unittest.mock import MagicMock
+
 import pytest
+
+
+@pytest.fixture
+def mock_conn():
+    conn = MagicMock()
+    conn.cursor.return_value.__enter__ = lambda s: s
+    conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+    return conn
+
+
+@pytest.fixture
+def mock_cursor(mock_conn):
+    return mock_conn.cursor.return_value
 
 
 MOCK_ARTISTS_RAW = {
