@@ -45,22 +45,24 @@ def crawl(
             if len(crawled) >= node_cap:
                 break
 
-            releases = sources.mb_releases_for(name)
+            releases = sources.discogs_releases_for(name, limit=release_cap)
             if not releases:
                 unresolved.append(name)
                 continue
 
             crawled.add(name)
-            for rel in releases[:release_cap]:
-                release_id = db.upsert_release(
-                    mbid=rel["mbid"],
+            for rel in releases:
+                release_id = db.upsert_release_by_discogs(
+                    discogs_id=rel["discogs_id"],
                     title=rel["title"],
                     year=rel.get("year"),
                     label=rel.get("label"),
                 )
-                for person in sources.mb_personnel_for(rel["mbid"]):
-                    musician_id = db.upsert_musician(
-                        mbid=person["mbid"],
+                for person in sources.discogs_personnel_for(
+                    rel["discogs_id"]
+                ):
+                    musician_id = db.upsert_musician_by_discogs(
+                        discogs_id=person["discogs_id"],
                         name=person["name"],
                         primary_instrument=person.get("instrument"),
                     )

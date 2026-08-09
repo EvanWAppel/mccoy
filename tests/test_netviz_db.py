@@ -3,6 +3,9 @@ from unittest.mock import patch
 from netviz.db import (
     upsert_musician,
     upsert_release,
+    upsert_musician_by_discogs,
+    upsert_release_by_discogs,
+    backfill_active_years,
     add_credit,
     replace_edges,
     get_graph,
@@ -55,6 +58,44 @@ class TestUpsertRelease:
             first = upsert_release(mbid="rel-1", title="The Sidewinder")
             second = upsert_release(mbid="rel-1", title="The Sidewinder")
         assert first == second == 12
+
+
+class TestUpsertMusicianByDiscogs:
+    def test_upserts_on_discogs_id_and_returns_id(self, mock_conn,
+                                                  mock_cursor):
+        mock_cursor.fetchone.return_value = (9,)
+        with patch("netviz.db.get_connection", return_value=mock_conn):
+            result = upsert_musician_by_discogs("200", "Joe Henderson",
+                                                "Tenor Saxophone")
+        assert result == 9
+        sql, params = mock_cursor.execute.call_args[0]
+        assert "nv_musicians" in sql
+        assert "ON CONFLICT (discogs_id)" in sql
+        assert params == ("200", "Joe Henderson", "Tenor Saxophone")
+
+
+class TestUpsertReleaseByDiscogs:
+    def test_upserts_on_discogs_id_and_returns_id(self, mock_conn,
+                                                  mock_cursor):
+        mock_cursor.fetchone.return_value = (14,)
+        with patch("netviz.db.get_connection", return_value=mock_conn):
+            result = upsert_release_by_discogs("111", "The Real McCoy",
+                                               1967, "Blue Note")
+        assert result == 14
+        sql, params = mock_cursor.execute.call_args[0]
+        assert "nv_releases" in sql
+        assert "ON CONFLICT (discogs_id)" in sql
+        assert params == ("111", "The Real McCoy", 1967, "Blue Note")
+
+
+class TestBackfillActiveYears:
+    def test_runs_update_and_commits(self, mock_conn, mock_cursor):
+        with patch("netviz.db.get_connection", return_value=mock_conn):
+            backfill_active_years()
+        sql = mock_cursor.execute.call_args[0][0]
+        assert "UPDATE nv_musicians" in sql
+        assert "MIN(r.year)" in sql
+        mock_conn.commit.assert_called_once()
 
 
 class TestAddCredit:

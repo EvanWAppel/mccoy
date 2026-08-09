@@ -6,7 +6,7 @@
 CREATE TABLE IF NOT EXISTS nv_musicians (
     id                 SERIAL PRIMARY KEY,
     mbid               TEXT UNIQUE,       -- MusicBrainz id
-    discogs_id         TEXT,
+    discogs_id         TEXT UNIQUE,       -- Discogs artist id (crawl key)
     name               TEXT NOT NULL,
     primary_instrument TEXT,
     active_start_year  INTEGER,           -- for era coloring
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS nv_musicians (
 CREATE TABLE IF NOT EXISTS nv_releases (
     id         SERIAL PRIMARY KEY,
     mbid       TEXT UNIQUE,
-    discogs_id TEXT,
+    discogs_id TEXT UNIQUE,              -- Discogs release id (crawl key)
     title      TEXT NOT NULL,
     year       INTEGER,
     label      TEXT

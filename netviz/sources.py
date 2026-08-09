@@ -105,11 +105,81 @@ def mb_personnel_for(release_mbid: str) -> list[dict]:
     return personnel
 
 
-def discogs_credits_for(release_id, client=None) -> list[dict]:
-    """Return ``[{name, role}]`` credits for a Discogs release.
+# Discogs credit roles that are not performing musicians — dropped so
+# the network is players, not cover designers / engineers / labels.
+_NON_PERFORMER_ROLES = {
+    "recorded by",
+    "engineer",
+    "mixed by",
+    "mastered by",
+    "remastered by",
+    "lacquer cut by",
+    "design",
+    "artwork",
+    "artwork by",
+    "photography",
+    "photography by",
+    "liner notes",
+    "notes",
+    "producer",
+    "executive-producer",
+    "executive producer",
+    "co-producer",
+    "reissue producer",
+    "supervised by",
+    "coordinator",
+    "management",
+    "other",
+}
 
-    Combines the main artists and the detailed ``extraartists`` liner
-    credits. Returns ``[]`` (logged) if the release can't be fetched.
+
+def _clean_role(role: str) -> str:
+    """First listed instrument from a Discogs role string."""
+    return role.split(",")[0].strip() if role else ""
+
+
+def _is_performer(role: str) -> bool:
+    return _clean_role(role).lower() not in _NON_PERFORMER_ROLES
+
+
+def discogs_releases_for(name: str, client=None, limit: int = 40) -> list[dict]:
+    """Resolve an artist by name; return up to ``limit`` of their releases.
+
+    Returns ``[{discogs_id, title, year, label}]`` (releases only, not
+    masters); ``[]`` (logged) if the name can't be resolved.
+    """
+    client = client or _get_discogs_client()
+    results = client.search(name, type="artist")
+    try:
+        artist = results[0]
+    except (IndexError, KeyError):
+        logger.info("Discogs: unresolved artist name %r", name)
+        return []
+
+    releases = []
+    for item in artist.releases:
+        data = item.data
+        if data.get("type") != "release":
+            continue  # skip masters; we want a concrete release + credits
+        releases.append(
+            {
+                "discogs_id": str(data["id"]),
+                "title": data.get("title", ""),
+                "year": data.get("year") or None,
+                "label": data.get("label"),
+            }
+        )
+        if len(releases) >= limit:
+            break
+    return releases
+
+
+def discogs_personnel_for(release_id, client=None) -> list[dict]:
+    """Return the performing musicians on a Discogs release.
+
+    Returns ``[{discogs_id, name, instrument}]`` from the main artists
+    plus the ``extraartists`` liner credits, filtered to performers.
+    ``[]`` (logged) if the release can't be fetched.
     """
     client = client or _get_discogs_client()
     try:
@@ -120,13 +190,23 @@ def discogs_credits_for(release_id, client=None) -> list[dict]:
     finally:
         time.sleep(DISCOGS_THROTTLE_SECONDS)
 
-    credits = []
-    for artist in data.get("artists") or []:
-        credits.append(
-            {"name": artist.get("name", ""), "role": artist.get("role") or ""}
+    personnel = []
+    seen = set()
+    for artist in (data.get("artists") or []) + (
+        data.get("extraartists") or []
+    ):
+        role = artist.get("role") or ""
+        if not _is_performer(role):
+            continue
+        discogs_id = str(artist.get("id"))
+        if discogs_id in seen:
+            continue
+        seen.add(discogs_id)
+        personnel.append(
+            {
+                "discogs_id": discogs_id,
+                "name": artist.get("name", ""),
+                "instrument": _clean_role(role) or None,
+            }
         )
-    for artist in data.get("extraartists") or []:
-        credits.append(
-            {"name": artist.get("name", ""), "role": artist.get("role") or ""}
-        )
-    return credits
+    return personnel

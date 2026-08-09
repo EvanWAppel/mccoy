@@ -2,10 +2,12 @@
   "id": 1234567,
   "title": "The Real McCoy",
   "year": 1967,
-  "artists": [{"name": "McCoy Tyner", "role": ""}],
+  "artists": [{"id": 100, "name": "McCoy Tyner", "role": ""}],
   "extraartists": [
-    {"name": "Joe Henderson", "role": "Tenor Saxophone"},
-    {"name": "Ron Carter", "role": "Bass"},
-    {"name": "Rudy Van Gelder", "role": "Recorded By"}
+    {"id": 200, "name": "Joe Henderson", "role": "Tenor Saxophone"},
+    {"id": 300, "name": "Ron Carter", "role": "Bass"},
+    {"id": 400, "name": "Elvin Jones", "role": "Drums"},
+    {"id": 500, "name": "Rudy Van Gelder", "role": "Recorded By"},
+    {"id": 600, "name": "Reid Miles", "role": "Design"}
   ]
 }

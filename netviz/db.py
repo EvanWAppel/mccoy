@@ -94,6 +94,89 @@ def upsert_release(
         conn.close()
 
 
+def upsert_musician_by_discogs(
+    discogs_id: str,
+    name: str,
+    primary_instrument: str | None = None,
+) -> int:
+    """Insert or update a musician keyed on Discogs id; return its id."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO nv_musicians
+                    (discogs_id, name, primary_instrument)
+                VALUES (%s, %s, %s)
+                ON CONFLICT (discogs_id) DO UPDATE SET
+                    name = EXCLUDED.name,
+                    primary_instrument =
+                        COALESCE(nv_musicians.primary_instrument,
+                                 EXCLUDED.primary_instrument)
+                RETURNING id
+                """,
+                (discogs_id, name, primary_instrument),
+            )
+            musician_id = cur.fetchone()[0]
+        conn.commit()
+        return musician_id
+    finally:
+        conn.close()
+
+
+def upsert_release_by_discogs(
+    discogs_id: str,
+    title: str,
+    year: int | None = None,
+    label: str | None = None,
+) -> int:
+    """Insert or update a release keyed on Discogs id; return its id."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO nv_releases (discogs_id, title, year, label)
+                VALUES (%s, %s, %s, %s)
+                ON CONFLICT (discogs_id) DO UPDATE SET
+                    title = EXCLUDED.title,
+                    year = COALESCE(EXCLUDED.year, nv_releases.year),
+                    label = COALESCE(EXCLUDED.label, nv_releases.label)
+                RETURNING id
+                """,
+                (discogs_id, title, year, label),
+            )
+            release_id = cur.fetchone()[0]
+        conn.commit()
+        return release_id
+    finally:
+        conn.close()
+
+
+def backfill_active_years() -> None:
+    """Set each musician's active_start_year to their earliest credit year."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                UPDATE nv_musicians m
+                SET active_start_year = sub.first_year
+                FROM (
+                    SELECT c.musician_id, MIN(r.year) AS first_year
+                    FROM nv_credits c
+                    JOIN nv_releases r ON r.id = c.release_id
+                    WHERE r.year IS NOT NULL
+                    GROUP BY c.musician_id
+                ) sub
+                WHERE m.id = sub.musician_id
+                """
+            )
+        conn.commit()
+    finally:
+        conn.close()
+
+
 def add_credit(musician_id: int, release_id: int, role: str | None) -> None:
     """Record that a musician is credited on a release (idempotent)."""
     conn = get_connection()
