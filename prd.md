@@ -758,3 +758,223 @@ mccoy/
 - Showing playlist owner / track count / description on cards.
 - Tapping the add counter chip to see the list of adds.
 - Mid-session change of the target playlist.
+
+---
+
+## Feature: Music Network Visualization (Hard Bop)
+
+### Overview
+
+A **standalone network-visualization** feature that lives in the mccoy
+repo but is **fully decoupled from the Spotify dashboard** — separate
+page, separate database tables, separate data pipeline. Its purpose is
+to explore how music is related to other music by rendering the
+**sideman network** of a genre: individual musicians as nodes, linked
+when they appear together on a release.
+
+**v1 seeds with hard bop** (the Blue Note-era jazz style — Art Blakey,
+Horace Silver, Clifford Brown, Lee Morgan, and the players who recorded
+with them). The schema and pipeline are **genre-agnostic** so more
+genres can be added later without a redesign.
+
+Because the site also has a **public / recruiter mode**, the network
+page must render for a logged-out visitor and must **never be empty**
+(same principle as the Stats demo).
+
+### Why individual musicians, and why "shared release" edges
+
+Within a single genre a "same genre" edge carries no information —
+everyone shares it. The structure that actually tells the hard bop
+story is **who played on whose records**: the dense, overlapping
+session network of the era. So:
+
+- **Node = one musician** (a person), not a band or an album.
+- **Edge = two musicians credited on the same release**; edge
+  **weight = number of shared releases**. This is robust to messy
+  per-track personnel data and still surfaces the sideman web.
+- **Year (era) and label are node attributes** (used for color /
+  grouping), not edges — an "everyone active in 1959" edge would
+  produce an unreadable hairball.
+
+### Data Sources
+
+Two external sources, fetched **offline** by an ingest job and cached
+into our own Postgres tables. The live page never calls these APIs.
+
+| Source | Role | Notes |
+|---|---|---|
+| **MusicBrainz** | Canonical identity + structured performer relationships | Free, no token, ~1 req/sec. Stable entity IDs (MBIDs); recording→performer→instrument relations. |
+| **Discogs** | Extra credit richness (producer, engineer, personnel) | Free personal-access token, ~60 req/min. Detailed liner-note credits, semi-structured. |
+
+**Matching:** MusicBrainz resolves the canonical musician; Discogs is
+joined on top for richer credits. Name-based matching will miss some
+entities — **misses are logged, never silently dropped** — and each
+resolved musician stores both its MBID and Discogs id.
+
+### Crawl / Ingest Design
+
+A **snowball crawl** from a curated seed list of hard bop musicians:
+
+1. Start from the **seed musicians**.
+2. For each, fetch their releases (**whole careers** — not era-bounded,
+   so you can see players fanning out across styles) and the personnel
+   on each release.
+3. Add newly discovered musicians and repeat outward, ~**2 hops**.
+
+Because "whole careers + 2 hops" can explode (Art Blakey alone appears
+on hundreds of releases), the crawl is **bounded** by config constants:
+
+- **Global node cap** (target ~150–250 musicians).
+- **Breadth-first expansion prioritized by connection strength** — a
+  discovered musician who links back to many already-included musicians
+  is admitted before a weakly-connected one.
+- **Per-musician release-fetch cap** so one prolific player can't
+  dominate the crawl.
+- **Weak-edge pruning** — once over budget, drop edges with only a
+  single shared release.
+
+All limits are constants so the graph can be grown later by raising
+them (or by adding a new seed genre). The ingest job is **rate-limit
+aware, resumable, and idempotent** — re-running extends the cache
+without duplicating rows, and it logs progress and unresolved names.
+
+### Database (new migration, `nv_` prefix)
+
+Separate from all Spotify tables. Final columns TBD at implementation:
+
+```sql
+-- One row per musician (person)
+CREATE TABLE nv_musicians (
+    id                 SERIAL PRIMARY KEY,
+    mbid               TEXT UNIQUE,       -- MusicBrainz id
+    discogs_id         TEXT,
+    name               TEXT NOT NULL,
+    primary_instrument TEXT,
+    active_start_year  INTEGER,          -- for era coloring
+    active_end_year    INTEGER
+);
+
+-- One row per release (album / session)
+CREATE TABLE nv_releases (
+    id          SERIAL PRIMARY KEY,
+    mbid        TEXT UNIQUE,
+    discogs_id  TEXT,
+    title       TEXT NOT NULL,
+    year        INTEGER,
+    label       TEXT
+);
+
+-- Raw fact: musician credited on a release
+CREATE TABLE nv_credits (
+    id          SERIAL PRIMARY KEY,
+    musician_id INTEGER REFERENCES nv_musicians(id) ON DELETE CASCADE,
+    release_id  INTEGER REFERENCES nv_releases(id) ON DELETE CASCADE,
+    role        TEXT,                     -- instrument / producer / etc.
+    UNIQUE (musician_id, release_id, role)
+);
+
+-- Precomputed musician<->musician edges (rebuilt from nv_credits)
+CREATE TABLE nv_edges (
+    id              SERIAL PRIMARY KEY,
+    musician_a      INTEGER REFERENCES nv_musicians(id) ON DELETE CASCADE,
+    musician_b      INTEGER REFERENCES nv_musicians(id) ON DELETE CASCADE,
+    weight          INTEGER NOT NULL,     -- number of shared releases
+    sample_releases TEXT[],               -- a few titles for the tooltip
+    UNIQUE (musician_a, musician_b)
+);
+```
+
+`nv_edges` is **precomputed** from `nv_credits` by the ingest job so the
+page reads a ready-made graph — no join-heavy queries at render time.
+
+### Visualization — `/network` page
+
+Rendered with **dash-cytoscape**.
+
+- **Node = musician.** Size scales with **degree** (how connected).
+  Color encodes **era** (or primary instrument — toggle).
+- **Edge = shared release**; thickness scales with weight.
+- **Layout:** force-directed (`cose`) by default, with a `concentric`
+  option (most-connected in the center).
+- **Interactions:**
+  - Click a node → **side panel** with that musician's releases and top
+    collaborators.
+  - **Filters:** era range, instrument, and a "minimum shared sessions"
+    slider to thin weak edges.
+  - Zoom / pan / drag nodes.
+- **Never empty:** if the DB has no `nv_*` data (fresh deploy) or the
+  visitor is logged out, the page falls back to a **committed,
+  precomputed graph JSON** so it always renders. Loaded state reads
+  from Postgres.
+
+### Public / Demo Mode
+
+- The network page is **visible to logged-out visitors** as part of the
+  public site (it is portfolio evidence, not owner-only).
+- It renders from the **precomputed graph JSON committed to the repo**,
+  never a live external API call — mirroring the "never empty" rule of
+  the Stats demo and the Rustle sandbox crate.
+
+### Tech Stack Additions
+
+| Layer | Choice | Notes |
+|---|---|---|
+| Graph rendering | `dash-cytoscape` | Interactive network canvas for Dash. |
+| MusicBrainz client | `musicbrainzngs` | Identity + structured relations. |
+| Discogs client | `python3-discogs-client` (`import discogs_client`) | Credit richness; needs a token. |
+
+Added via `uv add` (never editing `pyproject.toml` by hand).
+
+### Environment Variables
+
+| Variable | Description |
+|---|---|
+| `DISCOGS_TOKEN` | Discogs personal access token (Discogs half only; MusicBrainz needs none). |
+
+### Project Structure Additions
+
+```
+mccoy/
+├── netviz/                 # NEW: standalone network-viz package
+│   ├── __init__.py
+│   ├── sources.py          # MusicBrainz + Discogs fetch / normalize
+│   ├── crawl.py            # snowball crawl orchestration
+│   ├── edges.py            # build nv_edges from nv_credits
+│   ├── ingest.py           # CLI: uv run python -m netviz.ingest
+│   ├── seeds.py            # curated hard bop seeds + config consts
+│   ├── db.py               # nv_* access + get_graph()
+│   └── graph.json          # committed precomputed demo graph
+├── components/
+│   └── network.py          # NEW: dash-cytoscape graph + side panel
+├── migrations/
+│   └── 003_network.sql     # NEW: nv_* schema
+└── ...
+```
+
+### Testing
+
+- **TDD, mocked API responses only — no live network in tests.**
+  MusicBrainz / Discogs payloads are captured as fixtures (reuse the
+  `responses` dev dep) in `conftest.py` / `tests/fixtures/`.
+- Unit-test the source normalizers, the crawl bounding logic (node cap,
+  priority ordering, pruning), the edge builder, and the graph
+  component's element construction.
+
+### Out of Scope (Network Viz v1)
+
+- Genres other than hard bop (schema supports them; not seeded yet).
+- Live external-API calls at page-render time (always precomputed).
+- Producer / personnel-**typed** filterable edges (v1 collapses all
+  co-credits into a single weighted "shared release" edge; typed edges
+  are a later enhancement).
+- Editing / curating the graph from the UI.
+- Automatic scheduled re-crawls (ingest is run manually for v1).
+
+### Open Items (confirm before / during build)
+
+- **Seed list:** default proposed set (Art Blakey, Horace Silver,
+  Clifford Brown, Lee Morgan, Hank Mobley, Sonny Rollins, Cannonball
+  Adderley, Kenny Dorham, Wayne Shorter, Freddie Hubbard, Joe Henderson,
+  Jimmy Smith …) — Evan to confirm or replace.
+- **`DISCOGS_TOKEN`** to be generated (discogs.com → Settings →
+  Developers) and added to `.env` before the Discogs fetch step.

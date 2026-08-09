@@ -214,11 +214,19 @@ class TestPublicTrendsGating:
 
 class TestPublicTabToggle:
     def test_demo_visible_about_hidden(self):
-        demo_style, about_style = app_module.toggle_public_tabs("demo")
-        assert demo_style == {"display": "block"}
-        assert about_style == {"display": "none"}
+        demo, about, network = app_module.toggle_public_tabs("demo")
+        assert demo == {"display": "block"}
+        assert about == {"display": "none"}
+        assert network == {"display": "none"}
 
     def test_about_visible_demo_hidden(self):
-        demo_style, about_style = app_module.toggle_public_tabs("about")
-        assert demo_style == {"display": "none"}
-        assert about_style == {"display": "block"}
+        demo, about, network = app_module.toggle_public_tabs("about")
+        assert demo == {"display": "none"}
+        assert about == {"display": "block"}
+        assert network == {"display": "none"}
+
+    def test_network_visible_others_hidden(self):
+        demo, about, network = app_module.toggle_public_tabs("network")
+        assert demo == {"display": "none"}
+        assert about == {"display": "none"}
+        assert network == {"display": "block"}

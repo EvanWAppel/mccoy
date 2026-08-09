@@ -38,6 +38,7 @@ from components.header import render_header
 from components.artist_grid import render_grid
 from components.trends import render_bump_chart
 from components.about import about_tab
+from components.network import network_page, load_graph
 from components.rustle import (
     mode_switcher,
     target_picker,
@@ -446,6 +447,11 @@ def public_layout():
                             style=TAB_STYLE,
                             selected_style=TAB_SELECTED_STYLE,
                         ),
+                        dcc.Tab(
+                            label="Network", value="network",
+                            style=TAB_STYLE,
+                            selected_style=TAB_SELECTED_STYLE,
+                        ),
                     ],
                 ),
                 html.Div(id="public-demo", children=_public_demo()),
@@ -453,6 +459,11 @@ def public_layout():
                     id="public-about",
                     style={"display": "none"},
                     children=_public_about_placeholder(),
+                ),
+                html.Div(
+                    id="public-network",
+                    style={"display": "none"},
+                    children=network_page(load_graph()),
                 ),
             ],
         ),
@@ -584,12 +595,53 @@ def render_page(pathname):
 @app.callback(
     Output("public-demo", "style"),
     Output("public-about", "style"),
+    Output("public-network", "style"),
     Input("public-tabs", "value"),
 )
 def toggle_public_tabs(tab):
+    hidden = {"display": "none"}
+    shown = {"display": "block"}
     if tab == "about":
-        return {"display": "none"}, {"display": "block"}
-    return {"display": "block"}, {"display": "none"}
+        return hidden, shown, hidden
+    if tab == "network":
+        return hidden, hidden, shown
+    return shown, hidden, hidden
+
+
+@app.callback(
+    Output("network-graph", "layout"),
+    Input("network-layout", "value"),
+)
+def update_network_layout(name):
+    return {"name": name, "animate": False}
+
+
+@app.callback(
+    Output("network-side-panel", "children"),
+    Input("network-graph", "tapNodeData"),
+    prevent_initial_call=True,
+)
+def show_network_node(data):
+    if not data:
+        raise PreventUpdate
+    era = data.get("era")
+    instrument = data.get("instrument") or "musician"
+    samples = data.get("samples")
+    details = [
+        html.H3(data.get("label", ""), className="network-side-name"),
+        html.P(instrument.title(), className="network-side-instrument"),
+    ]
+    if era:
+        details.append(
+            html.P(f"Came up c. {era}", className="network-side-era")
+        )
+    details.append(
+        html.P(
+            f"{data.get('degree', 0)} collaborators in this network",
+            className="network-side-degree",
+        )
+    )
+    return html.Div(details)
 
 
 @app.callback(

@@ -1,0 +1,237 @@
+{
+  "nodes": [
+    {
+      "id": 1,
+      "name": "Art Blakey",
+      "era": 1954,
+      "instrument": "drums",
+      "degree": 7
+    },
+    {
+      "id": 2,
+      "name": "Horace Silver",
+      "era": 1952,
+      "instrument": "piano",
+      "degree": 2
+    },
+    {
+      "id": 3,
+      "name": "Clifford Brown",
+      "era": 1953,
+      "instrument": "trumpet",
+      "degree": 1
+    },
+    {
+      "id": 4,
+      "name": "Lee Morgan",
+      "era": 1956,
+      "instrument": "trumpet",
+      "degree": 6
+    },
+    {
+      "id": 5,
+      "name": "Hank Mobley",
+      "era": 1955,
+      "instrument": "saxophone",
+      "degree": 4
+    },
+    {
+      "id": 6,
+      "name": "Wayne Shorter",
+      "era": 1959,
+      "instrument": "saxophone",
+      "degree": 3
+    },
+    {
+      "id": 7,
+      "name": "Kenny Dorham",
+      "era": 1953,
+      "instrument": "trumpet",
+      "degree": 3
+    },
+    {
+      "id": 8,
+      "name": "Sonny Rollins",
+      "era": 1951,
+      "instrument": "saxophone",
+      "degree": 2
+    },
+    {
+      "id": 9,
+      "name": "Freddie Hubbard",
+      "era": 1958,
+      "instrument": "trumpet",
+      "degree": 2
+    },
+    {
+      "id": 10,
+      "name": "Joe Henderson",
+      "era": 1963,
+      "instrument": "saxophone",
+      "degree": 2
+    },
+    {
+      "id": 11,
+      "name": "Bobby Timmons",
+      "era": 1956,
+      "instrument": "piano",
+      "degree": 2
+    },
+    {
+      "id": 12,
+      "name": "Curtis Fuller",
+      "era": 1957,
+      "instrument": "trombone",
+      "degree": 2
+    }
+  ],
+  "edges": [
+    {
+      "source": 1,
+      "target": 2,
+      "weight": 3,
+      "sample_releases": [
+        "Horace Silver and the Jazz Messengers"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 4,
+      "weight": 4,
+      "sample_releases": [
+        "Moanin'",
+        "A Night in Tunisia"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 5,
+      "weight": 2,
+      "sample_releases": [
+        "The Jazz Messengers"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 6,
+      "weight": 3,
+      "sample_releases": [
+        "Mosaic",
+        "Free for All"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 7,
+      "weight": 2,
+      "sample_releases": [
+        "A Night at Birdland"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 11,
+      "weight": 2,
+      "sample_releases": [
+        "Moanin'"
+      ]
+    },
+    {
+      "source": 1,
+      "target": 12,
+      "weight": 2,
+      "sample_releases": [
+        "Mosaic"
+      ]
+    },
+    {
+      "source": 2,
+      "target": 5,
+      "weight": 2,
+      "sample_releases": [
+        "6 Pieces of Silver"
+      ]
+    },
+    {
+      "source": 4,
+      "target": 5,
+      "weight": 2,
+      "sample_releases": [
+        "Peckin' Time"
+      ]
+    },
+    {
+      "source": 4,
+      "target": 6,
+      "weight": 3,
+      "sample_releases": [
+        "Search for the New Land",
+        "The Sidewinder"
+      ]
+    },
+    {
+      "source": 4,
+      "target": 11,
+      "weight": 2,
+      "sample_releases": [
+        "Moanin'"
+      ]
+    },
+    {
+      "source": 4,
+      "target": 12,
+      "weight": 2,
+      "sample_releases": [
+        "Mosaic"
+      ]
+    },
+    {
+      "source": 4,
+      "target": 10,
+      "weight": 2,
+      "sample_releases": [
+        "The Sidewinder"
+      ]
+    },
+    {
+      "source": 6,
+      "target": 9,
+      "weight": 2,
+      "sample_releases": [
+        "Free for All"
+      ]
+    },
+    {
+      "source": 9,
+      "target": 10,
+      "weight": 2,
+      "sample_releases": [
+        "Breaking Point"
+      ]
+    },
+    {
+      "source": 7,
+      "target": 5,
+      "weight": 2,
+      "sample_releases": [
+        "'Round About Midnight at the Cafe Bohemia"
+      ]
+    },
+    {
+      "source": 8,
+      "target": 3,
+      "weight": 2,
+      "sample_releases": [
+        "Sonny Rollins Plus 4"
+      ]
+    },
+    {
+      "source": 7,
+      "target": 8,
+      "weight": 2,
+      "sample_releases": [
+        "Kenny Dorham Quintet"
+      ]
+    }
+  ]
+}

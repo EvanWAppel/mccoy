@@ -668,3 +668,117 @@ HH (data + sandbox auth) ──► II (public shell + stats demo, slice) ──�
 **Parallelism plan:** HH first (one agent). II is the serial
 integration moment. After II-09 turns green, JJ / KK / LL / MM / NN
 fan out to up to five agents, then OO ships.
+
+---
+
+## Feature: Music Network Visualization (Hard Bop)
+
+Refer to `prd.md` → **Feature: Music Network Visualization (Hard Bop)**
+for the full spec. A **standalone** network graph of hard bop musicians
+(nodes = people, edges = shared releases), **decoupled from Spotify**,
+with its own `nv_*` tables and an offline ingest job. Sources:
+**MusicBrainz** (identity + structured performances) + **Discogs**
+(credit richness), cached to Postgres so the page never hits an API
+live. Rendered with **dash-cytoscape**; must render for logged-out
+visitors and never be empty (committed `graph.json` fallback).
+
+**TDD discipline:** `-tests` tasks are the red phase; the matching
+`-impl` task makes them green. Don't skip the red phase.
+
+---
+
+## Group PP — Network DB Layer & Schema
+> No dependencies. Start immediately.
+
+- [x] **PP-01** Add deps via uv: `uv add dash-cytoscape musicbrainzngs python3-discogs-client`
+- [x] **PP-02** Create `migrations/003_network.sql` — `nv_musicians`, `nv_releases`, `nv_credits`, `nv_edges` per PRD schema
+- [x] **PP-03** Write `tests/test_netviz_db.py` — `upsert_musician(...)` inserts once and is idempotent on repeat (matched by mbid)
+- [x] **PP-04** Write `tests/test_netviz_db.py` — `upsert_release(...)` idempotent on mbid
+- [x] **PP-05** Write `tests/test_netviz_db.py` — `add_credit(musician_id, release_id, role)` idempotent on the unique triple
+- [x] **PP-06** Write `tests/test_netviz_db.py` — `get_graph()` returns `{nodes, edges}` in the shape the page expects (node id/name/era/degree; edge source/target/weight)
+- [x] **PP-07** Implement `netviz/db.py`: `upsert_musician`, `upsert_release`, `add_credit`, `replace_edges`, `get_graph`
+- [x] **PP-08** Run `pytest tests/test_netviz_db.py` — green
+
+---
+
+## Group QQ — Source Client Layer (MusicBrainz + Discogs)
+> Depends on: PP-01. Run in parallel with PP schema work.
+
+- [ ] **QQ-01** Capture fixture payloads into `tests/fixtures/`: a MusicBrainz artist + release-group + recording-relations response, and a Discogs release-credits response
+- [ ] **QQ-02** Write `tests/test_netviz_sources.py` — `mb_releases_for(name)` returns normalized `[{mbid, title, year, label}]` from a mocked MB response
+- [ ] **QQ-03** Write `tests/test_netviz_sources.py` — `mb_personnel_for(release_mbid)` returns `[{mbid, name, instrument}]`
+- [ ] **QQ-04** Write `tests/test_netviz_sources.py` — `discogs_credits_for(...)` returns `[{name, role}]` from a mocked Discogs response
+- [ ] **QQ-05** Write `tests/test_netviz_sources.py` — an unresolved name returns `[]` and logs a miss (no exception raised)
+- [ ] **QQ-06** Implement `netviz/sources.py`: MusicBrainz (`musicbrainzngs`) + Discogs (`discogs_client`) clients with rate-limit sleeps and a shared normalize step
+- [ ] **QQ-07** Run `pytest tests/test_netviz_sources.py` — green
+
+---
+
+## Group RR — Snowball Crawl / Ingest
+> Depends on: PP-07, QQ-07.
+
+- [ ] **RR-01** Create `netviz/seeds.py` — curated hard bop seed list + config constants (`NODE_CAP`, `MAX_HOPS=2`, `PER_MUSICIAN_RELEASE_CAP`, `MIN_EDGE_WEIGHT`)
+- [ ] **RR-02** Write `tests/test_netviz_crawl.py` — crawl stops at `NODE_CAP` (mocked sources)
+- [ ] **RR-03** Write `tests/test_netviz_crawl.py` — BFS admits the most-connected discovered musician first
+- [ ] **RR-04** Write `tests/test_netviz_crawl.py` — per-musician release cap is respected
+- [ ] **RR-05** Write `tests/test_netviz_crawl.py` — crawl is resumable / idempotent (re-run doesn't duplicate rows)
+- [ ] **RR-06** Implement `netviz/crawl.py` — snowball from seeds, apply bounding, write `nv_musicians` / `nv_releases` / `nv_credits`
+- [ ] **RR-07** Implement `netviz/ingest.py` — CLI (`uv run python -m netviz.ingest`) that runs the crawl then the edge build; logs progress + unresolved names
+- [ ] **RR-08** Run `pytest tests/test_netviz_crawl.py` — green
+
+---
+
+## Group SS — Edge Build
+> Depends on: PP-07.
+
+- [x] **SS-01** Write `tests/test_netviz_edges.py` — `build_edges(credits)` links two musicians co-credited on a release; weight = shared release count
+- [x] **SS-02** Write `tests/test_netviz_edges.py` — weak edges (`weight < MIN_EDGE_WEIGHT`) are pruned when over the node budget
+- [x] **SS-03** Write `tests/test_netviz_edges.py` — `sample_releases` is populated for tooltips
+- [x] **SS-04** Implement `netviz/edges.py`: `build_edges` + `replace_edges` (rebuild `nv_edges` from `nv_credits`)
+- [x] **SS-05** Run `pytest tests/test_netviz_edges.py` — green
+
+---
+
+## Group TT — Visualization Page (dash-cytoscape) — Vertical Slice
+> Depends on: PP-07, SS-05. **Highest priority for a visible result**
+> (can start against a stub `graph.json` before the crawl is ready).
+
+- [x] **TT-01** Write `tests/test_network.py` — `to_cytoscape_elements(graph)` returns node + edge dicts in Cytoscape shape (`data.id`, `data.source`/`target`, `data.weight`)
+- [x] **TT-02** Write `tests/test_network.py` — node degree + era attributes are present on the elements
+- [x] **TT-03** Implement `components/network.py`: `to_cytoscape_elements` + `network_page(graph)` returning a `cyto.Cytoscape` with a dark Spotify-style stylesheet
+- [x] **TT-04** Add the `/network` route/tab to `app.py`; load graph from `netviz.db.get_graph()`, falling back to committed `netviz/graph.json` when empty
+- [x] **TT-05** Node color by era, size by degree; edge width by weight; `cose` layout default (with a `concentric` toggle)
+- [x] **TT-06** Click a node → side-panel callback with the musician's releases + top collaborators
+- [ ] **TT-07** Filters: era range, instrument, and a min-shared-sessions slider
+- [x] **TT-08** Run `pytest tests/test_network.py` — green; layout/element build verified. *In-browser `/network` render still recommended.*
+- [x] **TT-09** Style the page + side panel (`.network*`) in `assets/style.css`, dark theme
+
+---
+
+## Group UU — Demo Fallback & Deployment
+> Depends on: RR-08, TT-08.
+
+- [ ] **UU-01** Run the ingest once against a local DB, then export the graph to committed `netviz/graph.json` (the never-empty demo)
+- [x] **UU-02** Write `tests/test_network.py` — the page renders from `graph.json` when the DB is empty / the visitor is logged out
+- [x] **UU-03** Add "Network" to the public shell so logged-out visitors can view it
+- [ ] **UU-04** Apply `migrations/003_network.sql` to Railway Postgres (same enable-public-networking flow as prior migrations)
+- [ ] **UU-05** Add `DISCOGS_TOKEN` to `.env.example` and Railway env
+- [ ] **UU-06** Merge to `main` → Railway auto-deploys; public smoke test: `/network` renders the graph logged-out
+
+---
+
+## Network Viz Dependency Graph
+
+```
+PP (db + schema) ──┬──► RR (crawl / ingest) ──┐
+                   │         ▲                 │
+QQ (sources) ──────┴─────────┘                 ▼
+                   └──► SS (edges) ──► TT (viz page) ──► UU (demo + deploy)
+```
+
+**Critical path to a visible graph:** PP → SS → TT (seed with a small
+hand-made `graph.json` first if the crawl isn't ready).
+
+**Parallelism plan:** PP and QQ start day 1 (one agent each). SS follows
+PP; RR follows PP + QQ. TT is the integration moment and can begin
+against a stub graph. UU ships last.
