@@ -762,6 +762,68 @@ body, html {
 .network-layout-toggle label {
   margin-right: 16px;
   cursor: pointer;
+  color: var(--text-secondary, #b3b3b3);
+}
+.network-layout-toggle input {
+  accent-color: var(--accent, #1db954);
+  margin-right: 6px;
+}
+
+/* rc-slider (ERA range + MIN SHARED SESSIONS) on the dark theme */
+/* Dash 4.x slider (filled range + thumbs) -> Spotify green */
+.network-filter .dash-slider-range {
+  background-color: var(--accent, #1db954) !important;
+}
+.network-filter .dash-slider-thumb {
+  background-color: var(--accent, #1db954) !important;
+  border-color: var(--accent, #1db954) !important;
+}
+.network-filter .rc-slider-mark-text {
+  color: var(--text-secondary, #b3b3b3);
+}
+/* the value tooltips that were rendering as white boxes */
+.rc-slider-tooltip-inner {
+  background-color: #1e1e1e !important;
+  color: #fff !important;
+  border: 1px solid #333;
+  box-shadow: none !important;
+}
+.rc-slider-tooltip-arrow {
+  border-top-color: #1e1e1e !important;
+  border-bottom-color: #1e1e1e !important;
+}
+
+/* Dash editable slider value inputs (min/max boxes beside the track) */
+.network-filter input.dash-input-container,
+.network-filter .dash-range-slider-input,
+.network-filter .dash-slider-input {
+  background-color: #1e1e1e !important;
+  color: #fff !important;
+  border: 1px solid #333 !important;
+  border-radius: 4px;
+}
+
+/* Dash 4.x dropdown (button + menu) */
+button.dash-dropdown,
+.network-dropdown.dash-dropdown {
+  background-color: #1e1e1e !important;
+  color: #fff !important;
+  border: 1px solid #333 !important;
+}
+.network-dropdown .dash-dropdown-value,
+.network-dropdown .dash-dropdown-placeholder {
+  color: #fff !important;
+}
+.dash-dropdown-menu,
+.dash-dropdown-options,
+.dash-dropdown-menu-outer {
+  background-color: #1e1e1e !important;
+  color: #fff !important;
+  border: 1px solid #333 !important;
+}
+.dash-dropdown-option:hover,
+.dash-dropdown-option[aria-selected="true"] {
+  background-color: #282828 !important;
 }
 .network-canvas-wrap {
   display: flex;
