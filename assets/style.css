@@ -825,6 +825,18 @@ button.dash-dropdown,
 .dash-dropdown-option[aria-selected="true"] {
   background-color: #282828 !important;
 }
+.network-controls-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.network-focus {
+  flex: 1 1 320px;
+  max-width: 420px;
+}
 .network-canvas-wrap {
   display: flex;
   gap: 16px;

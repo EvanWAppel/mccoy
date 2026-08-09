@@ -618,20 +618,29 @@ def toggle_public_tabs(tab):
     Input("network-layout", "value"),
 )
 def update_network_layout(name):
-    return {"name": name or "cose", "animate": False, "fit": True}
+    layout = {"name": name or "cose", "animate": False, "fit": True}
+    if layout["name"] == "cose":
+        # Spread nodes out so dense hubs don't merge into one blob.
+        layout.update({
+            "nodeRepulsion": 14000,
+            "idealEdgeLength": 90,
+            "nodeOverlap": 24,
+            "componentSpacing": 120,
+            "gravity": 0.15,
+        })
+    return layout
 
 
 # The cytoscape canvas mounts while its tab is display:none (zero size),
 # so it lays out but never fits the viewport — the graph renders blank
-# until shown. When the Network tab becomes visible, resize + fit it.
+# until shown. When the Network tab becomes visible, resize + fit it,
+# and (once) wire ego-network highlighting: tap a node to light up its
+# neighborhood and fade the rest; tap the background to reset.
 app.clientside_callback(
     """
     function(tab) {
-        if (tab !== 'network') {
-            return window.dash_clientside.no_update;
-        }
+        if (tab !== 'network') { return window.dash_clientside.no_update; }
         setTimeout(function () {
-            var el = document.querySelector('#network-graph');
             function findCy(root) {
                 var stack = [root];
                 while (stack.length) {
@@ -645,14 +654,65 @@ app.clientside_callback(
                 }
                 return null;
             }
-            var cy = findCy(el);
-            if (cy) { cy.resize(); cy.fit(undefined, 40); }
+            var cy = findCy(document.querySelector('#network-graph'));
+            if (!cy) { return; }
+            cy.resize();
+            cy.fit(undefined, 40);
+            if (cy.__mccoyBound) { return; }
+            cy.__mccoyBound = true;
+            function clear() {
+                cy.elements().removeClass('faded highlight ego');
+            }
+            function highlight(node) {
+                cy.batch(function () {
+                    cy.elements().addClass('faded');
+                    var hood = node.closedNeighborhood();
+                    hood.removeClass('faded');
+                    hood.nodes().addClass('highlight');
+                    hood.edges().addClass('highlight');
+                    node.removeClass('faded');
+                    node.addClass('ego');
+                });
+            }
+            cy.on('tap', 'node', function (e) { highlight(e.target); });
+            cy.on('tap', function (e) { if (e.target === cy) { clear(); } });
+            window.__mccoyNet = {
+                clear: clear,
+                focusById: function (id) {
+                    if (!id) {
+                        clear();
+                        cy.animate({fit: {padding: 40}}, {duration: 300});
+                        return;
+                    }
+                    var n = cy.getElementById(String(id));
+                    if (n && n.length) {
+                        highlight(n);
+                        cy.animate(
+                            {center: {eles: n}, zoom: 0.9},
+                            {duration: 400}
+                        );
+                    }
+                }
+            };
         }, 250);
         return window.dash_clientside.no_update;
     }
     """,
     Output("network-fit-dummy", "data"),
     Input("public-tabs", "value"),
+)
+
+
+# Focus dropdown: highlight + center a chosen musician's ego network.
+app.clientside_callback(
+    """
+    function(value) {
+        if (window.__mccoyNet) { window.__mccoyNet.focusById(value); }
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output("network-focus-dummy", "data"),
+    Input("network-focus", "value"),
 )
 
 
@@ -675,12 +735,32 @@ def filter_network(era_range, instruments, min_weight, graph):
     return to_cytoscape_elements(subgraph)
 
 
+def _find_node(graph, node_id):
+    for node in (graph or {}).get("nodes", []):
+        if str(node["id"]) == str(node_id):
+            return {
+                "label": node["name"],
+                "era": node.get("era"),
+                "instrument": node.get("instrument"),
+                "degree": node.get("degree", 0),
+            }
+    return None
+
+
 @app.callback(
     Output("network-side-panel", "children"),
     Input("network-graph", "tapNodeData"),
+    Input("network-focus", "value"),
+    State("network-graph-data", "data"),
     prevent_initial_call=True,
 )
-def show_network_node(data):
+def show_network_node(tap_data, focus_id, graph):
+    # Populated by either clicking a node or picking one from the focus
+    # dropdown — both should surface the same musician detail panel.
+    if ctx.triggered_id == "network-focus":
+        data = _find_node(graph, focus_id) if focus_id else None
+    else:
+        data = tap_data
     if not data:
         raise PreventUpdate
     era = data.get("era")

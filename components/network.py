@@ -8,6 +8,7 @@ a logged-out visitor never sees an empty canvas.
 
 import json
 import logging
+import math
 from pathlib import Path
 
 import dash_cytoscape as cyto
@@ -98,8 +99,9 @@ def to_cytoscape_elements(graph: dict) -> list[dict]:
                     "era": node.get("era"),
                     "instrument": node.get("instrument"),
                     "color": _era_color(node.get("era")),
-                    # scale marker size with connectivity
-                    "size": 18 + 6 * node.get("degree", 0),
+                    # sqrt scaling: hubs stay bigger without ballooning
+                    # into 250px blobs that swallow their neighbors.
+                    "size": round(14 + 7 * math.sqrt(node.get("degree", 0))),
                 }
             }
         )
@@ -126,26 +128,63 @@ _STYLESHEET = [
             "width": "data(size)",
             "height": "data(size)",
             "color": "#ffffff",
-            "font-size": "10px",
+            "font-size": "11px",
             "text-outline-color": "#121212",
-            "text-outline-width": 1.5,
-            "min-zoomed-font-size": 8,
+            "text-outline-width": 2,
+            # a bg-colored ring separates touching same-color nodes
+            "border-color": "#121212",
+            "border-width": 2,
+            # labels only when zoomed in enough, so it isn't a wall of
+            # text at the default fit — hubs + highlights override this.
+            "min-zoomed-font-size": 14,
+        },
+    },
+    {
+        # always label the well-connected anchors
+        "selector": "node[degree >= 12]",
+        "style": {
+            "font-size": "14px",
+            "min-zoomed-font-size": 0,
+            "font-weight": "bold",
         },
     },
     {
         "selector": "edge",
         "style": {
-            "width": "mapData(weight, 1, 5, 1, 6)",
-            "line-color": "#404040",
+            "width": "mapData(weight, 1, 9, 1, 7)",
+            "line-color": "#3a3a3a",
             "curve-style": "haystack",
-            "opacity": 0.7,
+            "opacity": 0.6,
         },
     },
     {
         "selector": "node:selected",
         "style": {
-            "border-color": "#1db954",
+            "border-color": "#ffffff",
             "border-width": 3,
+        },
+    },
+    # --- ego-network focus: dim everything, light up the neighborhood ---
+    {
+        "selector": ".faded",
+        "style": {"opacity": 0.08, "text-opacity": 0},
+    },
+    {
+        "selector": "node.highlight",
+        "style": {"opacity": 1, "min-zoomed-font-size": 0},
+    },
+    {
+        "selector": "edge.highlight",
+        "style": {"opacity": 0.9, "line-color": "#1db954", "width": 3},
+    },
+    {
+        "selector": "node.ego",
+        "style": {
+            "border-color": "#1db954",
+            "border-width": 5,
+            "min-zoomed-font-size": 0,
+            "font-size": "16px",
+            "font-weight": "bold",
         },
     },
 ]
@@ -174,6 +213,14 @@ def _max_weight(graph: dict) -> int:
     return max(weights) if weights else 1
 
 
+def _musician_options(graph: dict) -> list[dict]:
+    """Name -> node-id options for the focus dropdown, sorted by name."""
+    nodes = sorted(
+        graph.get("nodes", []), key=lambda n: n.get("name", "").lower()
+    )
+    return [{"label": n["name"], "value": str(n["id"])} for n in nodes]
+
+
 def network_page(graph: dict) -> html.Div:
     """Full /network view: intro, filters, layout toggle, canvas, panel."""
     elements = to_cytoscape_elements(graph)
@@ -187,6 +234,7 @@ def network_page(graph: dict) -> html.Div:
         children=[
             dcc.Store(id="network-graph-data", data=graph),
             dcc.Store(id="network-fit-dummy"),
+            dcc.Store(id="network-focus-dummy"),
             html.H2("Hard Bop Session Network", className="network-title"),
             html.P(
                 "Every node is a musician; every edge means they played "
@@ -261,15 +309,34 @@ def network_page(graph: dict) -> html.Div:
                     ),
                 ],
             ),
-            dcc.RadioItems(
-                id="network-layout",
-                options=[
-                    {"label": "Force-directed", "value": "cose"},
-                    {"label": "Concentric", "value": "concentric"},
+            html.Div(
+                className="network-controls-row",
+                children=[
+                    dcc.RadioItems(
+                        id="network-layout",
+                        options=[
+                            {"label": "Force-directed", "value": "cose"},
+                            {"label": "Concentric", "value": "concentric"},
+                        ],
+                        value="cose",
+                        inline=True,
+                        className="network-layout-toggle",
+                    ),
+                    html.Div(
+                        className="network-focus",
+                        children=[
+                            dcc.Dropdown(
+                                id="network-focus",
+                                options=_musician_options(graph),
+                                value=None,
+                                placeholder=(
+                                    "Focus on a musician's network…"
+                                ),
+                                className="network-dropdown",
+                            ),
+                        ],
+                    ),
                 ],
-                value="cose",
-                inline=True,
-                className="network-layout-toggle",
             ),
             html.Div(
                 className="network-canvas-wrap",
