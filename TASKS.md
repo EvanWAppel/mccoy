@@ -750,7 +750,7 @@ visitors and never be empty (committed `graph.json` fallback).
 - [x] **TT-05** Node color by era, size by degree; edge width by weight; `cose` layout default (with a `concentric` toggle)
 - [x] **TT-06** Click a node → side-panel callback with the musician's releases + top collaborators
 - [x] **TT-07** Filters: era range, instrument, and a min-shared-sessions slider
-- [x] **TT-08** Run `pytest tests/test_network.py` — green; layout/element build verified. *In-browser `/network` render still recommended.*
+- [x] **TT-08** Run `pytest tests/test_network.py` — green; layout/element build verified. *Verified in-browser: renders, auto-fits, node click -> side panel, filters work.*
 - [x] **TT-09** Style the page + side panel (`.network*`) in `assets/style.css`, dark theme
 
 ---

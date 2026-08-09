@@ -618,7 +618,42 @@ def toggle_public_tabs(tab):
     Input("network-layout", "value"),
 )
 def update_network_layout(name):
-    return {"name": name, "animate": False}
+    return {"name": name or "cose", "animate": False, "fit": True}
+
+
+# The cytoscape canvas mounts while its tab is display:none (zero size),
+# so it lays out but never fits the viewport — the graph renders blank
+# until shown. When the Network tab becomes visible, resize + fit it.
+app.clientside_callback(
+    """
+    function(tab) {
+        if (tab !== 'network') {
+            return window.dash_clientside.no_update;
+        }
+        setTimeout(function () {
+            var el = document.querySelector('#network-graph');
+            function findCy(root) {
+                var stack = [root];
+                while (stack.length) {
+                    var n = stack.pop();
+                    if (n && n._cyreg && n._cyreg.cy) return n._cyreg.cy;
+                    if (n && n.children) {
+                        for (var i = 0; i < n.children.length; i++) {
+                            stack.push(n.children[i]);
+                        }
+                    }
+                }
+                return null;
+            }
+            var cy = findCy(el);
+            if (cy) { cy.resize(); cy.fit(undefined, 40); }
+        }, 250);
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output("network-fit-dummy", "data"),
+    Input("public-tabs", "value"),
+)
 
 
 @app.callback(

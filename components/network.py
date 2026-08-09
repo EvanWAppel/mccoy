@@ -14,6 +14,7 @@ import dash_cytoscape as cyto
 from dash import dcc, html
 
 from netviz.db import get_graph
+from netviz.ingest import prune_isolated
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ def _era_color(era) -> str:
 def load_graph() -> dict:
     """Live graph from the DB, or the committed demo if empty/unreachable."""
     try:
-        graph = get_graph()
+        graph = prune_isolated(get_graph())
         if graph.get("nodes"):
             return graph
     except Exception as exc:  # DB missing/unreachable -> demo fallback
@@ -185,6 +186,7 @@ def network_page(graph: dict) -> html.Div:
         className="network-page",
         children=[
             dcc.Store(id="network-graph-data", data=graph),
+            dcc.Store(id="network-fit-dummy"),
             html.H2("Hard Bop Session Network", className="network-title"),
             html.P(
                 "Every node is a musician; every edge means they played "
