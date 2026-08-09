@@ -38,7 +38,12 @@ from components.header import render_header
 from components.artist_grid import render_grid
 from components.trends import render_bump_chart
 from components.about import about_tab
-from components.network import network_page, load_graph
+from components.network import (
+    network_page,
+    load_graph,
+    filter_graph,
+    to_cytoscape_elements,
+)
 from components.rustle import (
     mode_switcher,
     target_picker,
@@ -614,6 +619,25 @@ def toggle_public_tabs(tab):
 )
 def update_network_layout(name):
     return {"name": name, "animate": False}
+
+
+@app.callback(
+    Output("network-graph", "elements"),
+    Input("network-era", "value"),
+    Input("network-instrument", "value"),
+    Input("network-min-weight", "value"),
+    State("network-graph-data", "data"),
+)
+def filter_network(era_range, instruments, min_weight, graph):
+    if not graph:
+        raise PreventUpdate
+    subgraph = filter_graph(
+        graph,
+        era_range=era_range,
+        instruments=instruments,
+        min_weight=min_weight or 1,
+    )
+    return to_cytoscape_elements(subgraph)
 
 
 @app.callback(

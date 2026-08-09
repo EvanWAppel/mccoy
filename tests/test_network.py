@@ -8,6 +8,7 @@ from components.network import (
     to_cytoscape_elements,
     network_page,
     load_graph,
+    filter_graph,
 )
 
 SAMPLE_GRAPH = {
@@ -58,6 +59,36 @@ class TestToCytoscapeElements:
 
     def test_empty_graph_yields_no_elements(self):
         assert to_cytoscape_elements({"nodes": [], "edges": []}) == []
+
+
+class TestFilterGraph:
+    def test_no_filters_returns_full_graph(self):
+        g = filter_graph(SAMPLE_GRAPH)
+        assert len(g["nodes"]) == 3
+        assert len(g["edges"]) == 2
+
+    def test_era_range_drops_out_of_range_nodes(self):
+        # Keep only 1954-1956 -> drops Wayne Shorter (1959).
+        g = filter_graph(SAMPLE_GRAPH, era_range=(1954, 1956))
+        names = {n["name"] for n in g["nodes"]}
+        assert "Wayne Shorter" not in names
+        assert "Lee Morgan" in names
+
+    def test_instrument_filter(self):
+        g = filter_graph(SAMPLE_GRAPH, instruments=["trumpet"])
+        assert {n["name"] for n in g["nodes"]} == {"Lee Morgan"}
+
+    def test_min_weight_prunes_edges(self):
+        g = filter_graph(SAMPLE_GRAPH, min_weight=3)
+        # Only the weight-4 edge survives.
+        assert len(g["edges"]) == 1
+        assert g["edges"][0]["weight"] == 4
+
+    def test_edges_require_both_endpoints_kept(self):
+        # Drop Wayne Shorter via era; the 1-3 edge must go too.
+        g = filter_graph(SAMPLE_GRAPH, era_range=(1954, 1956))
+        for e in g["edges"]:
+            assert e["source"] != 3 and e["target"] != 3
 
 
 class TestNetworkPage:

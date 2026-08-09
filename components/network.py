@@ -48,6 +48,42 @@ def load_graph() -> dict:
     return json.loads(GRAPH_JSON.read_text())
 
 
+def filter_graph(
+    graph: dict,
+    era_range: tuple | list | None = None,
+    instruments: list | None = None,
+    min_weight: int = 1,
+) -> dict:
+    """Return a subgraph honoring the era / instrument / weight filters.
+
+    Nodes with an unknown (None) era are never filtered out by era.
+    Edges survive only if their weight clears ``min_weight`` *and* both
+    endpoints survived the node filters.
+    """
+    lo, hi = (era_range or (None, None))
+    kept_ids = set()
+    nodes = []
+    for node in graph.get("nodes", []):
+        era = node.get("era")
+        if era is not None and lo is not None and era < lo:
+            continue
+        if era is not None and hi is not None and era > hi:
+            continue
+        if instruments and node.get("instrument") not in instruments:
+            continue
+        nodes.append(node)
+        kept_ids.add(node["id"])
+
+    edges = [
+        e
+        for e in graph.get("edges", [])
+        if e.get("weight", 1) >= min_weight
+        and e["source"] in kept_ids
+        and e["target"] in kept_ids
+    ]
+    return {"nodes": nodes, "edges": edges}
+
+
 def to_cytoscape_elements(graph: dict) -> list[dict]:
     """Convert a ``{nodes, edges}`` graph to Cytoscape element dicts."""
     elements: list[dict] = []
@@ -114,15 +150,41 @@ _STYLESHEET = [
 ]
 
 
+def _era_bounds(graph: dict) -> tuple[int, int]:
+    eras = [n["era"] for n in graph.get("nodes", []) if n.get("era")]
+    if not eras:
+        return (1945, 1975)
+    return (min(eras), max(eras))
+
+
+def _instrument_options(graph: dict) -> list[dict]:
+    instruments = sorted(
+        {
+            n["instrument"]
+            for n in graph.get("nodes", [])
+            if n.get("instrument")
+        }
+    )
+    return [{"label": i.title(), "value": i} for i in instruments]
+
+
+def _max_weight(graph: dict) -> int:
+    weights = [e.get("weight", 1) for e in graph.get("edges", [])]
+    return max(weights) if weights else 1
+
+
 def network_page(graph: dict) -> html.Div:
-    """Full /network view: intro, layout toggle, graph canvas, side panel."""
+    """Full /network view: intro, filters, layout toggle, canvas, panel."""
     elements = to_cytoscape_elements(graph)
     n_nodes = len(graph.get("nodes", []))
     n_edges = len(graph.get("edges", []))
+    era_lo, era_hi = _era_bounds(graph)
+    max_weight = _max_weight(graph)
 
     return html.Div(
         className="network-page",
         children=[
+            dcc.Store(id="network-graph-data", data=graph),
             html.H2("Hard Bop Session Network", className="network-title"),
             html.P(
                 "Every node is a musician; every edge means they played "
@@ -135,6 +197,67 @@ def network_page(graph: dict) -> html.Div:
             html.P(
                 f"{n_nodes} musicians · {n_edges} shared-session links",
                 className="network-stats",
+            ),
+            html.Div(
+                className="network-filters",
+                children=[
+                    html.Div(
+                        className="network-filter",
+                        children=[
+                            html.Label("Era", className="network-filter-lbl"),
+                            dcc.RangeSlider(
+                                id="network-era",
+                                min=era_lo,
+                                max=era_hi,
+                                value=[era_lo, era_hi],
+                                step=1,
+                                marks={
+                                    era_lo: str(era_lo),
+                                    era_hi: str(era_hi),
+                                },
+                                tooltip={"placement": "bottom"},
+                            ),
+                        ],
+                    ),
+                    html.Div(
+                        className="network-filter",
+                        children=[
+                            html.Label(
+                                "Instrument",
+                                className="network-filter-lbl",
+                            ),
+                            dcc.Dropdown(
+                                id="network-instrument",
+                                options=_instrument_options(graph),
+                                value=[],
+                                multi=True,
+                                placeholder="All instruments",
+                                className="network-dropdown",
+                            ),
+                        ],
+                    ),
+                    html.Div(
+                        className="network-filter",
+                        children=[
+                            html.Label(
+                                "Min shared sessions",
+                                className="network-filter-lbl",
+                            ),
+                            dcc.Slider(
+                                id="network-min-weight",
+                                min=1,
+                                max=max_weight,
+                                value=1,
+                                step=1,
+                                marks={
+                                    1: "1",
+                                    max_weight: str(max_weight),
+                                },
+                                tooltip={"placement": "bottom"},
+                            ),
+                        ],
+                    ),
+                ],
             ),
             dcc.RadioItems(
                 id="network-layout",

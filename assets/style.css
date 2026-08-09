@@ -806,3 +806,29 @@ body, html {
     flex-basis: auto;
   }
 }
+
+/* Network filters */
+.network-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin: 8px 0 12px;
+}
+.network-filter {
+  flex: 1 1 220px;
+  min-width: 200px;
+}
+.network-filter-lbl {
+  display: block;
+  color: var(--text-secondary, #b3b3b3);
+  font-size: 0.8rem;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.network-dropdown .Select-control,
+.network-dropdown .Select-menu-outer {
+  background: #1e1e1e;
+  border-color: #282828;
+  color: #fff;
+}
