@@ -814,12 +814,30 @@ button.dash-dropdown,
 .network-dropdown .dash-dropdown-placeholder {
   color: #fff !important;
 }
-.dash-dropdown-menu,
-.dash-dropdown-options,
-.dash-dropdown-menu-outer {
+/* Opened menu (Radix portal): content, search field, options */
+.dash-dropdown-content,
+.dash-dropdown-options {
   background-color: #1e1e1e !important;
   color: #fff !important;
   border: 1px solid #333 !important;
+}
+.dash-dropdown-search-container {
+  background-color: #1e1e1e !important;
+  border-bottom: 1px solid #333 !important;
+}
+.dash-dropdown-search {
+  background-color: #1e1e1e !important;
+  color: #fff !important;
+}
+.dash-dropdown-search::placeholder {
+  color: #8a8a8a !important;
+}
+.dash-dropdown-search-icon {
+  color: #8a8a8a !important;
+}
+.dash-dropdown-option,
+.dash-dropdown-option .dash-options-list-option-text {
+  color: #fff !important;
 }
 .dash-dropdown-option:hover,
 .dash-dropdown-option[aria-selected="true"] {
