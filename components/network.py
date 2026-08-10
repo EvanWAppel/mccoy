@@ -15,34 +15,38 @@ import dash_cytoscape as cyto
 from dash import dcc, html
 
 from netviz.db import get_graph
-from netviz.ingest import prune_isolated
+from netviz.ingest import cap_by_degree, focus_graph, prune_isolated
 
 logger = logging.getLogger(__name__)
 
 GRAPH_JSON = Path(__file__).parent.parent / "netviz" / "graph.json"
 
-# Era buckets -> node color (Spotify-dark friendly palette).
-_ERA_COLORS = [
-    (1955, "#1db954"),   # earliest hard bop -> Spotify green
-    (1960, "#4fc3f7"),
-    (1965, "#ba68c8"),
-    (9999, "#ffb74d"),   # later / post-bop
-]
+# Genre bucket -> node color (Spotify-dark friendly palette). Keys match
+# netviz.genre.GENRE_BUCKETS; unknown/None renders grey.
+_GENRE_COLORS = {
+    "Bebop": "#f06292",             # pink
+    "Hard Bop": "#1db954",          # the core -> Spotify green
+    "Modal": "#4fc3f7",             # blue
+    "Post-Bop": "#ba68c8",          # purple
+    "Soul-Jazz": "#ffb74d",         # orange
+    "Free/Avant-Garde": "#e57373",  # red
+    "Cool": "#4db6ac",              # teal
+    "Latin": "#fff176",             # yellow
+    "Other": "#90a4ae",             # blue-grey
+}
+_UNKNOWN_GENRE_COLOR = "#888888"
 
 
-def _era_color(era) -> str:
-    if era is None:
-        return "#888888"
-    for cutoff, color in _ERA_COLORS:
-        if era < cutoff:
-            return color
-    return _ERA_COLORS[-1][1]
+def _genre_color(genre) -> str:
+    if not genre:
+        return _UNKNOWN_GENRE_COLOR
+    return _GENRE_COLORS.get(genre, _GENRE_COLORS["Other"])
 
 
 def load_graph() -> dict:
     """Live graph from the DB, or the committed demo if empty/unreachable."""
     try:
-        graph = prune_isolated(get_graph())
+        graph = cap_by_degree(focus_graph(prune_isolated(get_graph())))
         if graph.get("nodes"):
             return graph
     except Exception as exc:  # DB missing/unreachable -> demo fallback
@@ -55,10 +59,14 @@ def filter_graph(
     era_range: tuple | list | None = None,
     instruments: list | None = None,
     min_weight: int = 1,
+    genres: list | None = None,
 ) -> dict:
-    """Return a subgraph honoring the era / instrument / weight filters.
+    """Return a subgraph honoring the era / instrument / genre / weight
+    filters.
 
     Nodes with an unknown (None) era are never filtered out by era.
+    A genre filter only keeps nodes whose genre is in ``genres``
+    (unknown-genre nodes drop when a genre filter is active).
     Edges survive only if their weight clears ``min_weight`` *and* both
     endpoints survived the node filters.
     """
@@ -72,6 +80,8 @@ def filter_graph(
         if era is not None and hi is not None and era > hi:
             continue
         if instruments and node.get("instrument") not in instruments:
+            continue
+        if genres and node.get("genre") not in genres:
             continue
         nodes.append(node)
         kept_ids.add(node["id"])
@@ -98,7 +108,8 @@ def to_cytoscape_elements(graph: dict) -> list[dict]:
                     "degree": node.get("degree", 0),
                     "era": node.get("era"),
                     "instrument": node.get("instrument"),
-                    "color": _era_color(node.get("era")),
+                    "genre": node.get("genre"),
+                    "color": _genre_color(node.get("genre")),
                     # sqrt scaling: hubs stay bigger without ballooning
                     # into 250px blobs that swallow their neighbors.
                     "size": round(14 + 7 * math.sqrt(node.get("degree", 0))),
@@ -208,6 +219,36 @@ def _instrument_options(graph: dict) -> list[dict]:
     return [{"label": i.title(), "value": i} for i in instruments]
 
 
+def _genre_options(graph: dict) -> list[dict]:
+    """Genre filter options, ordered by the palette (present genres only)."""
+    present = {n["genre"] for n in graph.get("nodes", []) if n.get("genre")}
+    return [
+        {"label": g, "value": g}
+        for g in _GENRE_COLORS
+        if g in present
+    ]
+
+
+def _genre_legend() -> html.Div:
+    """Color key mapping each genre bucket to its node color."""
+    return html.Div(
+        className="network-legend",
+        children=[
+            html.Span(
+                className="network-legend-item",
+                children=[
+                    html.Span(
+                        className="network-legend-swatch",
+                        style={"backgroundColor": color},
+                    ),
+                    html.Span(genre, className="network-legend-lbl"),
+                ],
+            )
+            for genre, color in _GENRE_COLORS.items()
+        ],
+    )
+
+
 def _max_weight(graph: dict) -> int:
     weights = [e.get("weight", 1) for e in graph.get("edges", [])]
     return max(weights) if weights else 1
@@ -235,19 +276,22 @@ def network_page(graph: dict) -> html.Div:
             dcc.Store(id="network-graph-data", data=graph),
             dcc.Store(id="network-fit-dummy"),
             dcc.Store(id="network-focus-dummy"),
-            html.H2("Hard Bop Session Network", className="network-title"),
+            html.H2("Musical Network", className="network-title"),
             html.P(
                 "Every node is a musician; every edge means they played "
                 "on the same record. Node size grows with how many "
-                "collaborators a player has; color marks the era they "
-                "came up in. Built offline from MusicBrainz + Discogs, "
-                "cached to Postgres. Click a node to see their sessions.",
+                "collaborators a player has; color marks their dominant "
+                "genre, from hard bop through the modal and post-bop "
+                "scenes around McCoy Tyner. Built offline from "
+                "MusicBrainz + Discogs, cached to Postgres. Click a node "
+                "to see their sessions.",
                 className="network-blurb",
             ),
             html.P(
                 f"{n_nodes} musicians · {n_edges} shared-session links",
                 className="network-stats",
             ),
+            _genre_legend(),
             html.Div(
                 className="network-filters",
                 children=[
@@ -282,6 +326,23 @@ def network_page(graph: dict) -> html.Div:
                                 value=[],
                                 multi=True,
                                 placeholder="All instruments",
+                                className="network-dropdown",
+                            ),
+                        ],
+                    ),
+                    html.Div(
+                        className="network-filter",
+                        children=[
+                            html.Label(
+                                "Genre",
+                                className="network-filter-lbl",
+                            ),
+                            dcc.Dropdown(
+                                id="network-genre",
+                                options=_genre_options(graph),
+                                value=[],
+                                multi=True,
+                                placeholder="All genres",
                                 className="network-dropdown",
                             ),
                         ],

@@ -45,22 +45,36 @@ def crawl(
             if len(crawled) >= node_cap:
                 break
 
-            releases = sources.discogs_releases_for(name, limit=release_cap)
+            try:
+                releases = sources.discogs_releases_for(
+                    name, limit=release_cap
+                )
+            except Exception as exc:  # never let one musician kill the run
+                logger.warning("crawl: skipping %r after error: %s", name, exc)
+                unresolved.append(name)
+                continue
             if not releases:
                 unresolved.append(name)
                 continue
 
             crawled.add(name)
             for rel in releases:
-                release_id = db.upsert_release_by_discogs(
-                    discogs_id=rel["discogs_id"],
-                    title=rel["title"],
-                    year=rel.get("year"),
-                    label=rel.get("label"),
-                )
-                for person in sources.discogs_personnel_for(
-                    rel["discogs_id"]
-                ):
+                try:
+                    release_id = db.upsert_release_by_discogs(
+                        discogs_id=rel["discogs_id"],
+                        title=rel["title"],
+                        year=rel.get("year"),
+                        label=rel.get("label"),
+                    )
+                    fetched = sources.discogs_personnel_for(rel["discogs_id"])
+                    db.set_release_styles(release_id, fetched["styles"])
+                except Exception as exc:  # skip a bad release, keep crawling
+                    logger.warning(
+                        "crawl: skipping release %s: %s",
+                        rel.get("discogs_id"), exc,
+                    )
+                    continue
+                for person in fetched["personnel"]:
                     musician_id = db.upsert_musician_by_discogs(
                         discogs_id=person["discogs_id"],
                         name=person["name"],

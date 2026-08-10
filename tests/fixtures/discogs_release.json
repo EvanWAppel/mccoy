@@ -2,6 +2,7 @@
   "id": 1234567,
   "title": "The Real McCoy",
   "year": 1967,
+  "styles": ["Post Bop", "Modal"],
   "artists": [{"id": 100, "name": "McCoy Tyner", "role": ""}],
   "extraartists": [
     {"id": 200, "name": "Joe Henderson", "role": "Tenor Saxophone"},

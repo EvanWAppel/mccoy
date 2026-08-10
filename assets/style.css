@@ -865,11 +865,35 @@ button.dash-dropdown,
   color: var(--accent, #1db954);
 }
 .network-side-instrument,
+.network-side-genre,
 .network-side-era,
 .network-side-degree {
   margin: 2px 0;
   color: var(--text-secondary, #b3b3b3);
   font-size: 0.9rem;
+}
+
+/* Genre color legend */
+.network-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 4px 0 12px;
+}
+.network-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.network-legend-swatch {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.network-legend-lbl {
+  color: var(--text-secondary, #b3b3b3);
+  font-size: 0.78rem;
 }
 
 @media (max-width: 640px) {

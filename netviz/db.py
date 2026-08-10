@@ -129,6 +129,7 @@ def upsert_release_by_discogs(
     title: str,
     year: int | None = None,
     label: str | None = None,
+    styles: list[str] | None = None,
 ) -> int:
     """Insert or update a release keyed on Discogs id; return its id."""
     conn = get_connection()
@@ -136,15 +137,16 @@ def upsert_release_by_discogs(
         with conn.cursor() as cur:
             cur.execute(
                 """
-                INSERT INTO nv_releases (discogs_id, title, year, label)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO nv_releases (discogs_id, title, year, label, styles)
+                VALUES (%s, %s, %s, %s, %s)
                 ON CONFLICT (discogs_id) DO UPDATE SET
                     title = EXCLUDED.title,
                     year = COALESCE(EXCLUDED.year, nv_releases.year),
-                    label = COALESCE(EXCLUDED.label, nv_releases.label)
+                    label = COALESCE(EXCLUDED.label, nv_releases.label),
+                    styles = COALESCE(EXCLUDED.styles, nv_releases.styles)
                 RETURNING id
                 """,
-                (discogs_id, title, year, label),
+                (discogs_id, title, year, label, styles),
             )
             release_id = cur.fetchone()[0]
         conn.commit()
@@ -172,6 +174,63 @@ def backfill_active_years() -> None:
                 WHERE m.id = sub.musician_id
                 """
             )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def set_release_styles(release_id: int, styles: list[str] | None) -> None:
+    """Attach Discogs styles to a release (from the full-release fetch)."""
+    if not styles:
+        return
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE nv_releases SET styles = %s WHERE id = %s",
+                (styles, release_id),
+            )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def backfill_primary_genre() -> None:
+    """Set each musician's primary_genre to their dominant release style.
+
+    Gathers every style across the releases a musician is credited on,
+    collapses them into a bucket via ``genre.dominant_genre``, and
+    writes the result. Musicians with no styled releases are left NULL
+    (rendered as unknown).
+    """
+    from netviz.genre import dominant_genre
+
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT c.musician_id, r.styles
+                FROM nv_credits c
+                JOIN nv_releases r ON r.id = c.release_id
+                WHERE r.styles IS NOT NULL
+                """
+            )
+            styles_by_musician: dict[int, list[str]] = {}
+            for musician_id, styles in cur.fetchall():
+                styles_by_musician.setdefault(musician_id, []).extend(
+                    styles or []
+                )
+            updates = [
+                (dominant_genre(styles), musician_id)
+                for musician_id, styles in styles_by_musician.items()
+            ]
+            if updates:
+                cur.executemany(
+                    "UPDATE nv_musicians SET primary_genre = %s "
+                    "WHERE id = %s",
+                    updates,
+                )
         conn.commit()
     finally:
         conn.close()
@@ -229,7 +288,7 @@ def replace_edges(edges: list[dict]) -> None:
 def get_graph() -> dict:
     """Return the whole graph as ``{"nodes": [...], "edges": [...]}``.
 
-    Node: ``{id, name, era, instrument, degree}``.
+    Node: ``{id, name, era, instrument, genre, degree}``.
     Edge: ``{source, target, weight, sample_releases}``.
     Degree is derived from the edge list (no join at render time).
     """
@@ -238,7 +297,8 @@ def get_graph() -> dict:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT id, name, active_start_year, primary_instrument
+                SELECT id, name, active_start_year, primary_instrument,
+                       primary_genre
                 FROM nv_musicians
                 """
             )
@@ -273,9 +333,10 @@ def get_graph() -> dict:
             "name": name,
             "era": era,
             "instrument": instrument,
+            "genre": genre,
             "degree": degree.get(mid, 0),
         }
-        for mid, name, era, instrument in musician_rows
+        for mid, name, era, instrument, genre in musician_rows
     ]
 
     return {"nodes": nodes, "edges": edges}

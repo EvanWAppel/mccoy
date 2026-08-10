@@ -721,9 +721,10 @@ app.clientside_callback(
     Input("network-era", "value"),
     Input("network-instrument", "value"),
     Input("network-min-weight", "value"),
+    Input("network-genre", "value"),
     State("network-graph-data", "data"),
 )
-def filter_network(era_range, instruments, min_weight, graph):
+def filter_network(era_range, instruments, min_weight, genres, graph):
     if not graph:
         raise PreventUpdate
     subgraph = filter_graph(
@@ -731,6 +732,7 @@ def filter_network(era_range, instruments, min_weight, graph):
         era_range=era_range,
         instruments=instruments,
         min_weight=min_weight or 1,
+        genres=genres,
     )
     return to_cytoscape_elements(subgraph)
 
@@ -742,6 +744,7 @@ def _find_node(graph, node_id):
                 "label": node["name"],
                 "era": node.get("era"),
                 "instrument": node.get("instrument"),
+                "genre": node.get("genre"),
                 "degree": node.get("degree", 0),
             }
     return None
@@ -764,12 +767,17 @@ def show_network_node(tap_data, focus_id, graph):
     if not data:
         raise PreventUpdate
     era = data.get("era")
+    genre = data.get("genre")
     instrument = data.get("instrument") or "musician"
     samples = data.get("samples")
     details = [
         html.H3(data.get("label", ""), className="network-side-name"),
         html.P(instrument.title(), className="network-side-instrument"),
     ]
+    if genre:
+        details.append(
+            html.P(genre, className="network-side-genre")
+        )
     if era:
         details.append(
             html.P(f"Came up c. {era}", className="network-side-era")

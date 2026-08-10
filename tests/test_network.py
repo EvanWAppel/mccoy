@@ -9,16 +9,18 @@ from components.network import (
     network_page,
     load_graph,
     filter_graph,
+    _genre_color,
+    _genre_options,
 )
 
 SAMPLE_GRAPH = {
     "nodes": [
         {"id": 1, "name": "Lee Morgan", "era": 1956,
-         "instrument": "trumpet", "degree": 2},
+         "instrument": "trumpet", "genre": "Hard Bop", "degree": 2},
         {"id": 2, "name": "Art Blakey", "era": 1954,
-         "instrument": "drums", "degree": 1},
+         "instrument": "drums", "genre": "Hard Bop", "degree": 1},
         {"id": 3, "name": "Wayne Shorter", "era": 1959,
-         "instrument": "saxophone", "degree": 1},
+         "instrument": "saxophone", "genre": "Post-Bop", "degree": 1},
     ],
     "edges": [
         {"source": 1, "target": 2, "weight": 4,
@@ -60,6 +62,30 @@ class TestToCytoscapeElements:
     def test_empty_graph_yields_no_elements(self):
         assert to_cytoscape_elements({"nodes": [], "edges": []}) == []
 
+    def test_node_colored_by_genre(self):
+        elements = to_cytoscape_elements(SAMPLE_GRAPH)
+        node = next(e for e in elements if e["data"].get("id") == "1")
+        assert node["data"]["genre"] == "Hard Bop"
+        assert node["data"]["color"] == _genre_color("Hard Bop")
+
+
+class TestGenreColor:
+    def test_known_genre_gets_palette_color(self):
+        assert _genre_color("Modal") != _genre_color(None)
+
+    def test_unknown_and_none_are_grey_fallbacks(self):
+        assert _genre_color(None) == "#888888"
+        # An unrecognized genre falls back to the Other color.
+        assert _genre_color("Reggae") == _genre_color("Other")
+
+
+class TestGenreOptions:
+    def test_lists_only_present_genres_in_palette_order(self):
+        opts = _genre_options(SAMPLE_GRAPH)
+        values = [o["value"] for o in opts]
+        # Hard Bop precedes Post-Bop in the palette; Modal absent here.
+        assert values == ["Hard Bop", "Post-Bop"]
+
 
 class TestFilterGraph:
     def test_no_filters_returns_full_graph(self):
@@ -73,6 +99,16 @@ class TestFilterGraph:
         names = {n["name"] for n in g["nodes"]}
         assert "Wayne Shorter" not in names
         assert "Lee Morgan" in names
+
+    def test_genre_filter_keeps_only_matching_nodes(self):
+        g = filter_graph(SAMPLE_GRAPH, genres=["Post-Bop"])
+        assert {n["id"] for n in g["nodes"]} == {3}
+        # Wayne Shorter has no surviving co-node, so no edges remain.
+        assert g["edges"] == []
+
+    def test_genre_filter_multi(self):
+        g = filter_graph(SAMPLE_GRAPH, genres=["Hard Bop", "Post-Bop"])
+        assert {n["id"] for n in g["nodes"]} == {1, 2, 3}
 
     def test_instrument_filter(self):
         g = filter_graph(SAMPLE_GRAPH, instruments=["trumpet"])
@@ -118,7 +154,13 @@ class TestLoadGraph:
             return_value=SAMPLE_GRAPH,
         )
         graph = load_graph()
-        assert len(graph["nodes"]) == 3
+        # DB graph is used (not the committed fallback), then focused:
+        # Art Blakey (era 1954) drops as pre-1955, leaving Lee Morgan +
+        # Wayne Shorter with their surviving edge.
+        assert {n["name"] for n in graph["nodes"]} == {
+            "Lee Morgan",
+            "Wayne Shorter",
+        }
 
     def test_falls_back_when_db_raises(self, mocker):
         mocker.patch(
