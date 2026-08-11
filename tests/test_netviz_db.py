@@ -6,6 +6,7 @@ from netviz.db import (
     upsert_musician_by_discogs,
     upsert_release_by_discogs,
     backfill_active_years,
+    backfill_primary_genre,
     add_credit,
     replace_edges,
     get_graph,
@@ -79,13 +80,19 @@ class TestUpsertReleaseByDiscogs:
                                                   mock_cursor):
         mock_cursor.fetchone.return_value = (14,)
         with patch("netviz.db.get_connection", return_value=mock_conn):
-            result = upsert_release_by_discogs("111", "The Real McCoy",
-                                               1967, "Blue Note")
+            result = upsert_release_by_discogs(
+                "111", "The Real McCoy", 1967, "Blue Note",
+                styles=["Hard Bop", "Modal"],
+            )
         assert result == 14
         sql, params = mock_cursor.execute.call_args[0]
         assert "nv_releases" in sql
         assert "ON CONFLICT (discogs_id)" in sql
-        assert params == ("111", "The Real McCoy", 1967, "Blue Note")
+        assert "styles" in sql
+        assert params == (
+            "111", "The Real McCoy", 1967, "Blue Note",
+            ["Hard Bop", "Modal"],
+        )
 
 
 class TestBackfillActiveYears:
@@ -95,6 +102,35 @@ class TestBackfillActiveYears:
         sql = mock_cursor.execute.call_args[0][0]
         assert "UPDATE nv_musicians" in sql
         assert "MIN(r.year)" in sql
+        mock_conn.commit.assert_called_once()
+
+
+class TestBackfillPrimaryGenre:
+    def test_aggregates_styles_and_updates_dominant_genre(
+        self, mock_conn, mock_cursor
+    ):
+        # Musician 1 spans two releases -> Hard Bop dominates; musician
+        # 2 -> Free/Avant-Garde.
+        mock_cursor.fetchall.return_value = [
+            (1, ["Hard Bop", "Modal"]),
+            (1, ["Hard Bop"]),
+            (2, ["Free Jazz"]),
+        ]
+        with patch("netviz.db.get_connection", return_value=mock_conn):
+            backfill_primary_genre()
+
+        sql = mock_cursor.executemany.call_args[0][0]
+        updates = mock_cursor.executemany.call_args[0][1]
+        assert "UPDATE nv_musicians" in sql
+        assert "primary_genre" in sql
+        assert set(updates) == {("Hard Bop", 1), ("Free/Avant-Garde", 2)}
+        mock_conn.commit.assert_called_once()
+
+    def test_no_styled_releases_skips_update(self, mock_conn, mock_cursor):
+        mock_cursor.fetchall.return_value = []
+        with patch("netviz.db.get_connection", return_value=mock_conn):
+            backfill_primary_genre()
+        mock_cursor.executemany.assert_not_called()
         mock_conn.commit.assert_called_once()
 
 
@@ -140,8 +176,8 @@ class TestGetGraph:
         # First fetchall -> musicians, second -> edges.
         mock_cursor.fetchall.side_effect = [
             [
-                (1, "Lee Morgan", 1956, "trumpet"),
-                (2, "Art Blakey", 1954, "drums"),
+                (1, "Lee Morgan", 1956, "trumpet", "Hard Bop"),
+                (2, "Art Blakey", 1954, "drums", "Hard Bop"),
             ],
             [
                 (1, 2, 4, ["The Sidewinder"]),
@@ -155,6 +191,7 @@ class TestGetGraph:
         node = next(n for n in graph["nodes"] if n["id"] == 1)
         assert node["name"] == "Lee Morgan"
         assert node["era"] == 1956
+        assert node["genre"] == "Hard Bop"
         assert node["degree"] == 1  # touched by one edge
 
         edge = graph["edges"][0]

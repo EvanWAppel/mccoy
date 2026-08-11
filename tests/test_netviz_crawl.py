@@ -12,6 +12,7 @@ class FakeDB:
         self.musicians = {}   # discogs_id -> id
         self.releases = {}    # discogs_id -> id
         self.credits = set()  # (musician_id, release_id, role)
+        self.styles = {}      # release_id -> styles
         self._next = iter(range(1, 100000))
 
     def upsert_musician_by_discogs(self, discogs_id, name,
@@ -21,7 +22,7 @@ class FakeDB:
         return self.musicians[discogs_id]
 
     def upsert_release_by_discogs(self, discogs_id, title, year=None,
-                                  label=None):
+                                  label=None, styles=None):
         if discogs_id not in self.releases:
             self.releases[discogs_id] = next(self._next)
         return self.releases[discogs_id]
@@ -29,12 +30,15 @@ class FakeDB:
     def add_credit(self, musician_id, release_id, role):
         self.credits.add((musician_id, release_id, role))
 
+    def set_release_styles(self, release_id, styles):
+        self.styles[release_id] = styles
+
 
 @pytest.fixture
 def fake_db(mocker):
     db = FakeDB()
     for fn in ("upsert_musician_by_discogs", "upsert_release_by_discogs",
-               "add_credit"):
+               "add_credit", "set_release_styles"):
         mocker.patch.object(crawl_mod.db, fn, getattr(db, fn))
     return db
 
@@ -44,7 +48,10 @@ def _wire_sources(mocker, releases_by_name, personnel_by_release):
         return releases_by_name.get(name, [])[:limit]
 
     def discogs_personnel_for(release_did):
-        return personnel_by_release.get(release_did, [])
+        return {
+            "styles": None,
+            "personnel": personnel_by_release.get(release_did, []),
+        }
 
     mocker.patch.object(
         crawl_mod.sources, "discogs_releases_for",

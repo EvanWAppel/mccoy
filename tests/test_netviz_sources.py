@@ -69,6 +69,27 @@ class TestMbPersonnelFor:
         assert len(people) == 3
 
 
+class TestRetry:
+    def test_retries_then_succeeds(self, mocker):
+        calls = {"n": 0}
+
+        def flaky():
+            calls["n"] += 1
+            if calls["n"] < 3:
+                raise json.JSONDecodeError("bad", "doc", 0)
+            return "ok"
+
+        assert sources._retry(flaky) == "ok"
+        assert calls["n"] == 3
+
+    def test_non_ratelimit_errors_propagate(self, mocker):
+        def boom():
+            raise IndexError("no results")
+
+        with pytest.raises(IndexError):
+            sources._retry(boom)
+
+
 class TestDiscogsPersonnelFor:
     def _client(self, mocker):
         fake_release = mocker.MagicMock()
@@ -78,27 +99,35 @@ class TestDiscogsPersonnelFor:
         return fake_client
 
     def test_returns_performing_musicians(self, mocker):
-        people = sources.discogs_personnel_for(
+        result = sources.discogs_personnel_for(
             1234567, client=self._client(mocker)
         )
-        names = {p["name"] for p in people}
+        names = {p["name"] for p in result["personnel"]}
         assert "Joe Henderson" in names
         assert "Ron Carter" in names
         assert "McCoy Tyner" in names  # main artist included
 
-    def test_carries_discogs_id_and_instrument(self, mocker):
-        people = sources.discogs_personnel_for(
+    def test_captures_styles_from_full_release(self, mocker):
+        result = sources.discogs_personnel_for(
             1234567, client=self._client(mocker)
         )
-        joe = next(p for p in people if p["name"] == "Joe Henderson")
+        assert result["styles"] == ["Post Bop", "Modal"]
+
+    def test_carries_discogs_id_and_instrument(self, mocker):
+        result = sources.discogs_personnel_for(
+            1234567, client=self._client(mocker)
+        )
+        joe = next(
+            p for p in result["personnel"] if p["name"] == "Joe Henderson"
+        )
         assert joe["discogs_id"] == "200"
         assert joe["instrument"] == "Tenor Saxophone"
 
     def test_filters_out_non_performers(self, mocker):
-        people = sources.discogs_personnel_for(
+        result = sources.discogs_personnel_for(
             1234567, client=self._client(mocker)
         )
-        names = {p["name"] for p in people}
+        names = {p["name"] for p in result["personnel"]}
         # Engineer + designer must be dropped.
         assert "Rudy Van Gelder" not in names
         assert "Reid Miles" not in names
@@ -108,7 +137,7 @@ class TestDiscogsPersonnelFor:
         fake_client.release.side_effect = Exception("404 not found")
         with caplog.at_level("INFO"):
             result = sources.discogs_personnel_for(999, client=fake_client)
-        assert result == []
+        assert result == {"styles": None, "personnel": []}
         assert any("999" in r.message for r in caplog.records)
 
 
@@ -140,6 +169,25 @@ class TestDiscogsReleasesFor:
         titles = [r["title"] for r in releases]
         assert titles == ["The Real McCoy", "Tender Moments"]
         assert releases[0]["discogs_id"] == "111"
+
+    def test_paging_error_returns_partial(self, mocker):
+        # A transient Discogs error mid-paging must yield what we have,
+        # not crash the crawl.
+        good = self._item(mocker, {"id": 111, "title": "Good",
+                                   "year": 1967, "type": "release"})
+
+        class Boom(list):
+            def __iter__(self):
+                yield good
+                raise ValueError("rate-limit HTML, not JSON")
+
+        artist = mocker.MagicMock()
+        artist.releases = Boom()
+        client = mocker.MagicMock()
+        client.search.return_value = [artist]
+
+        releases = sources.discogs_releases_for("McCoy Tyner", client=client)
+        assert [r["title"] for r in releases] == ["Good"]
 
     def test_respects_limit(self, mocker):
         items = [

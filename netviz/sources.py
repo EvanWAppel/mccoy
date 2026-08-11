@@ -6,6 +6,7 @@ relations, Discogs for richer liner-note credits. Name resolution
 misses are logged, never silently dropped.
 """
 
+import json
 import logging
 import os
 import re
@@ -22,8 +23,36 @@ musicbrainzngs.set_rate_limit(limit_or_interval=1.0, new_requests=1)
 
 # Discogs allows ~60 req/min for authenticated clients.
 DISCOGS_THROTTLE_SECONDS = 1.0
+# When Discogs rate-limits it returns a non-JSON (HTML) body that the
+# client fails to decode. Back off and retry rather than crash the crawl.
+DISCOGS_MAX_RETRIES = 5
 
 _discogs_singleton = None
+
+
+def _throttle() -> None:
+    time.sleep(DISCOGS_THROTTLE_SECONDS)
+
+
+def _retry(fn):
+    """Run a Discogs call, retrying with backoff on rate-limit bodies.
+
+    Discogs signals throttling with an HTML page that the client can't
+    JSON-decode (``JSONDecodeError``). We back off exponentially and
+    retry; other errors (e.g. IndexError for "no results") propagate so
+    callers can handle them. Raises the last error if retries run out.
+    """
+    for attempt in range(DISCOGS_MAX_RETRIES):
+        try:
+            return fn()
+        except json.JSONDecodeError as exc:
+            wait = DISCOGS_THROTTLE_SECONDS * 2 ** (attempt + 1)
+            logger.warning(
+                "Discogs rate-limited (%s); backoff %.0fs [%d/%d]",
+                exc, wait, attempt + 1, DISCOGS_MAX_RETRIES,
+            )
+            time.sleep(wait)
+    return fn()  # final attempt — let it raise if still failing
 
 
 def _get_discogs_client():
@@ -164,51 +193,76 @@ def discogs_releases_for(name: str, client=None, limit: int = 40) -> list[dict]:
     """Resolve an artist by name; return up to ``limit`` of their releases.
 
     Returns ``[{discogs_id, title, year, label}]`` (releases only, not
-    masters); ``[]`` (logged) if the name can't be resolved.
+    masters); ``[]`` (logged) if the name can't be resolved. Styles are
+    NOT on these list items — they come from the full release fetch in
+    ``discogs_personnel_for``.
+
+    The release-list pagination is wrapped so a transient Discogs error
+    (a rate-limit HTML body that fails JSON decode) yields the partial
+    list gathered so far instead of killing the whole crawl.
     """
     client = client or _get_discogs_client()
+    _throttle()
     results = client.search(name, type="artist")
     try:
-        artist = results[0]
+        artist = _retry(lambda: results[0])
     except (IndexError, KeyError):
         logger.info("Discogs: unresolved artist name %r", name)
         return []
+    except Exception as exc:  # exhausted retries on a rate-limit body
+        logger.warning("Discogs: search failed for %r (%s)", name, exc)
+        return []
 
     releases = []
-    for item in artist.releases:
-        data = item.data
-        if data.get("type") != "release":
-            continue  # skip masters; we want a concrete release + credits
-        releases.append(
-            {
-                "discogs_id": str(data["id"]),
-                "title": data.get("title", ""),
-                "year": data.get("year") or None,
-                "label": data.get("label"),
-            }
+    try:
+        for item in artist.releases:
+            data = item.data
+            if data.get("type") != "release":
+                continue  # skip masters; we want a release + credits
+            releases.append(
+                {
+                    "discogs_id": str(data["id"]),
+                    "title": data.get("title", ""),
+                    "year": data.get("year") or None,
+                    "label": data.get("label"),
+                }
+            )
+            if len(releases) >= limit:
+                break
+    except Exception as exc:  # rate-limit / bad page -> keep partial
+        logger.warning(
+            "Discogs: release paging failed for %r after %d (%s)",
+            name,
+            len(releases),
+            exc,
         )
-        if len(releases) >= limit:
-            break
     return releases
 
 
-def discogs_personnel_for(release_id, client=None) -> list[dict]:
-    """Return the performing musicians on a Discogs release.
+def discogs_personnel_for(release_id, client=None) -> dict:
+    """Return the performers and styles on a Discogs release.
 
-    Returns ``[{discogs_id, name, instrument}]`` from the main artists
-    plus the ``extraartists`` liner credits, filtered to performers.
-    ``[]`` (logged) if the release can't be fetched.
+    Returns ``{"styles": [...] | None, "personnel": [{discogs_id, name,
+    instrument}]}`` from the main artists plus the ``extraartists``
+    liner credits, filtered to performers. Styles come from the full
+    release resource (they are absent from artist release-lists).
+    ``{"styles": None, "personnel": []}`` (logged) if the release can't
+    be fetched.
     """
     client = client or _get_discogs_client()
-    try:
+
+    def _fetch():
         release = client.release(release_id)
         release.refresh()  # .data is lazy — force the full fetch
-        data = release.data
-    except Exception as exc:  # unresolved / network / rate-limit
+        return release.data
+
+    try:
+        data = _retry(_fetch)
+    except Exception as exc:  # unresolved / network / exhausted retries
         logger.info("Discogs: could not fetch release %s: %s", release_id, exc)
-        return []
+        return {"styles": None, "personnel": []}
     finally:
-        time.sleep(DISCOGS_THROTTLE_SECONDS)
+        _throttle()
 
     personnel = []
     seen = set()
@@ -229,4 +283,7 @@ def discogs_personnel_for(release_id, client=None) -> list[dict]:
                 "instrument": _clean_role(role) or None,
             }
         )
-    return personnel
+    return {
+        "styles": data.get("styles") or data.get("style") or None,
+        "personnel": personnel,
+    }
