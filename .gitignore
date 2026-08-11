@@ -20,3 +20,10 @@ wheels/
 
 # Spotipy token cache
 .cache
+.cache-playlist
+
+# Playlist CLI consent helper log (may contain client_id)
+_consent.log
+
+# Stray saved web pages
+srch.html
