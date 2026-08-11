@@ -237,3 +237,103 @@ def clear_recent_searches(user_id: str) -> None:
         conn.commit()
     finally:
         conn.close()
+
+
+# --- Song ratings (Rate feature) ---
+
+# Whitelist of sortable columns so the sort key can't be injected. Each
+# maps to a safe ORDER BY clause; ratings sort high-to-low, everything
+# else A→Z (case-insensitive), always tie-broken by title.
+RATING_SORTS = {
+    "title": "LOWER(title) ASC, LOWER(artist) ASC",
+    "artist": "LOWER(artist) ASC, LOWER(title) ASC",
+    "year": "year DESC, LOWER(title) ASC",
+    "rating": "rating DESC, LOWER(title) ASC",
+}
+
+
+def save_rating(user_id: str, track: dict, rating: int) -> None:
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO song_ratings
+                    (user_id, track_uri, title, artist, year,
+                     image_url, rating, rated_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, now())
+                ON CONFLICT (user_id, track_uri)
+                DO UPDATE SET
+                    rating = EXCLUDED.rating,
+                    title = EXCLUDED.title,
+                    artist = EXCLUDED.artist,
+                    year = EXCLUDED.year,
+                    image_url = EXCLUDED.image_url,
+                    rated_at = now()
+                """,
+                (
+                    user_id,
+                    track["uri"],
+                    track.get("name", ""),
+                    track.get("artist", ""),
+                    track.get("year", ""),
+                    track.get("image_url"),
+                    rating,
+                ),
+            )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def get_ratings(user_id: str, sort_by: str = "rating") -> list[dict]:
+    order = RATING_SORTS.get(sort_by, RATING_SORTS["rating"])
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                f"""
+                SELECT track_uri, title, artist, year, image_url,
+                       rating, rated_at
+                FROM song_ratings
+                WHERE user_id = %s
+                ORDER BY {order}
+                """,
+                (user_id,),
+            )
+            rows = cur.fetchall()
+    finally:
+        conn.close()
+    return [
+        {
+            "uri": uri,
+            "name": title,
+            "artist": artist,
+            "year": year,
+            "image_url": image_url,
+            "rating": rating,
+            "rated_at": rated_at,
+        }
+        for (uri, title, artist, year, image_url, rating, rated_at) in rows
+    ]
+
+
+def get_ratings_for_uris(user_id: str, uris: list[str]) -> dict:
+    """Map of track_uri -> rating for the given uris (for showing the
+    current score while flipping through an album)."""
+    if not uris:
+        return {}
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT track_uri, rating
+                FROM song_ratings
+                WHERE user_id = %s AND track_uri = ANY(%s)
+                """,
+                (user_id, list(uris)),
+            )
+            return {uri: rating for uri, rating in cur.fetchall()}
+    finally:
+        conn.close()

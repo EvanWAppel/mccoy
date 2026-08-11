@@ -1,0 +1,24 @@
+{
+  "name": "Smoky Late Night Hard Bop",
+  "description": "After-hours hard bop — minor blues, ballads, and slow burners for a dark room and a low light. Blue Note / Prestige era.",
+  "tracks": [
+    {"artist": "Miles Davis", "title": "'Round Midnight", "album": "'Round About Midnight"},
+    {"artist": "Kenny Burrell", "title": "Midnight Blue", "album": "Midnight Blue"},
+    {"artist": "Grant Green", "title": "Idle Moments", "album": "Idle Moments"},
+    {"artist": "Lee Morgan", "title": "Ceora", "album": "Cornbread"},
+    {"artist": "Hank Mobley", "title": "Soul Station", "album": "Soul Station"},
+    {"artist": "Sonny Clark", "title": "Cool Struttin'", "album": "Cool Struttin'"},
+    {"artist": "John Coltrane", "title": "Naima", "album": "Giant Steps"},
+    {"artist": "Cannonball Adderley", "title": "Autumn Leaves", "album": "Somethin' Else"},
+    {"artist": "Horace Silver", "title": "Peace", "album": "Blowin' the Blues Away"},
+    {"artist": "Stanley Turrentine", "title": "Sugar", "album": "Sugar"},
+    {"artist": "Joe Henderson", "title": "Blue Bossa", "album": "Page One"},
+    {"artist": "Tina Brooks", "title": "True Blue", "album": "True Blue"},
+    {"artist": "Freddie Hubbard", "title": "Up Jumped Spring", "album": "Backlash"},
+    {"artist": "Jimmy Smith", "title": "Midnight Special", "album": "Midnight Special"},
+    {"artist": "Lou Donaldson", "title": "Blues Walk", "album": "Blues Walk"},
+    {"artist": "Wes Montgomery", "title": "Polka Dots and Moonbeams", "album": "Full House"},
+    {"artist": "Kenny Burrell", "title": "Chitlins con Carne", "album": "Midnight Blue"},
+    {"artist": "Dexter Gordon", "title": "You've Changed", "album": "Ballads"}
+  ]
+}
