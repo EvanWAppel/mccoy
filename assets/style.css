@@ -736,3 +736,173 @@ body, html {
   border-color: var(--accent);
   outline: none;
 }
+
+/* --- Music Network Visualization (/network) --- */
+.network-page {
+  color: var(--text, #fff);
+}
+.network-title {
+  margin: 8px 0 4px;
+}
+.network-blurb {
+  color: var(--text-secondary, #b3b3b3);
+  max-width: 720px;
+  line-height: 1.5;
+}
+.network-stats {
+  color: var(--accent, #1db954);
+  font-size: 0.85rem;
+  margin: 4px 0 12px;
+}
+.network-layout-toggle {
+  margin-bottom: 12px;
+  color: var(--text-secondary, #b3b3b3);
+  font-size: 0.9rem;
+}
+.network-layout-toggle label {
+  margin-right: 16px;
+  cursor: pointer;
+  color: var(--text-secondary, #b3b3b3);
+}
+.network-layout-toggle input {
+  accent-color: var(--accent, #1db954);
+  margin-right: 6px;
+}
+
+/* rc-slider (ERA range + MIN SHARED SESSIONS) on the dark theme */
+/* Dash 4.x slider (filled range + thumbs) -> Spotify green */
+.network-filter .dash-slider-range {
+  background-color: var(--accent, #1db954) !important;
+}
+.network-filter .dash-slider-thumb {
+  background-color: var(--accent, #1db954) !important;
+  border-color: var(--accent, #1db954) !important;
+}
+.network-filter .rc-slider-mark-text {
+  color: var(--text-secondary, #b3b3b3);
+}
+/* the value tooltips that were rendering as white boxes */
+.rc-slider-tooltip-inner {
+  background-color: #1e1e1e !important;
+  color: #fff !important;
+  border: 1px solid #333;
+  box-shadow: none !important;
+}
+.rc-slider-tooltip-arrow {
+  border-top-color: #1e1e1e !important;
+  border-bottom-color: #1e1e1e !important;
+}
+
+/* Dash editable slider value inputs (min/max boxes beside the track) */
+.network-filter input.dash-input-container,
+.network-filter .dash-range-slider-input,
+.network-filter .dash-slider-input {
+  background-color: #1e1e1e !important;
+  color: #fff !important;
+  border: 1px solid #333 !important;
+  border-radius: 4px;
+}
+
+/* Dash 4.x dropdown (button + menu) */
+button.dash-dropdown,
+.network-dropdown.dash-dropdown {
+  background-color: #1e1e1e !important;
+  color: #fff !important;
+  border: 1px solid #333 !important;
+}
+.network-dropdown .dash-dropdown-value,
+.network-dropdown .dash-dropdown-placeholder {
+  color: #fff !important;
+}
+.dash-dropdown-menu,
+.dash-dropdown-options,
+.dash-dropdown-menu-outer {
+  background-color: #1e1e1e !important;
+  color: #fff !important;
+  border: 1px solid #333 !important;
+}
+.dash-dropdown-option:hover,
+.dash-dropdown-option[aria-selected="true"] {
+  background-color: #282828 !important;
+}
+.network-controls-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.network-focus {
+  flex: 1 1 320px;
+  max-width: 420px;
+}
+.network-canvas-wrap {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+}
+#network-graph {
+  flex: 1 1 auto;
+  background: #181818;
+  border: 1px solid #282828;
+  border-radius: 8px;
+}
+.network-side-panel {
+  flex: 0 0 240px;
+  background: #1e1e1e;
+  border: 1px solid #282828;
+  border-radius: 8px;
+  padding: 16px;
+  min-height: 200px;
+}
+.network-side-hint {
+  color: var(--text-secondary, #b3b3b3);
+  font-size: 0.9rem;
+}
+.network-side-name {
+  margin: 0 0 4px;
+  color: var(--accent, #1db954);
+}
+.network-side-instrument,
+.network-side-era,
+.network-side-degree {
+  margin: 2px 0;
+  color: var(--text-secondary, #b3b3b3);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 640px) {
+  .network-canvas-wrap {
+    flex-direction: column;
+  }
+  .network-side-panel {
+    flex-basis: auto;
+  }
+}
+
+/* Network filters */
+.network-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin: 8px 0 12px;
+}
+.network-filter {
+  flex: 1 1 220px;
+  min-width: 200px;
+}
+.network-filter-lbl {
+  display: block;
+  color: var(--text-secondary, #b3b3b3);
+  font-size: 0.8rem;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.network-dropdown .Select-control,
+.network-dropdown .Select-menu-outer {
+  background: #1e1e1e;
+  border-color: #282828;
+  color: #fff;
+}

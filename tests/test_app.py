@@ -87,14 +87,15 @@ class TestPublicStats:
         assert _find_id(out, "public-artist-grid-inner") or \
             "Radiohead" in str(out)
 
-    def test_empty_state_when_no_snapshot(self):
+    def test_falls_back_to_demo_when_no_snapshot(self):
+        # With no real snapshot, the public grid shows deterministic
+        # demo data (never an empty state) so recruiters see content.
         with patch.object(
             app_module.db, "get_latest_snapshot", return_value=None
         ):
             out = app_module.render_public_stats("short_term")
-        assert "Radiohead" not in str(out)
-        # some non-empty placeholder is rendered
-        assert out is not None
+        assert _find_id(out, "public-artist-grid-inner")
+        assert "Radiohead" in str(out)
 
     def test_uses_requested_time_range(self):
         with patch.object(
@@ -102,6 +103,18 @@ class TestPublicStats:
         ) as mock_latest:
             app_module.render_public_stats("medium_term")
         mock_latest.assert_called_once_with("medium_term")
+
+
+class TestPublicTrends:
+    def test_falls_back_to_demo_when_no_snapshots(self):
+        # Demo provides >=2 snapshots, so a real bump chart renders
+        # instead of the "first snapshot" empty state.
+        with patch.object(
+            app_module.db, "get_snapshots", return_value=[]
+        ):
+            out = app_module.render_public_trends("trends")
+        assert out is not None
+        assert "First snapshot captured" not in str(out)
 
 
 class TestPublicRustleSandbox:
@@ -201,11 +214,19 @@ class TestPublicTrendsGating:
 
 class TestPublicTabToggle:
     def test_demo_visible_about_hidden(self):
-        demo_style, about_style = app_module.toggle_public_tabs("demo")
-        assert demo_style == {"display": "block"}
-        assert about_style == {"display": "none"}
+        demo, about, network = app_module.toggle_public_tabs("demo")
+        assert demo == {"display": "block"}
+        assert about == {"display": "none"}
+        assert network == {"display": "none"}
 
     def test_about_visible_demo_hidden(self):
-        demo_style, about_style = app_module.toggle_public_tabs("about")
-        assert demo_style == {"display": "none"}
-        assert about_style == {"display": "block"}
+        demo, about, network = app_module.toggle_public_tabs("about")
+        assert demo == {"display": "none"}
+        assert about == {"display": "block"}
+        assert network == {"display": "none"}
+
+    def test_network_visible_others_hidden(self):
+        demo, about, network = app_module.toggle_public_tabs("network")
+        assert demo == {"display": "none"}
+        assert about == {"display": "none"}
+        assert network == {"display": "block"}
