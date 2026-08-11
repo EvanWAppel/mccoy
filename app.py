@@ -39,6 +39,12 @@ from components.header import render_header
 from components.artist_grid import render_grid
 from components.trends import render_bump_chart
 from components.about import about_tab
+from components.network import (
+    network_page,
+    load_graph,
+    filter_graph,
+    to_cytoscape_elements,
+)
 from components.rustle import (
     mode_switcher,
     target_picker,
@@ -102,7 +108,7 @@ server.secret_key = os.environ["FLASK_SECRET_KEY"]
 # Railway knows — set PUBLIC_BASE_URL there (e.g.
 # https://mccoy.up.railway.app). Falls back to relative paths locally.
 _BASE = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
-_OG_IMAGE = f"{_BASE}/assets/icon-512.png" if _BASE else "/assets/icon-512.png"
+_OG_IMAGE = f"{_BASE}/assets/og-image.png" if _BASE else "/assets/og-image.png"
 _OG_DESC = (
     "A personal Spotify listening dashboard and crate-digging tool, "
     "built in Python by Evan Appel. Live demo — no login required."
@@ -116,7 +122,7 @@ _SEO_META = f"""
         <meta property="og:description" content="{_OG_DESC}">
         <meta property="og:image" content="{_OG_IMAGE}">
         {'<meta property="og:url" content="' + _BASE + '/">' if _BASE else ''}
-        <meta name="twitter:card" content="summary">
+        <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:title" content="{_OG_TITLE}">
         <meta name="twitter:description" content="{_OG_DESC}">
         <meta name="twitter:image" content="{_OG_IMAGE}">"""
@@ -457,6 +463,11 @@ def public_layout():
                             style=TAB_STYLE,
                             selected_style=TAB_SELECTED_STYLE,
                         ),
+                        dcc.Tab(
+                            label="Network", value="network",
+                            style=TAB_STYLE,
+                            selected_style=TAB_SELECTED_STYLE,
+                        ),
                     ],
                 ),
                 html.Div(id="public-demo", children=_public_demo()),
@@ -464,6 +475,11 @@ def public_layout():
                     id="public-about",
                     style={"display": "none"},
                     children=_public_about_placeholder(),
+                ),
+                html.Div(
+                    id="public-network",
+                    style={"display": "none"},
+                    children=network_page(load_graph()),
                 ),
             ],
         ),
@@ -624,12 +640,187 @@ def render_page(pathname):
 @app.callback(
     Output("public-demo", "style"),
     Output("public-about", "style"),
+    Output("public-network", "style"),
     Input("public-tabs", "value"),
 )
 def toggle_public_tabs(tab):
+    hidden = {"display": "none"}
+    shown = {"display": "block"}
     if tab == "about":
-        return {"display": "none"}, {"display": "block"}
-    return {"display": "block"}, {"display": "none"}
+        return hidden, shown, hidden
+    if tab == "network":
+        return hidden, hidden, shown
+    return shown, hidden, hidden
+
+
+@app.callback(
+    Output("network-graph", "layout"),
+    Input("network-layout", "value"),
+)
+def update_network_layout(name):
+    layout = {"name": name or "cose", "animate": False, "fit": True}
+    if layout["name"] == "cose":
+        # Spread nodes out so dense hubs don't merge into one blob.
+        layout.update({
+            "nodeRepulsion": 14000,
+            "idealEdgeLength": 90,
+            "nodeOverlap": 24,
+            "componentSpacing": 120,
+            "gravity": 0.15,
+        })
+    return layout
+
+
+# The cytoscape canvas mounts while its tab is display:none (zero size),
+# so it lays out but never fits the viewport — the graph renders blank
+# until shown. When the Network tab becomes visible, resize + fit it,
+# and (once) wire ego-network highlighting: tap a node to light up its
+# neighborhood and fade the rest; tap the background to reset.
+app.clientside_callback(
+    """
+    function(tab) {
+        if (tab !== 'network') { return window.dash_clientside.no_update; }
+        setTimeout(function () {
+            function findCy(root) {
+                var stack = [root];
+                while (stack.length) {
+                    var n = stack.pop();
+                    if (n && n._cyreg && n._cyreg.cy) return n._cyreg.cy;
+                    if (n && n.children) {
+                        for (var i = 0; i < n.children.length; i++) {
+                            stack.push(n.children[i]);
+                        }
+                    }
+                }
+                return null;
+            }
+            var cy = findCy(document.querySelector('#network-graph'));
+            if (!cy) { return; }
+            cy.resize();
+            cy.fit(undefined, 40);
+            if (cy.__mccoyBound) { return; }
+            cy.__mccoyBound = true;
+            function clear() {
+                cy.elements().removeClass('faded highlight ego');
+            }
+            function highlight(node) {
+                cy.batch(function () {
+                    cy.elements().addClass('faded');
+                    var hood = node.closedNeighborhood();
+                    hood.removeClass('faded');
+                    hood.nodes().addClass('highlight');
+                    hood.edges().addClass('highlight');
+                    node.removeClass('faded');
+                    node.addClass('ego');
+                });
+            }
+            cy.on('tap', 'node', function (e) { highlight(e.target); });
+            cy.on('tap', function (e) { if (e.target === cy) { clear(); } });
+            window.__mccoyNet = {
+                clear: clear,
+                focusById: function (id) {
+                    if (!id) {
+                        clear();
+                        cy.animate({fit: {padding: 40}}, {duration: 300});
+                        return;
+                    }
+                    var n = cy.getElementById(String(id));
+                    if (n && n.length) {
+                        highlight(n);
+                        cy.animate(
+                            {center: {eles: n}, zoom: 0.9},
+                            {duration: 400}
+                        );
+                    }
+                }
+            };
+        }, 250);
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output("network-fit-dummy", "data"),
+    Input("public-tabs", "value"),
+)
+
+
+# Focus dropdown: highlight + center a chosen musician's ego network.
+app.clientside_callback(
+    """
+    function(value) {
+        if (window.__mccoyNet) { window.__mccoyNet.focusById(value); }
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output("network-focus-dummy", "data"),
+    Input("network-focus", "value"),
+)
+
+
+@app.callback(
+    Output("network-graph", "elements"),
+    Input("network-era", "value"),
+    Input("network-instrument", "value"),
+    Input("network-min-weight", "value"),
+    State("network-graph-data", "data"),
+)
+def filter_network(era_range, instruments, min_weight, graph):
+    if not graph:
+        raise PreventUpdate
+    subgraph = filter_graph(
+        graph,
+        era_range=era_range,
+        instruments=instruments,
+        min_weight=min_weight or 1,
+    )
+    return to_cytoscape_elements(subgraph)
+
+
+def _find_node(graph, node_id):
+    for node in (graph or {}).get("nodes", []):
+        if str(node["id"]) == str(node_id):
+            return {
+                "label": node["name"],
+                "era": node.get("era"),
+                "instrument": node.get("instrument"),
+                "degree": node.get("degree", 0),
+            }
+    return None
+
+
+@app.callback(
+    Output("network-side-panel", "children"),
+    Input("network-graph", "tapNodeData"),
+    Input("network-focus", "value"),
+    State("network-graph-data", "data"),
+    prevent_initial_call=True,
+)
+def show_network_node(tap_data, focus_id, graph):
+    # Populated by either clicking a node or picking one from the focus
+    # dropdown — both should surface the same musician detail panel.
+    if ctx.triggered_id == "network-focus":
+        data = _find_node(graph, focus_id) if focus_id else None
+    else:
+        data = tap_data
+    if not data:
+        raise PreventUpdate
+    era = data.get("era")
+    instrument = data.get("instrument") or "musician"
+    samples = data.get("samples")
+    details = [
+        html.H3(data.get("label", ""), className="network-side-name"),
+        html.P(instrument.title(), className="network-side-instrument"),
+    ]
+    if era:
+        details.append(
+            html.P(f"Came up c. {era}", className="network-side-era")
+        )
+    details.append(
+        html.P(
+            f"{data.get('degree', 0)} collaborators in this network",
+            className="network-side-degree",
+        )
+    )
+    return html.Div(details)
 
 
 @app.callback(
