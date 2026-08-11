@@ -867,6 +867,8 @@ body, html {
 
 .rate-empty__msg {
   color: var(--text-secondary);
+}
+
 /* --- Music Network Visualization (/network) --- */
 .network-page {
   color: var(--text, #fff);
