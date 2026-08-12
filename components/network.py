@@ -24,6 +24,12 @@ GRAPH_JSON = Path(__file__).parent.parent / "netviz" / "graph.json"
 # Genre bucket -> node color (Spotify-dark friendly palette). Keys match
 # netviz.genre.GENRE_BUCKETS; unknown/None renders grey.
 _GENRE_COLORS = {
+    # Top-level genres (multi-genre atlas from the Discogs dump).
+    "Jazz": "#1db954",              # Spotify green
+    "Rock": "#e57373",              # red
+    "Blues": "#4fc3f7",             # blue
+    "Funk / Soul": "#ffb74d",       # orange
+    # Jazz style buckets (the original jazz-only graph colors by these).
     "Bebop": "#f06292",             # pink
     "Hard Bop": "#1db954",          # the core -> Spotify green
     "Modal": "#4fc3f7",             # blue
@@ -109,6 +115,7 @@ def to_cytoscape_elements(graph: dict) -> list[dict]:
                     "era": node.get("era"),
                     "instrument": node.get("instrument"),
                     "genre": node.get("genre"),
+                    "style": node.get("style"),
                     "color": _genre_color(node.get("genre")),
                     # sqrt scaling: hubs stay bigger without ballooning
                     # into 250px blobs that swallow their neighbors.

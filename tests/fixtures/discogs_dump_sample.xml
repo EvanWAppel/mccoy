@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<releases>
+  <release id="1" status="Accepted">
+    <artists><artist><id>10</id><name>McCoy Tyner</name></artist></artists>
+    <title>The Real McCoy</title>
+    <genres><genre>Jazz</genre></genres>
+    <styles><style>Hard Bop</style><style>Modal</style></styles>
+    <released>1967-04-21</released>
+    <extraartists>
+      <artist><id>20</id><name>Joe Henderson</name><role>Tenor Saxophone</role></artist>
+      <artist><id>30</id><name>Elvin Jones</name><role>Drums</role></artist>
+      <artist><id>99</id><name>Rudy Van Gelder</name><role>Engineer</role></artist>
+    </extraartists>
+  </release>
+  <release id="2" status="Accepted">
+    <artists><artist><id>10</id><name>McCoy Tyner</name></artist></artists>
+    <title>Later Reissue Era</title>
+    <genres><genre>Jazz</genre></genres>
+    <styles><style>Post Bop</style></styles>
+    <released>1988</released>
+  </release>
+  <release id="3" status="Accepted">
+    <artists><artist><id>40</id><name>Some Techno Act</name></artist></artists>
+    <title>Out Of Scope Genre</title>
+    <genres><genre>Electronic</genre></genres>
+    <styles><style>Techno</style></styles>
+    <released>1970</released>
+  </release>
+  <release id="4" status="Accepted">
+    <artists><artist><id>50</id><name>The Rock Band</name></artist></artists>
+    <title>Heavy Sessions</title>
+    <genres><genre>Rock</genre></genres>
+    <styles><style>Blues Rock</style></styles>
+    <released>1969</released>
+    <extraartists>
+      <artist><id>60</id><name>Jimmy Page</name><role>Guitar</role></artist>
+      <artist><id>70</id><name>John Bonham</name><role>Drums</role></artist>
+      <artist><id>20</id><name>Joe Henderson</name><role>Saxophone</role></artist>
+    </extraartists>
+  </release>
+  <release id="5" status="Accepted">
+    <artists><artist><id>10</id><name>McCoy Tyner</name></artist></artists>
+    <title>Tender Moments</title>
+    <genres><genre>Jazz</genre></genres>
+    <styles><style>Hard Bop</style></styles>
+    <released>1965</released>
+    <extraartists>
+      <artist><id>20</id><name>Joe Henderson</name><role>Tenor Saxophone</role></artist>
+    </extraartists>
+  </release>
+</releases>
