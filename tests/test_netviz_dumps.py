@@ -41,7 +41,7 @@ class TestBuildGraph:
         return dumps.build_graph(lambda: iter(recs), **kw)
 
     def test_nodes_have_genre_style_era(self):
-        g = self._graph(top_k=100, min_weight=1, node_limit=100)
+        g = self._graph(top_k=100, min_weight=1, per_genre_limit=100)
         tyner = next(n for n in g["nodes"] if n["name"] == "McCoy Tyner")
         assert tyner["genre"] == "Jazz"
         assert tyner["style"] == "Hard Bop"      # 2x Hard Bop vs 1x Modal
@@ -49,13 +49,13 @@ class TestBuildGraph:
 
     def test_cross_genre_performer_gets_dominant_genre(self):
         # Joe Henderson: 2 Jazz releases, 1 Rock -> Jazz dominates.
-        g = self._graph(top_k=100, min_weight=1, node_limit=100)
+        g = self._graph(top_k=100, min_weight=1, per_genre_limit=100)
         joe = next(n for n in g["nodes"] if n["name"] == "Joe Henderson")
         assert joe["genre"] == "Jazz"
 
     def test_edge_weight_counts_shared_releases(self):
         # Tyner & Henderson share r1 and r5 -> weight 2.
-        g = self._graph(top_k=100, min_weight=2, node_limit=100)
+        g = self._graph(top_k=100, min_weight=2, per_genre_limit=100)
         ids = {n["name"]: n["id"] for n in g["nodes"]}
         te, jo = ids["McCoy Tyner"], ids["Joe Henderson"]
         edge = next(
@@ -67,7 +67,7 @@ class TestBuildGraph:
     def test_min_weight_prunes_weak_edges(self):
         # At min_weight=2, the single Rock co-credits (weight 1) drop,
         # isolating those nodes -> pruned out.
-        g = self._graph(top_k=100, min_weight=2, node_limit=100)
+        g = self._graph(top_k=100, min_weight=2, per_genre_limit=100)
         names = {n["name"] for n in g["nodes"]}
         assert "Jimmy Page" not in names
         assert {"McCoy Tyner", "Joe Henderson"} <= names
@@ -75,7 +75,7 @@ class TestBuildGraph:
     def test_top_k_per_genre_balances(self):
         # top_k=1 keeps only the single most-credited performer per
         # genre. Jazz's busiest here is Joe Henderson (3 credits).
-        g = self._graph(top_k=1, min_weight=1, node_limit=100)
+        g = self._graph(top_k=1, min_weight=1, per_genre_limit=100)
         jazz = [n for n in g["nodes"] if n["genre"] == "Jazz"]
         # At most one kept per genre before edge pruning; edges may then
         # leave it isolated, so just assert we didn't keep everyone.
@@ -90,7 +90,7 @@ class TestExtractRoundTrip:
         out = tmp_path / "graph.json"
         g = dumps.build_from_extract(
             FIXTURE and str(jsonl), str(out),
-            top_k=100, min_weight=1, node_limit=100,
+            top_k=100, min_weight=1, per_genre_limit=100,
         )
         assert out.exists()
         assert {n["name"] for n in g["nodes"]} >= {

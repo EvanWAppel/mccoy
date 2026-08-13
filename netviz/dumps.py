@@ -29,7 +29,7 @@ from collections import Counter, defaultdict
 from itertools import combinations
 from pathlib import Path
 
-from netviz.ingest import cap_by_degree, prune_isolated
+from netviz.ingest import prune_isolated
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +38,12 @@ SCOPE_GENRES = ("Jazz", "Rock", "Blues", "Funk / Soul")
 YEAR_LO, YEAR_HI = 1955, 1975
 
 _HEADERS = {"User-Agent": "mccoy-netviz/0.1 (+appelew@gmail.com)"}
+
+# Discogs placeholder "artists" that aren't people — huge false hubs.
+_BLOCKLIST = {
+    "Various", "Various Artists", "Unknown Artist", "No Artist",
+    "Soundtrack", "Traditional",
+}
 
 # Credit roles that are not performances (drop from the network).
 _NON_PERFORMER = (
@@ -93,32 +99,43 @@ def iter_inscope(source: str):
     dropped), deduped by artist id.
     """
     stream = _open_source(source)
-    for _event, rel in ET.iterparse(stream, events=("end",)):
-        if rel.tag != "release":
-            continue
-        yr = _year(rel)
-        genres = {g.text for g in rel.findall("genres/genre") if g.text}
-        hit = [g for g in SCOPE_GENRES if g in genres]
-        if yr and YEAR_LO <= yr <= YEAR_HI and hit:
-            performers = {}
-            for a in rel.findall("artists/artist"):
-                aid, nm = a.findtext("id"), a.findtext("name")
-                if aid and nm:
-                    performers[aid] = nm
-            for a in rel.findall("extraartists/artist"):
-                aid, nm = a.findtext("id"), a.findtext("name")
-                if aid and nm and _is_performer(a.findtext("role")):
-                    performers.setdefault(aid, nm)
-            if performers:
-                yield {
-                    "y": yr,
-                    "g": hit,
-                    "s": [s.text for s in rel.findall("styles/style")
-                          if s.text],
-                    "p": [[aid, nm] for aid, nm in performers.items()],
-                    "t": rel.findtext("title") or "",
-                }
-        rel.clear()
+    # events=("start","end") so we can grab the <releases> root and drop
+    # its parsed children after each release — otherwise iterparse keeps
+    # every element attached to root and memory grows until the OS kills
+    # the process partway through the ~15M-release dump.
+    context = ET.iterparse(stream, events=("start", "end"))
+    _, root = next(context)
+    try:
+        for event, rel in context:
+            if event != "end" or rel.tag != "release":
+                continue
+            yr = _year(rel)
+            genres = {g.text for g in rel.findall("genres/genre") if g.text}
+            hit = [g for g in SCOPE_GENRES if g in genres]
+            if yr and YEAR_LO <= yr <= YEAR_HI and hit:
+                performers = {}
+                for a in rel.findall("artists/artist"):
+                    aid, nm = a.findtext("id"), a.findtext("name")
+                    if aid and nm:
+                        performers[aid] = nm
+                for a in rel.findall("extraartists/artist"):
+                    aid, nm = a.findtext("id"), a.findtext("name")
+                    if aid and nm and _is_performer(a.findtext("role")):
+                        performers.setdefault(aid, nm)
+                if performers:
+                    yield {
+                        "y": yr,
+                        "g": hit,
+                        "s": [s.text for s in rel.findall("styles/style")
+                              if s.text],
+                        "p": [[aid, nm] for aid, nm in performers.items()],
+                        "t": rel.findtext("title") or "",
+                    }
+            rel.clear()
+            root.clear()  # drop parsed siblings; keeps memory flat
+    except (EOFError, OSError, ET.ParseError) as exc:
+        # A truncated/partial download ends mid-stream — keep what we got.
+        logger.warning("dump stream ended early (%s); partial results", exc)
 
 
 def extract_to_file(source: str, out_path: str) -> int:
@@ -143,11 +160,38 @@ def _read_jsonl(path: str):
             yield json.loads(line)
 
 
+def cap_per_genre(graph: dict, per_genre_limit: int) -> dict:
+    """Keep the top ``per_genre_limit`` nodes by degree WITHIN each genre.
+
+    A global degree cap re-tilts the atlas toward Jazz (its session-player
+    core is the densest), so cap per genre instead — this balances the
+    render across genres and thins the dense core. Isolated nodes pruned.
+    """
+    degree: Counter = Counter()
+    for e in graph["edges"]:
+        degree[e["source"]] += 1
+        degree[e["target"]] += 1
+    by_genre: dict[str, list] = defaultdict(list)
+    for n in graph["nodes"]:
+        by_genre[n["genre"]].append(n)
+    keep: set = set()
+    for nodes in by_genre.values():
+        nodes.sort(key=lambda n: (-degree.get(n["id"], 0), n["id"]))
+        keep.update(n["id"] for n in nodes[:per_genre_limit])
+    kept_nodes = [n for n in graph["nodes"] if n["id"] in keep]
+    kept_edges = [
+        e for e in graph["edges"]
+        if e["source"] in keep and e["target"] in keep
+    ]
+    return prune_isolated({"nodes": kept_nodes, "edges": kept_edges})
+
+
 def build_graph(
     records_factory,
     top_k: int = 500,
-    min_weight: int = 2,
-    node_limit: int = 700,
+    min_weight: int = 8,
+    per_genre_limit: int = 60,
+    max_release_performers: int = 12,
 ) -> dict:
     """Build the atlas graph from in-scope records.
 
@@ -158,7 +202,13 @@ def build_graph(
     Keeps the ``top_k`` most-credited performers *per genre* (balanced),
     forms co-credit edges (weight = shared in-scope releases) at or above
     ``min_weight``, colors each node by its dominant top-level genre with
-    a dominant style, then caps to ``node_limit`` by degree.
+    a dominant style, then caps to ``per_genre_limit`` nodes per genre by
+    degree (keeps the render balanced across genres).
+
+    Placeholder "artists" (Various, Unknown Artist, …) are dropped, and
+    releases with more than ``max_release_performers`` credited players
+    (big bands, orchestras, compilations) are excluded from edge-building
+    so their all-pairs cliques don't swamp the graph.
     """
     # Pass 1: tally per-performer genre/style counts, name, earliest year.
     gcount: dict[str, Counter] = defaultdict(Counter)
@@ -166,7 +216,11 @@ def build_graph(
     name: dict[str, str] = {}
     minyear: dict[str, int] = {}
     for rec in records_factory():
+        if len(rec["p"]) > max_release_performers:
+            continue
         for aid, nm in rec["p"]:
+            if nm in _BLOCKLIST:
+                continue
             name[aid] = nm
             for g in rec["g"]:
                 gcount[aid][g] += 1
@@ -202,6 +256,8 @@ def build_graph(
     weight: Counter = Counter()
     samples: dict[tuple, list] = defaultdict(list)
     for rec in records_factory():
+        if len(rec["p"]) > max_release_performers:
+            continue
         kept = sorted({idmap[aid] for aid, _ in rec["p"] if aid in keep})
         for a, b in combinations(kept, 2):
             weight[(a, b)] += 1
@@ -214,8 +270,9 @@ def build_graph(
         if w >= min_weight
     ]
 
-    graph = cap_by_degree(prune_isolated({"nodes": nodes, "edges": edges}),
-                          node_limit)
+    graph = cap_per_genre(
+        prune_isolated({"nodes": nodes, "edges": edges}), per_genre_limit
+    )
     # Set degree from the final edge set (drives node size in the UI).
     degree: Counter = Counter()
     for e in graph["edges"]:
@@ -230,11 +287,12 @@ def build_from_extract(
     extract_path: str,
     out_json: str,
     top_k: int = 500,
-    min_weight: int = 2,
-    node_limit: int = 700,
+    min_weight: int = 8,
+    per_genre_limit: int = 60,
 ) -> dict:
     graph = build_graph(
-        lambda: _read_jsonl(extract_path), top_k, min_weight, node_limit
+        lambda: _read_jsonl(extract_path), top_k, min_weight,
+        per_genre_limit,
     )
     Path(out_json).write_text(json.dumps(graph, indent=2))
     logger.info(

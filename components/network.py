@@ -15,7 +15,7 @@ import dash_cytoscape as cyto
 from dash import dcc, html
 
 from netviz.db import get_graph
-from netviz.ingest import cap_by_degree, focus_graph, prune_isolated
+from netviz.ingest import cap_by_degree, prune_isolated
 
 logger = logging.getLogger(__name__)
 
@@ -24,21 +24,12 @@ GRAPH_JSON = Path(__file__).parent.parent / "netviz" / "graph.json"
 # Genre bucket -> node color (Spotify-dark friendly palette). Keys match
 # netviz.genre.GENRE_BUCKETS; unknown/None renders grey.
 _GENRE_COLORS = {
-    # Top-level genres (multi-genre atlas from the Discogs dump).
+    # Top-level genres of the multi-genre atlas (Discogs dump).
     "Jazz": "#1db954",              # Spotify green
     "Rock": "#e57373",              # red
     "Blues": "#4fc3f7",             # blue
     "Funk / Soul": "#ffb74d",       # orange
-    # Jazz style buckets (the original jazz-only graph colors by these).
-    "Bebop": "#f06292",             # pink
-    "Hard Bop": "#1db954",          # the core -> Spotify green
-    "Modal": "#4fc3f7",             # blue
-    "Post-Bop": "#ba68c8",          # purple
-    "Soul-Jazz": "#ffb74d",         # orange
-    "Free/Avant-Garde": "#e57373",  # red
-    "Cool": "#4db6ac",              # teal
-    "Latin": "#fff176",             # yellow
-    "Other": "#90a4ae",             # blue-grey
+    "Other": "#90a4ae",             # blue-grey (fallback)
 }
 _UNKNOWN_GENRE_COLOR = "#888888"
 
@@ -52,7 +43,10 @@ def _genre_color(genre) -> str:
 def load_graph() -> dict:
     """Live graph from the DB, or the committed demo if empty/unreachable."""
     try:
-        graph = cap_by_degree(focus_graph(prune_isolated(get_graph())))
+        # Focusing/capping is done at build time (netviz.dumps for the
+        # atlas, ingest.export_graph for the jazz DB); here just cap by
+        # degree as a safety net so a huge DB can't blow up the render.
+        graph = cap_by_degree(prune_isolated(get_graph()))
         if graph.get("nodes"):
             return graph
     except Exception as exc:  # DB missing/unreachable -> demo fallback
@@ -236,8 +230,9 @@ def _genre_options(graph: dict) -> list[dict]:
     ]
 
 
-def _genre_legend() -> html.Div:
-    """Color key mapping each genre bucket to its node color."""
+def _genre_legend(graph: dict) -> html.Div:
+    """Color key for the genres actually present, in palette order."""
+    present = {n.get("genre") for n in graph.get("nodes", [])}
     return html.Div(
         className="network-legend",
         children=[
@@ -252,6 +247,7 @@ def _genre_legend() -> html.Div:
                 ],
             )
             for genre, color in _GENRE_COLORS.items()
+            if genre in present
         ],
     )
 
@@ -288,17 +284,17 @@ def network_page(graph: dict) -> html.Div:
                 "Every node is a musician; every edge means they played "
                 "on the same record. Node size grows with how many "
                 "collaborators a player has; color marks their dominant "
-                "genre, from hard bop through the modal and post-bop "
-                "scenes around McCoy Tyner. Built offline from "
-                "MusicBrainz + Discogs, cached to Postgres. Click a node "
-                "to see their sessions.",
+                "genre across the 1955–1975 golden era — jazz, "
+                "rock, blues, and funk/soul — where session players "
+                "wove the scenes together. Built offline from Discogs "
+                "release credits. Click a node to see their sessions.",
                 className="network-blurb",
             ),
             html.P(
                 f"{n_nodes} musicians · {n_edges} shared-session links",
                 className="network-stats",
             ),
-            _genre_legend(),
+            _genre_legend(graph),
             html.Div(
                 className="network-filters",
                 children=[
