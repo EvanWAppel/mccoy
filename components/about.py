@@ -66,10 +66,9 @@ def about_tab():
                 html.Ul(className="about__list", children=[
                     html.Li(
                         "Two data paths: the live views fetch from "
-                        "Spotify per request, while a weekly Railway "
-                        "cron snapshots top artists into Postgres so the "
-                        "Trends charts (and this public demo) have "
-                        "history to draw on."
+                        "Spotify per request, while a scheduled job "
+                        "keeps a running history in Postgres (see Data "
+                        "pipeline below)."
                     ),
                     html.Li(
                         "Public, no-login portfolio mode: logged-out "
@@ -91,6 +90,19 @@ def about_tab():
                         "changes scoped and reviewable."
                     ),
                 ]),
+            ]),
+            _section("Data pipeline", [
+                _p(
+                    "A small but real scheduled-ingest pipeline sits "
+                    "under the Trends charts: a weekly Railway cron "
+                    "snapshots my top-artist rankings into Postgres, and "
+                    "both the Trends bump chart and this public demo read "
+                    "that history. The write is idempotent per week, so "
+                    "re-runs extend the record without duplicating it. "
+                    "It's a personal weekly cron — not production data "
+                    "engineering — but it's the same snapshot-into-a-"
+                    "warehouse shape, honestly scoped."
+                ),
             ]),
             _section("Tradeoffs worth calling out", [
                 html.Ul(className="about__list", children=[
