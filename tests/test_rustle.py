@@ -1,29 +1,29 @@
 import pytest
-from dash import html, dcc
+from dash import dcc, html
 
 # Group T is the TDD red phase for `components/rustle.py`. The module is
 # implemented in Group U (vertical slice). Until then, skip this file
 # cleanly instead of erroring out the whole test suite.
 try:
     from components.rustle import (
-        mode_switcher,
-        target_picker,
-        search_bar,
-        recents_chips,
-        playlist_card,
-        track_card,
-        end_of_queue_card,
-        added_stamp_overlay,
-        add_counter_chip,
-        card_stack,
-        tap_to_start_overlay,
-        create_playlist_form,
-        no_results_state,
-        error_toast,
-        embed_player,
         ALBUM_END_MESSAGE,
         SEARCH_END_MESSAGE,
         TRACK_END_MESSAGE,
+        add_counter_chip,
+        added_stamp_overlay,
+        card_stack,
+        create_playlist_form,
+        embed_player,
+        end_of_queue_card,
+        error_toast,
+        mode_switcher,
+        no_results_state,
+        playlist_card,
+        recents_chips,
+        search_bar,
+        tap_to_start_overlay,
+        target_picker,
+        track_card,
     )
 except ImportError:
     pytest.skip(

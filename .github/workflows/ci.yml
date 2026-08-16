@@ -13,5 +13,17 @@ jobs:
         uses: astral-sh/setup-uv@v5
       - name: Sync dependencies
         run: uv sync
+      - name: Lint (ruff)
+        run: uv run ruff check .
+      # ty is advisory for now: its inference on Dash/Flask types
+      # produces mostly false positives, so it runs and is visible but
+      # does not gate the build. Tighten to blocking once the type
+      # story matures.
+      - name: Typecheck (ty, advisory)
+        continue-on-error: true
+        run: >-
+          uv run ty check
+          app.py auth.py spotify.py db.py demo_data.py snapshot.py
+          components netviz scripts
       - name: Test (pytest)
         run: uv run pytest -q

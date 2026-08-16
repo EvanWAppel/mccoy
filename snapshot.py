@@ -39,7 +39,11 @@ def run_snapshot() -> None:
         try:
             artists = get_top_artists(sp, time_range, limit=50)
             db.save_snapshot(time_range, artists)
-            logger.info("Saved snapshot for %s (%d artists)", time_range, len(artists))
+            logger.info(
+                "Saved snapshot for %s (%d artists)",
+                time_range,
+                len(artists),
+            )
         except Exception as e:
             logger.error("Failed snapshot for %s: %s", time_range, e)
 

@@ -1,15 +1,15 @@
 from unittest.mock import patch
 
 from netviz.db import (
-    upsert_musician,
-    upsert_release,
-    upsert_musician_by_discogs,
-    upsert_release_by_discogs,
+    add_credit,
     backfill_active_years,
     backfill_primary_genre,
-    add_credit,
-    replace_edges,
     get_graph,
+    replace_edges,
+    upsert_musician,
+    upsert_musician_by_discogs,
+    upsert_release,
+    upsert_release_by_discogs,
 )
 
 # mock_conn / mock_cursor fixtures live in conftest.py

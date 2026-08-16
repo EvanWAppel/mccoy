@@ -33,7 +33,9 @@ def save_refresh_token(token: str) -> None:
                 """
                 INSERT INTO stored_token (id, refresh_token, updated_at)
                 VALUES (1, %s, now())
-                ON CONFLICT (id) DO UPDATE SET refresh_token = EXCLUDED.refresh_token, updated_at = now()
+                ON CONFLICT (id) DO UPDATE
+                    SET refresh_token = EXCLUDED.refresh_token,
+                        updated_at = now()
                 """,
                 (token,),
             )
@@ -46,7 +48,10 @@ def get_refresh_token() -> str | None:
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT refresh_token FROM stored_token ORDER BY id LIMIT 1")
+            cur.execute(
+                "SELECT refresh_token FROM stored_token "
+                "ORDER BY id LIMIT 1"
+            )
             row = cur.fetchone()
             return row[0] if row else None
     finally:
@@ -66,7 +71,8 @@ def save_snapshot(time_range: str, artists: list[dict]) -> int:
                 cur.executemany(
                     """
                     INSERT INTO artist_entries
-                        (snapshot_id, rank, artist_name, artist_id, image_url, genres)
+                        (snapshot_id, rank, artist_name, artist_id,
+                         image_url, genres)
                     VALUES (%s, %s, %s, %s, %s, %s)
                     """,
                     [
@@ -94,7 +100,8 @@ def get_snapshots(time_range: str) -> list[dict]:
             cur.execute(
                 """
                 SELECT s.id, s.captured_at, s.time_range,
-                       ae.rank, ae.artist_name, ae.artist_id, ae.image_url, ae.genres
+                       ae.rank, ae.artist_name, ae.artist_id,
+                       ae.image_url, ae.genres
                 FROM snapshots s
                 LEFT JOIN artist_entries ae ON ae.snapshot_id = s.id
                 WHERE s.time_range = %s

@@ -1,9 +1,13 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
+
 from dash import dcc, html
-from components.trends import render_bump_chart, render_area_chart
+
+from components.trends import render_area_chart, render_bump_chart
 
 
-def make_snapshot(snapshot_id: int, days_ago: int, artists: list[dict]) -> dict:
+def make_snapshot(
+    snapshot_id: int, days_ago: int, artists: list[dict]
+) -> dict:
     return {
         "snapshot_id": snapshot_id,
         "captured_at": datetime.now(timezone.utc) - timedelta(days=days_ago),
@@ -46,7 +50,9 @@ class TestRenderBumpChart:
 
     def test_empty_state_contains_message(self):
         result = render_bump_chart([], n=10)
-        assert _contains_text(result, "snapshot") or _contains_text(result, "week")
+        assert _contains_text(result, "snapshot") or _contains_text(
+            result, "week"
+        )
 
     def test_figure_has_one_trace_per_artist_in_top_n(self):
         result = render_bump_chart(TWO_SNAPS, n=3)

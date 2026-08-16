@@ -2,15 +2,14 @@ import json
 from pathlib import Path
 
 import dash_cytoscape as cyto
-from dash import html
 
 from components.network import (
-    to_cytoscape_elements,
-    network_page,
-    load_graph,
-    filter_graph,
     _genre_color,
     _genre_options,
+    filter_graph,
+    load_graph,
+    network_page,
+    to_cytoscape_elements,
 )
 
 SAMPLE_GRAPH = {

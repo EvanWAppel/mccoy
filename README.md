@@ -1,5 +1,7 @@
 # mccoy
 
+[![ci](https://github.com/EvanWAppel/mccoy/actions/workflows/ci.yml/badge.svg)](https://github.com/EvanWAppel/mccoy/actions/workflows/ci.yml)
+
 **A live Spotify listening dashboard and DJ-style crate-digging tool —
 built entirely in Python on Plotly Dash, deployed on Railway.**
 

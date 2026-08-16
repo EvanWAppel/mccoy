@@ -1,20 +1,21 @@
 import pytest
-from tests.conftest import MOCK_ARTISTS
+
 from spotify import (
-    get_top_artists,
-    get_user_profile,
-    aggregate_genres,
-    search_playlists,
-    search_albums,
-    get_playlist_tracks,
-    get_album_tracks,
-    get_user_playlists,
-    create_playlist,
     add_track_to_playlist,
+    aggregate_genres,
+    create_playlist,
+    get_album_tracks,
     get_playlist_track_uris,
+    get_playlist_tracks,
+    get_top_artists,
+    get_user_playlists,
     get_user_product,
+    get_user_profile,
+    search_albums,
+    search_playlists,
     start_playback,
 )
+from tests.conftest import MOCK_ARTISTS
 
 
 class TestGetTopArtists:
@@ -94,8 +95,15 @@ class TestAggregateGenres:
 
     def test_max_twenty_genres(self):
         # Build artists with many unique genres
-        artists = [{"genres": [f"genre_{i}"], "name": f"A{i}", "image_url": None, "rank": i}
-                   for i in range(30)]
+        artists = [
+            {
+                "genres": [f"genre_{i}"],
+                "name": f"A{i}",
+                "image_url": None,
+                "rank": i,
+            }
+            for i in range(30)
+        ]
         result = aggregate_genres(artists)
         assert len(result) <= 20
 
@@ -107,8 +115,18 @@ class TestAggregateGenres:
 
     def test_empty_genres_excluded(self):
         artists = [
-            {"genres": [], "name": "Silent Artist", "image_url": None, "rank": 1},
-            {"genres": ["ambient"], "name": "Ambient Artist", "image_url": None, "rank": 2},
+            {
+                "genres": [],
+                "name": "Silent Artist",
+                "image_url": None,
+                "rank": 1,
+            },
+            {
+                "genres": ["ambient"],
+                "name": "Ambient Artist",
+                "image_url": None,
+                "rank": 2,
+            },
         ]
         result = aggregate_genres(artists)
         genres = [r["genre"] for r in result]

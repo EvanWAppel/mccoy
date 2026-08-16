@@ -5,7 +5,11 @@ def render_artist_card(artist: dict, rank: int) -> html.Div:
     image_url = artist.get("image_url")
     return html.Div(
         className="artist-card",
-        style={"backgroundImage": f"url({image_url})" if image_url else "none"},
+        style={
+            "backgroundImage": (
+                f"url({image_url})" if image_url else "none"
+            ),
+        },
         children=[
             html.Div(
                 className="artist-card__overlay",

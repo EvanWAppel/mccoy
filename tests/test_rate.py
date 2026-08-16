@@ -4,23 +4,23 @@ Mirrors the Rustle test style: components return Dash nodes, db calls
 are exercised against a mocked psycopg2 connection, and the spotify
 mapper is checked against a mocked Spotipy client.
 """
-import pytest
 from unittest.mock import patch
-from dash import html, dcc
+
+import pytest
+from dash import dcc, html
 
 from components.rate import (
-    rate_sub_tabs,
-    rate_search_bar,
+    RATE_ALBUM_END_MESSAGE,
+    RATE_SEARCH_END_MESSAGE,
     album_card,
+    rate_search_bar,
+    rate_sub_tabs,
     rating_card,
     rating_scale,
     ratings_table,
-    RATE_SEARCH_END_MESSAGE,
-    RATE_ALBUM_END_MESSAGE,
 )
+from db import RATING_SORTS, get_ratings, get_ratings_for_uris, save_rating
 from spotify import get_album_rating_tracks
-from db import save_rating, get_ratings, get_ratings_for_uris, RATING_SORTS
-
 
 # --- Components ---
 

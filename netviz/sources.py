@@ -168,7 +168,10 @@ _DISAMBIG_RE = re.compile(r"\s*\(\d+\)$")
 
 
 def _clean_name(name: str) -> str:
-    """Strip Discogs' numeric disambiguation suffix, e.g. 'Paul Chambers (3)'."""
+    """Strip Discogs' numeric disambiguation suffix.
+
+    E.g. 'Paul Chambers (3)'.
+    """
     return _DISAMBIG_RE.sub("", name or "").strip()
 
 
@@ -189,7 +192,9 @@ def _is_performer(role: str) -> bool:
     return _clean_role(role).lower() not in _NON_PERFORMER_ROLES
 
 
-def discogs_releases_for(name: str, client=None, limit: int = 40) -> list[dict]:
+def discogs_releases_for(
+    name: str, client=None, limit: int = 40
+) -> list[dict]:
     """Resolve an artist by name; return up to ``limit`` of their releases.
 
     Returns ``[{discogs_id, title, year, label}]`` (releases only, not

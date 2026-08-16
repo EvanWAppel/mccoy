@@ -1,7 +1,7 @@
-from dash import html, dcc
+from dash import dcc, html
+
 from components.artist_grid import render_artist_card, render_grid
 from components.genre_chart import render_genre_chart
-
 
 SAMPLE_ARTIST = {
     "name": "Radiohead",
@@ -66,7 +66,8 @@ class TestRenderGenreChart:
         fig = result.figure
         # Plotly Figure object — access data via .data attribute
         assert any(
-            "indie rock" in str(getattr(trace, "y", "") or getattr(trace, "x", ""))
+            "indie rock"
+            in str(getattr(trace, "y", "") or getattr(trace, "x", ""))
             for trace in fig.data
         )
 

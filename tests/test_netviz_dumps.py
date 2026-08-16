@@ -76,7 +76,6 @@ class TestBuildGraph:
         # top_k=1 keeps only the single most-credited performer per
         # genre. Jazz's busiest here is Joe Henderson (3 credits).
         g = self._graph(top_k=1, min_weight=1, per_genre_limit=100)
-        jazz = [n for n in g["nodes"] if n["genre"] == "Jazz"]
         # At most one kept per genre before edge pruning; edges may then
         # leave it isolated, so just assert we didn't keep everyone.
         assert len(g["nodes"]) <= 4

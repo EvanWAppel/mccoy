@@ -1,80 +1,89 @@
 import logging
 import os
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
+
 from dotenv import load_dotenv
 
 load_dotenv()
 
+import flask
 from dash import (
-    Dash, html, dcc, Input, Output, State, ALL, ctx, no_update,
+    ALL,
     ClientsideFunction,
+    Dash,
+    Input,
+    Output,
+    State,
+    ctx,
+    dcc,
+    html,
+    no_update,
 )
 from dash.exceptions import PreventUpdate
-import flask
+from spotipy import SpotifyException
 
 import db
 import demo_data
 from auth import (
-    get_auth_url,
-    handle_callback,
-    get_sp_from_session,
     get_app_token_client,
+    get_auth_url,
+    get_sp_from_session,
+    handle_callback,
 )
-from spotify import (
-    get_top_artists,
-    get_user_profile,
-    get_user_playlists,
-    search_playlists,
-    search_albums,
-    get_playlist_tracks,
-    get_album_tracks,
-    get_album_rating_tracks,
-    add_track_to_playlist,
-    get_playlist_track_uris,
-    create_playlist,
-    get_user_product,
-    start_playback,
-)
-from components.header import render_header
-from components.artist_grid import render_grid
-from components.trends import render_bump_chart
 from components.about import about_tab
+from components.artist_grid import render_grid
+from components.header import render_header
 from components.network import (
-    network_page,
-    load_graph,
     filter_graph,
+    load_graph,
+    network_page,
     to_cytoscape_elements,
 )
-from components.rustle import (
-    mode_switcher,
-    target_picker,
-    search_bar,
-    playlist_card,
-    track_card,
-    end_of_queue_card,
-    card_stack,
-    tap_to_start_overlay,
-    add_counter_chip,
-    create_playlist_form,
-    recents_chips,
-    no_results_state,
-    error_toast,
-    embed_player,
-    ALBUM_END_MESSAGE,
-    SEARCH_END_MESSAGE,
-    TRACK_END_MESSAGE,
-)
 from components.rate import (
-    rate_sub_tabs,
-    rate_search_bar,
+    RATE_ALBUM_END_MESSAGE,
+    RATE_SEARCH_END_MESSAGE,
     album_card,
+    rate_search_bar,
+    rate_sub_tabs,
     rating_card,
     rating_scale,
     ratings_table,
-    RATE_SEARCH_END_MESSAGE,
-    RATE_ALBUM_END_MESSAGE,
 )
-from spotipy import SpotifyException
+from components.rustle import (
+    ALBUM_END_MESSAGE,
+    SEARCH_END_MESSAGE,
+    TRACK_END_MESSAGE,
+    add_counter_chip,
+    card_stack,
+    create_playlist_form,
+    embed_player,
+    end_of_queue_card,
+    error_toast,
+    mode_switcher,
+    no_results_state,
+    playlist_card,
+    recents_chips,
+    search_bar,
+    tap_to_start_overlay,
+    target_picker,
+    track_card,
+)
+from components.trends import render_bump_chart
+from spotify import (
+    add_track_to_playlist,
+    create_playlist,
+    get_album_rating_tracks,
+    get_album_tracks,
+    get_playlist_track_uris,
+    get_playlist_tracks,
+    get_top_artists,
+    get_user_playlists,
+    get_user_product,
+    get_user_profile,
+    search_albums,
+    search_playlists,
+    start_playback,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -243,8 +252,15 @@ LOGIN_PAGE = html.Div(
     className="login-page",
     children=[
         html.H1("mccoy", className="login-page__title"),
-        html.P("Your Spotify listening habits, visualized.", className="login-page__subtitle"),
-        html.A("Connect with Spotify", href="/login", className="login-page__btn"),
+        html.P(
+            "Your Spotify listening habits, visualized.",
+            className="login-page__subtitle",
+        ),
+        html.A(
+            "Connect with Spotify",
+            href="/login",
+            className="login-page__btn",
+        ),
     ],
 )
 
@@ -525,7 +541,11 @@ def render_page(pathname):
     return html.Div([
         render_header(profile),
         html.Div(
-            style={"maxWidth": "1100px", "margin": "0 auto", "padding": "24px 16px"},
+            style={
+                "maxWidth": "1100px",
+                "margin": "0 auto",
+                "padding": "24px 16px",
+            },
             children=[
                 mode_switcher(),
                 html.Div(
@@ -548,8 +568,18 @@ def render_page(pathname):
                             id="content-tabs",
                             value="artists",
                             children=[
-                                dcc.Tab(label="Artists", value="artists", style=TAB_STYLE, selected_style=TAB_SELECTED_STYLE),
-                                dcc.Tab(label="Trends", value="trends", style=TAB_STYLE, selected_style=TAB_SELECTED_STYLE),
+                                dcc.Tab(
+                                    label="Artists",
+                                    value="artists",
+                                    style=TAB_STYLE,
+                                    selected_style=TAB_SELECTED_STYLE,
+                                ),
+                                dcc.Tab(
+                                    label="Trends",
+                                    value="trends",
+                                    style=TAB_STYLE,
+                                    selected_style=TAB_SELECTED_STYLE,
+                                ),
                             ],
                             style={"marginTop": "4px"},
                         ),
@@ -557,7 +587,10 @@ def render_page(pathname):
                             id="loading",
                             type="circle",
                             color="#1db954",
-                            children=html.Div(id="tab-content", style={"marginTop": "16px"}),
+                            children=html.Div(
+                                id="tab-content",
+                                style={"marginTop": "16px"},
+                            ),
                         ),
                     ],
                 ),
@@ -570,7 +603,10 @@ def render_page(pathname):
                         children=html.Div(id="rustle-content"),
                     ),
                 ),
-                dcc.Store(id="rustle-user-id", data=profile.get("user_id", "")),
+                dcc.Store(
+                    id="rustle-user-id",
+                    data=profile.get("user_id", ""),
+                ),
                 dcc.Store(id="rustle-target", data=None),
                 dcc.Store(id="rustle-view", data="picker"),
                 dcc.Store(id="rustle-playlist-queue", data=[]),
@@ -811,7 +847,6 @@ def show_network_node(tap_data, focus_id, graph):
     genre = data.get("genre")
     style = data.get("style")
     instrument = data.get("instrument") or "musician"
-    samples = data.get("samples")
     details = [
         html.H3(data.get("label", ""), className="network-side-name"),
         html.P(instrument.title(), className="network-side-instrument"),
@@ -1131,7 +1166,8 @@ def update_content(time_range, content_tab):
                 style={"padding": "48px 0", "textAlign": "center"},
                 children=[
                     html.P(
-                        "Snapshots are taken daily. Come back after your first snapshot to see trends.",
+                        "Snapshots are taken daily. Come back after "
+                        "your first snapshot to see trends.",
                         style={"color": "#b3b3b3", "marginBottom": "8px"},
                     ),
                     html.P(
@@ -1143,9 +1179,26 @@ def update_content(time_range, content_tab):
             return html.Div([empty])
 
         return html.Div([
-            html.H3("Artist Rank Movement", style={"color": "#fff", "marginBottom": "4px", "fontWeight": "600"}),
-            html.P("Short term (4 weeks) — top artists by rank over time", style={"color": "#b3b3b3", "marginBottom": "8px", "fontSize": "0.85rem"}),
-            html.Label("Artists shown:", style={"color": "#b3b3b3", "fontSize": "0.8rem"}),
+            html.H3(
+                "Artist Rank Movement",
+                style={
+                    "color": "#fff",
+                    "marginBottom": "4px",
+                    "fontWeight": "600",
+                },
+            ),
+            html.P(
+                "Short term (4 weeks) — top artists by rank over time",
+                style={
+                    "color": "#b3b3b3",
+                    "marginBottom": "8px",
+                    "fontSize": "0.85rem",
+                },
+            ),
+            html.Label(
+                "Artists shown:",
+                style={"color": "#b3b3b3", "fontSize": "0.8rem"},
+            ),
             html.Div(n_slider, style={"marginBottom": "16px"}),
             html.Div(id="bump-chart-container"),
         ])
@@ -1503,7 +1556,10 @@ def _classify_error(e) -> str:
 
 
 def _error_payload(kind: str) -> dict:
-    return {"kind": kind, "msg": ERROR_MESSAGES.get(kind, ERROR_MESSAGES["error"])}
+    return {
+        "kind": kind,
+        "msg": ERROR_MESSAGES.get(kind, ERROR_MESSAGES["error"]),
+    }
 
 
 def _enter_playlist(sp, queue, idx):
