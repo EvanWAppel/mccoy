@@ -10,6 +10,13 @@ SAMPLE_ARTIST = {
     "genres": ["alternative rock", "art rock"],
 }
 
+SAMPLE_ARTIST_NO_IMAGE = {
+    "name": "Kendrick Lamar",
+    "image_url": None,
+    "rank": 4,
+    "genres": ["hip hop"],
+}
+
 SAMPLE_GENRES = [
     {"genre": "indie rock", "count": 8},
     {"genre": "alternative", "count": 6},
@@ -33,6 +40,22 @@ class TestRenderArtistCard:
     def test_contains_rank(self):
         result = render_artist_card(SAMPLE_ARTIST, 3)
         assert _contains_text(result, "#3") or _contains_text(result, "3")
+
+    def test_uses_background_image_when_present(self):
+        result = render_artist_card(SAMPLE_ARTIST, 1)
+        assert "url(" in str(result.style)
+        assert "placeholder" not in (result.className or "")
+
+    def test_placeholder_class_when_no_image(self):
+        # A missing image must render an intentional placeholder tile,
+        # not a bare dark box (also covers expired Spotify CDN URLs).
+        result = render_artist_card(SAMPLE_ARTIST_NO_IMAGE, 4)
+        assert "artist-card--placeholder" in result.className
+
+    def test_placeholder_shows_artist_initial(self):
+        result = render_artist_card(SAMPLE_ARTIST_NO_IMAGE, 4)
+        assert "artist-card__initial" in str(result)
+        assert _contains_text(result, "K")
 
 
 class TestRenderGrid:

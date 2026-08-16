@@ -104,6 +104,32 @@ class TestPublicStats:
             app_module.render_public_stats("medium_term")
         mock_latest.assert_called_once_with("medium_term")
 
+    def test_real_snapshot_shows_real_caption(self):
+        snap = {
+            "snapshot_id": 1,
+            "captured_at": None,
+            "time_range": "short_term",
+            "artists": [
+                {"rank": 1, "name": "Radiohead", "artist_id": "a",
+                 "image_url": None, "genres": []},
+            ],
+        }
+        with patch.object(
+            app_module.db, "get_latest_snapshot", return_value=snap
+        ):
+            out = app_module.render_public_stats("short_term")
+        assert app_module.PUBLIC_DATA_CAPTION in str(out)
+        assert app_module.PUBLIC_DEMO_CAPTION not in str(out)
+
+    def test_demo_fallback_shows_demo_caption(self):
+        # The "real data" claim must not be shown over demo fallback data.
+        with patch.object(
+            app_module.db, "get_latest_snapshot", return_value=None
+        ):
+            out = app_module.render_public_stats("short_term")
+        assert app_module.PUBLIC_DEMO_CAPTION in str(out)
+        assert app_module.PUBLIC_DATA_CAPTION not in str(out)
+
 
 class TestPublicTrends:
     def test_falls_back_to_demo_when_no_snapshots(self):
