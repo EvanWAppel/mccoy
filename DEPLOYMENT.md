@@ -55,6 +55,18 @@ init_db()
 uv run python snapshot.py
 ```
 
+## Pre-send liveness check
+
+Before linking a recruiter to the live demo, confirm it is up:
+
+```bash
+uv run python scripts/check_live.py            # defaults to prod URL
+uv run python scripts/check_live.py <other-url>
+```
+
+Exits 0 when the URL returns 200 and the demo's og:title marker is
+present; non-zero otherwise.
+
 ## Production smoke test
 
 1. Open the deployed app.

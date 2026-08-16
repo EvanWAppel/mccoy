@@ -983,12 +983,15 @@ def run_public_search(query):
     if not query or not query.strip():
         return [], 0, "search", ""
     q = query.strip()
-    sp = get_app_token_client()
     try:
+        # Acquire the app token inside the try too: if the
+        # client-credentials token call itself fails, degrade to the
+        # crate rather than throwing to the recruiter's screen.
+        sp = get_app_token_client()
         results = search_albums(sp, q)
     except Exception as e:
-        # JJ-08: live album search failed — fall back to the curated
-        # crate so the stack is never empty.
+        # JJ-08: live album search (or the token call) failed — fall
+        # back to the curated crate so the stack is never empty.
         logger.warning("public search failed, using crate: %s", e)
         results = CURATED_CRATE
     return results, 0, "search", q
