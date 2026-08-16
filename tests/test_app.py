@@ -200,6 +200,16 @@ class TestPublicRustleSandbox:
             queue, idx, view, q = app_module.run_public_search("indie")
         assert queue == app_module.CURATED_CRATE
 
+    def test_search_falls_back_to_crate_on_token_error(self):
+        # Task 5: a failing client-credentials *token call* must degrade
+        # to the curated crate too, not throw to the recruiter's screen.
+        with patch.object(
+            app_module, "get_app_token_client",
+            side_effect=RuntimeError("token endpoint down"),
+        ):
+            queue, idx, view, q = app_module.run_public_search("indie")
+        assert queue == app_module.CURATED_CRATE
+
     def test_search_returns_results_on_success(self):
         fake = [{"id": "p1", "name": "Indie", "image_url": None}]
         with patch.object(

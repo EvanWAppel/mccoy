@@ -1,14 +1,15 @@
 from unittest.mock import patch
+
 from db import (
-    save_refresh_token,
-    get_refresh_token,
-    save_snapshot,
-    get_snapshots,
-    get_latest_snapshot,
-    count_snapshots,
-    save_recent_search,
-    get_recent_searches,
     clear_recent_searches,
+    count_snapshots,
+    get_latest_snapshot,
+    get_recent_searches,
+    get_refresh_token,
+    get_snapshots,
+    save_recent_search,
+    save_refresh_token,
+    save_snapshot,
 )
 
 # mock_conn / mock_cursor fixtures live in conftest.py
@@ -60,13 +61,29 @@ class TestSaveSnapshot:
     def test_inserts_artist_rows(self, mock_conn, mock_cursor):
         mock_cursor.fetchone.return_value = (1,)
         artists = [
-            {"name": "Radiohead", "artist_id": "abc", "rank": 1, "image_url": None, "genres": ["art rock"]},
-            {"name": "Portishead", "artist_id": "def", "rank": 2, "image_url": None, "genres": ["trip hop"]},
+            {
+                "name": "Radiohead",
+                "artist_id": "abc",
+                "rank": 1,
+                "image_url": None,
+                "genres": ["art rock"],
+            },
+            {
+                "name": "Portishead",
+                "artist_id": "def",
+                "rank": 2,
+                "image_url": None,
+                "genres": ["trip hop"],
+            },
         ]
         with patch("db.get_connection", return_value=mock_conn):
             save_snapshot("short_term", artists)
-        # Should have at least one executemany or multiple execute calls for artists
-        total_calls = mock_cursor.execute.call_count + mock_cursor.executemany.call_count
+        # Should have at least one executemany or multiple execute
+        # calls for artists
+        total_calls = (
+            mock_cursor.execute.call_count
+            + mock_cursor.executemany.call_count
+        )
         assert total_calls >= 2
 
     def test_commits(self, mock_conn, mock_cursor):
@@ -114,7 +131,8 @@ class TestGetSnapshots:
         ]
         with patch("db.get_connection", return_value=mock_conn):
             result = get_snapshots("short_term")
-        # Both rows share snapshot_id=1, so should collapse to 1 snapshot with 2 artists
+        # Both rows share snapshot_id=1, so should collapse to
+        # 1 snapshot with 2 artists
         assert len(result) == 1
         assert len(result[0]["artists"]) == 2
 

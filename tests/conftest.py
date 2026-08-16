@@ -21,7 +21,11 @@ MOCK_ARTISTS_RAW = {
         {
             "id": f"spotify_artist_{i}",
             "name": f"Artist {i}",
-            "genres": ["indie rock", "alternative"] if i % 2 == 0 else ["pop", "dance pop"],
+            "genres": (
+                ["indie rock", "alternative"]
+                if i % 2 == 0
+                else ["pop", "dance pop"]
+            ),
             "images": [{"url": f"https://example.com/img{i}.jpg"}],
         }
         for i in range(1, 11)
@@ -39,7 +43,11 @@ MOCK_ARTISTS = [
         "artist_id": f"spotify_artist_{i}",
         "image_url": f"https://example.com/img{i}.jpg",
         "rank": i,
-        "genres": ["indie rock", "alternative"] if i % 2 == 0 else ["pop", "dance pop"],
+        "genres": (
+            ["indie rock", "alternative"]
+            if i % 2 == 0
+            else ["pop", "dance pop"]
+        ),
     }
     for i in range(1, 11)
 ]

@@ -137,7 +137,8 @@ def upsert_release_by_discogs(
         with conn.cursor() as cur:
             cur.execute(
                 """
-                INSERT INTO nv_releases (discogs_id, title, year, label, styles)
+                INSERT INTO nv_releases
+                    (discogs_id, title, year, label, styles)
                 VALUES (%s, %s, %s, %s, %s)
                 ON CONFLICT (discogs_id) DO UPDATE SET
                     title = EXCLUDED.title,

@@ -1,7 +1,11 @@
-"""H-05: Integration test — mock Spotify response → aggregate_genres → render_genre_chart."""
+"""H-05: Integration test.
+
+Mock Spotify response → aggregate_genres → render_genre_chart.
+"""
 from dash import dcc
-from spotify import get_top_artists, aggregate_genres
+
 from components.genre_chart import render_genre_chart
+from spotify import aggregate_genres, get_top_artists
 
 
 class TestFullDataFlow:
@@ -25,8 +29,10 @@ class TestFullDataFlow:
 
     def test_api_error_returns_empty_chart(self, mock_sp):
         import spotipy
-        mock_sp.current_user_top_artists.side_effect = spotipy.SpotifyException(
-            http_status=401, code=-1, msg="Unauthorized"
+        mock_sp.current_user_top_artists.side_effect = (
+            spotipy.SpotifyException(
+                http_status=401, code=-1, msg="Unauthorized"
+            )
         )
         artists = get_top_artists(mock_sp, "short_term")
         assert artists == []

@@ -8,7 +8,9 @@ logger = logging.getLogger(__name__)
 
 def get_top_artists(sp, time_range: str, limit: int = 10) -> list[dict]:
     try:
-        response = sp.current_user_top_artists(limit=limit, time_range=time_range)
+        response = sp.current_user_top_artists(
+            limit=limit, time_range=time_range
+        )
     except spotipy.SpotifyException as e:
         logger.error("Spotify API error in get_top_artists: %s", e)
         return []
@@ -20,7 +22,8 @@ def get_top_artists(sp, time_range: str, limit: int = 10) -> list[dict]:
             "artist_id": item.get("id", ""),
             "image_url": images[0]["url"] if images else None,  # H-02
             "rank": rank,
-            "genres": item.get("genres", []),  # H-03: empty list handled safely
+            # H-03: empty list handled safely
+            "genres": item.get("genres", []),
         })
     return artists
 

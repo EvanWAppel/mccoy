@@ -31,15 +31,20 @@ DARK_LAYOUT = dict(
 )
 
 
-def render_bump_chart(snapshots: list[dict], n: int = 10) -> dcc.Graph | html.Div:
+def render_bump_chart(
+    snapshots: list[dict], n: int = 10
+) -> dcc.Graph | html.Div:
     if len(snapshots) < 2:
         return EMPTY_STATE
 
-    # Collect all unique artist names across snapshots, ranked by best rank seen
+    # Collect all unique artist names across snapshots, ranked by best
+    # rank seen
     dates = [s["captured_at"] for s in snapshots]
 
     # Build {artist_name: [rank_or_None per snapshot]}
-    artist_ranks: dict[str, list] = defaultdict(lambda: [None] * len(snapshots))
+    artist_ranks: dict[str, list] = defaultdict(
+        lambda: [None] * len(snapshots)
+    )
     for i, snap in enumerate(snapshots):
         for a in snap["artists"]:
             artist_ranks[a["name"]][i] = a["rank"]
@@ -49,7 +54,10 @@ def render_bump_chart(snapshots: list[dict], n: int = 10) -> dcc.Graph | html.Di
         valid = [r for r in ranks if r is not None]
         return min(valid) if valid else 999
 
-    top_artists = sorted(artist_ranks.keys(), key=lambda name: best_rank(artist_ranks[name]))[:n]
+    top_artists = sorted(
+        artist_ranks.keys(),
+        key=lambda name: best_rank(artist_ranks[name]),
+    )[:n]
 
     fig = go.Figure()
     for artist in top_artists:
@@ -62,7 +70,10 @@ def render_bump_chart(snapshots: list[dict], n: int = 10) -> dcc.Graph | html.Di
             line=dict(width=2),
             marker=dict(size=7),
             connectgaps=False,
-            hovertemplate=f"<b>{artist}</b><br>%{{x|%b %d}}: #%{{y}}<extra></extra>",
+            hovertemplate=(
+                f"<b>{artist}</b><br>"
+                "%{x|%b %d}: #%{y}<extra></extra>"
+            ),
         ))
 
     fig.update_layout(
@@ -93,7 +104,9 @@ def render_area_chart(snapshots: list[dict]) -> dcc.Graph | html.Div:
     dates = [s["captured_at"] for s in snapshots]
 
     # Count genres per snapshot
-    genre_counts: dict[str, list[int]] = defaultdict(lambda: [0] * len(snapshots))
+    genre_counts: dict[str, list[int]] = defaultdict(
+        lambda: [0] * len(snapshots)
+    )
     for i, snap in enumerate(snapshots):
         snap_genres: dict[str, int] = defaultdict(int)
         for a in snap["artists"]:

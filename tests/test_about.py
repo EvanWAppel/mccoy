@@ -11,7 +11,7 @@ class TestAboutTab:
         assert "https://github.com/EvanWAppel/mccoy" in _all_text(about_tab())
 
     def test_renders_linkedin(self):
-        assert "linkedin.com/in/evan-appel-8885569b" in _all_text(about_tab())
+        assert "linkedin.com/in/evanwebsterappel" in _all_text(about_tab())
 
     def test_renders_email(self):
         assert "appelew@gmail.com" in _all_text(about_tab())
@@ -26,3 +26,11 @@ class TestAboutTab:
     def test_has_build_story(self):
         text = _all_text(about_tab())
         assert "Why" in text or "built" in text
+
+    def test_has_data_pipeline_note(self):
+        # Task 7: the scheduled ingest story should be discoverable
+        # without reading code, and stay at true (weekly, personal) scale.
+        text = _all_text(about_tab()).lower()
+        assert "pipeline" in text
+        assert "idempotent" in text
+        assert "postgres" in text

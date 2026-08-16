@@ -1,5 +1,5 @@
-from dash import dcc
 import plotly.graph_objects as go
+from dash import dcc
 
 
 def render_genre_chart(genres: list[dict]) -> dcc.Graph:
@@ -51,4 +51,8 @@ def render_genre_chart(genres: list[dict]) -> dcc.Graph:
         ),
         margin=dict(l=16, r=24, t=16, b=48),
     )
-    return dcc.Graph(figure=fig, className="genre-chart", config={"displayModeBar": False})
+    return dcc.Graph(
+        figure=fig,
+        className="genre-chart",
+        config={"displayModeBar": False},
+    )

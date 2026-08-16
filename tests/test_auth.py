@@ -1,11 +1,13 @@
+from unittest.mock import patch
+
 import pytest
 import spotipy
-from unittest.mock import patch
+
 from auth import (
-    get_auth_url,
-    handle_callback,
-    get_sp_from_session,
     get_app_token_client,
+    get_auth_url,
+    get_sp_from_session,
+    handle_callback,
 )
 
 
@@ -58,7 +60,9 @@ class TestHandleCallback:
     def test_saves_refresh_token(self):
         token = {"access_token": "access", "refresh_token": "refresh"}
         with patch("auth._oauth_manager") as mock_oauth_manager:
-            mock_oauth_manager.return_value.get_access_token.return_value = token
+            mock_oauth_manager.return_value.get_access_token.return_value = (
+                token
+            )
             with patch("db.save_refresh_token") as mock_save:
                 result = handle_callback("code")
 

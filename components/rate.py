@@ -7,7 +7,7 @@ gesture-driven crate (assets/rustle.js), drilling up into an album opens
 its tracks, and each track carries a tap scale instead of an add gesture.
 """
 
-from dash import html, dcc
+from dash import dcc, html
 
 # Album cards reuse Rustle's card chrome (cover art + title). Rating
 # track cards deliberately use a plain `.rustle-card` (not

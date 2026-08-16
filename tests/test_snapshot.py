@@ -1,6 +1,6 @@
-from unittest.mock import patch, MagicMock
-from snapshot import run_snapshot
+from unittest.mock import MagicMock, patch
 
+from snapshot import run_snapshot
 
 TIME_RANGES = ["short_term", "medium_term", "long_term"]
 
@@ -19,7 +19,9 @@ class TestRunSnapshot:
     def test_fetches_all_three_time_ranges(self, mocker):
         mocker.patch("snapshot.db.get_refresh_token", return_value="tok")
         mocker.patch("snapshot.db.save_snapshot", return_value=1)
-        mock_get_artists = mocker.patch("snapshot.get_top_artists", return_value=MOCK_ARTISTS)
+        mock_get_artists = mocker.patch(
+            "snapshot.get_top_artists", return_value=MOCK_ARTISTS
+        )
         mocker.patch("snapshot.spotipy.Spotify")
         mocker.patch("snapshot._get_sp_from_token", return_value=MagicMock())
 
@@ -41,10 +43,14 @@ class TestRunSnapshot:
     def test_fetches_top_50_artists(self, mocker):
         mocker.patch("snapshot.db.get_refresh_token", return_value="tok")
         mocker.patch("snapshot.db.save_snapshot", return_value=1)
-        mock_get_artists = mocker.patch("snapshot.get_top_artists", return_value=MOCK_ARTISTS)
+        mock_get_artists = mocker.patch(
+            "snapshot.get_top_artists", return_value=MOCK_ARTISTS
+        )
         mocker.patch("snapshot._get_sp_from_token", return_value=MagicMock())
 
         run_snapshot()
 
         for c in mock_get_artists.call_args_list:
-            assert c.kwargs.get("limit") == 50 or (len(c.args) > 2 and c.args[2] == 50)
+            assert c.kwargs.get("limit") == 50 or (
+                len(c.args) > 2 and c.args[2] == 50
+            )

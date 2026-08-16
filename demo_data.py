@@ -6,9 +6,8 @@ fresh deploy before the weekly cron has run). This data is never written
 to the database; it only feeds the public callbacks when the DB is empty.
 """
 
-from datetime import datetime, timedelta, timezone
-
 import logging
+from datetime import datetime, timedelta, timezone
 
 logger = logging.getLogger(__name__)
 
