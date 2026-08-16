@@ -675,6 +675,16 @@ def render_page(pathname):
                 dcc.Store(id="rate-sort", data="rating"),
                 dcc.Store(id="rate-gesture", data=None),
                 dcc.Store(id="rate-error", data=None),
+                # Owner Network view: reuses the same graph component the
+                # public shell renders. Only one of the two trees is ever
+                # mounted (render_page branches on auth), so the shared
+                # network-* ids never collide.
+                html.Div(
+                    id="network-wrap",
+                    style={"display": "none"},
+                    children=network_page(load_graph()),
+                ),
+                dcc.Store(id="network-fit-dummy-owner"),
             ],
         ),
     ])
@@ -722,8 +732,7 @@ def update_network_layout(name):
 # until shown. When the Network tab becomes visible, resize + fit it,
 # and (once) wire ego-network highlighting: tap a node to light up its
 # neighborhood and fade the rest; tap the background to reset.
-app.clientside_callback(
-    """
+_NETWORK_FIT_JS = """
     function(tab) {
         if (tab !== 'network') { return window.dash_clientside.no_update; }
         setTimeout(function () {
@@ -783,9 +792,20 @@ app.clientside_callback(
         }, 250);
         return window.dash_clientside.no_update;
     }
-    """,
+    """
+
+
+# Public shell fires on its top-level tabs; the owner view fires on the
+# mode switcher. Same JS — both look for #network-graph and fit it.
+app.clientside_callback(
+    _NETWORK_FIT_JS,
     Output("network-fit-dummy", "data"),
     Input("public-tabs", "value"),
+)
+app.clientside_callback(
+    _NETWORK_FIT_JS,
+    Output("network-fit-dummy-owner", "data"),
+    Input("mode-tabs", "value"),
 )
 
 
@@ -1243,16 +1263,19 @@ def update_bump_chart(n):
     Output("stats-content", "style"),
     Output("rustle-wrap", "style"),
     Output("rate-wrap", "style"),
+    Output("network-wrap", "style"),
     Input("mode-tabs", "value"),
 )
 def toggle_mode(mode):
     hidden = {"display": "none"}
     shown = {"display": "block"}
     if mode == "rustle":
-        return hidden, shown, hidden
+        return hidden, shown, hidden, hidden
     if mode == "rate":
-        return hidden, hidden, shown
-    return shown, hidden, hidden
+        return hidden, hidden, shown, hidden
+    if mode == "network":
+        return hidden, hidden, hidden, shown
+    return shown, hidden, hidden, hidden
 
 
 GESTURE_HINT = (
