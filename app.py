@@ -785,6 +785,7 @@ def _find_node(graph, node_id):
                 "era": node.get("era"),
                 "instrument": node.get("instrument"),
                 "genre": node.get("genre"),
+                "style": node.get("style"),
                 "degree": node.get("degree", 0),
             }
     return None
@@ -808,6 +809,7 @@ def show_network_node(tap_data, focus_id, graph):
         raise PreventUpdate
     era = data.get("era")
     genre = data.get("genre")
+    style = data.get("style")
     instrument = data.get("instrument") or "musician"
     samples = data.get("samples")
     details = [
@@ -815,8 +817,9 @@ def show_network_node(tap_data, focus_id, graph):
         html.P(instrument.title(), className="network-side-instrument"),
     ]
     if genre:
+        label = f"{genre} · {style}" if style else genre
         details.append(
-            html.P(genre, className="network-side-genre")
+            html.P(label, className="network-side-genre")
         )
     if era:
         details.append(

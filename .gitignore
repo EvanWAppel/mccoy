@@ -27,3 +27,10 @@ _consent.log
 
 # Stray saved web pages
 srch.html
+
+# Local Discogs dump extracts (large, generated)
+/data/
+netviz/data/
+
+# Discogs dump files (huge, downloaded locally)
+*.xml.gz
