@@ -77,6 +77,24 @@ body, html {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
 }
 
+/* Missing/expired artwork: an intentional tile with the artist initial,
+   rather than a bare dark box. */
+.artist-card--placeholder {
+  background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+}
+
+.artist-card__initial {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: rgba(255, 255, 255, 0.22);
+  font-size: 2.6rem;
+  font-weight: 800;
+  line-height: 1;
+  user-select: none;
+}
+
 .artist-card__overlay {
   position: absolute;
   bottom: 0;

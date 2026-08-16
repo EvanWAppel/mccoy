@@ -256,6 +256,20 @@ PUBLIC_DATA_CAPTION = (
     "weekly snapshot pipeline."
 )
 
+# Shown instead of PUBLIC_DATA_CAPTION when the grid falls back to demo
+# data (no real snapshots yet), so the "real data" claim is never made
+# over sample artists.
+PUBLIC_DEMO_CAPTION = (
+    "Sample data — the owner's real Spotify listening will appear "
+    "here once mccoy's weekly snapshot pipeline captures it."
+)
+
+PUBLIC_CAPTION_STYLE = {
+    "color": "#b3b3b3",
+    "fontSize": "0.85rem",
+    "margin": "12px 0",
+}
+
 
 def _public_header():
     return html.Div(
@@ -396,13 +410,9 @@ def _public_demo():
                                 for w in TIME_WINDOWS
                             ],
                         ),
-                        html.P(
-                            PUBLIC_DATA_CAPTION,
-                            style={
-                                "color": "#b3b3b3", "fontSize": "0.85rem",
-                                "margin": "12px 0",
-                            },
-                        ),
+                        # Caption is rendered inside the grid callback so
+                        # it can reflect real vs. demo data (see
+                        # render_public_stats).
                         dcc.Loading(
                             type="circle", color="#1db954",
                             children=html.Div(
@@ -889,11 +899,16 @@ def render_public_stats(time_range):
         snap = None
     # Fall back to deterministic demo data so the public grid is never
     # empty (e.g. a fresh deploy before any snapshot exists).
-    if not snap or not snap.get("artists"):
+    is_demo = not snap or not snap.get("artists")
+    if is_demo:
         snap = demo_data.demo_latest_snapshot(time_range)
+    caption = PUBLIC_DEMO_CAPTION if is_demo else PUBLIC_DATA_CAPTION
     return html.Div(
         id="public-artist-grid-inner",
-        children=render_grid(snap["artists"]),
+        children=[
+            html.P(caption, style=PUBLIC_CAPTION_STYLE),
+            render_grid(snap["artists"]),
+        ],
     )
 
 
