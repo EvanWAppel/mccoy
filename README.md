@@ -5,7 +5,8 @@
 **A live Spotify listening dashboard and DJ-style crate-digging tool —
 built entirely in Python on Plotly Dash, deployed on Railway.**
 
-👉 **Try the no-login demo: [mccoy.evanappel.me](https://mccoy.evanappel.me)**
+👉 **Try the no-login demo:
+[web-production-bee9a.up.railway.app](https://web-production-bee9a.up.railway.app)**
 — no Spotify account required.
 
 ---
@@ -53,7 +54,8 @@ chart, Rustle sandbox, /network graph) into docs/screenshots/ and embed
 them here. Use the public/demo views only, so no private listening data
 is shown. -->
 
-_Coming soon — see the [live demo](https://mccoy.evanappel.me) in the
+_Coming soon — see the
+[live demo](https://web-production-bee9a.up.railway.app) in the
 meantime._
 
 ## Features
