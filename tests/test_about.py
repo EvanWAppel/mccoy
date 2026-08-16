@@ -11,7 +11,7 @@ class TestAboutTab:
         assert "https://github.com/EvanWAppel/mccoy" in _all_text(about_tab())
 
     def test_renders_linkedin(self):
-        assert "linkedin.com/in/evan-appel-8885569b" in _all_text(about_tab())
+        assert "linkedin.com/in/evanwebsterappel" in _all_text(about_tab())
 
     def test_renders_email(self):
         assert "appelew@gmail.com" in _all_text(about_tab())

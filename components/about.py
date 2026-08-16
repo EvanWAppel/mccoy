@@ -7,7 +7,7 @@ from dash import html
 
 REPO_URL = "https://github.com/EvanWAppel/mccoy"
 PROFILE_URL = "https://github.com/EvanWAppel"
-LINKEDIN_URL = "https://www.linkedin.com/in/evan-appel-8885569b/"
+LINKEDIN_URL = "https://www.linkedin.com/in/evanwebsterappel"
 EMAIL = "appelew@gmail.com"
 RESUME_URL = "/assets/resume.pdf"
 
