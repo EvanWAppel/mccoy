@@ -25,6 +25,12 @@ def mode_switcher():
                 className="mode-tab",
                 selected_className="mode-tab--selected",
             ),
+            dcc.Tab(
+                label="Network",
+                value="network",
+                className="mode-tab",
+                selected_className="mode-tab--selected",
+            ),
         ],
     )
 

@@ -95,6 +95,12 @@ class TestModeSwitcher:
         assert "stats" in values
         assert "rustle" in values
 
+    def test_has_network_tab(self):
+        # Owner gets the same Network graph the public shell exposes.
+        result = mode_switcher()
+        values = [tab.value for tab in result.children]
+        assert "network" in values
+
 
 class TestTargetPicker:
     def test_returns_div(self):

@@ -65,6 +65,9 @@ class TestRenderPageLoggedInUnchanged:
         # owner keeps today's UI (mode-tabs), not the public shell
         assert _find_id(tree, "mode-tabs")
         assert not _find_id(tree, "public-tabs")
+        # owner now also has the Network pane + its graph
+        assert _find_id(tree, "network-wrap")
+        assert _find_id(tree, "network-graph")
 
 
 class TestPublicStats:
@@ -246,6 +249,20 @@ class TestPublicTrendsGating:
         )
         assert artists_style == {"display": "block"}
         assert trends_style == {"display": "none"}
+
+
+class TestOwnerModeToggle:
+    def test_network_mode_shows_network_wrap(self):
+        stats, rustle, rate, network = app_module.toggle_mode("network")
+        assert network == {"display": "block"}
+        assert stats == {"display": "none"}
+        assert rustle == {"display": "none"}
+        assert rate == {"display": "none"}
+
+    def test_stats_mode_hides_network_wrap(self):
+        stats, rustle, rate, network = app_module.toggle_mode("stats")
+        assert stats == {"display": "block"}
+        assert network == {"display": "none"}
 
 
 class TestPublicTabToggle:
