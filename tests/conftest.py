@@ -4,6 +4,15 @@ import pytest
 
 
 @pytest.fixture
+def listening_artists():
+    return [
+        {"name": "Radiohead", "rank": 1, "genres": ["rock", "art rock"]},
+        {"name": "Bon Iver", "rank": 2, "genres": ["art rock"]},
+        {"name": "Miles Davis", "rank": 3, "genres": []},
+    ]
+
+
+@pytest.fixture
 def mock_conn():
     conn = MagicMock()
     conn.cursor.return_value.__enter__ = lambda s: s

@@ -8,7 +8,7 @@ EMPTY_STATE = html.Div(
     children=[
         html.P(
             "First snapshot captured. Check back tomorrow to see your trends.",
-            style={"color": "#b3b3b3", "fontSize": "1rem"},
+            style={"color": "#6e6b63", "fontSize": "1rem"},
         ),
     ],
 )
@@ -18,15 +18,15 @@ NO_GENRE_STATE = html.Div(
     children=[
         html.P(
             "No genre data was returned for these snapshots.",
-            style={"color": "#b3b3b3", "fontSize": "1rem"},
+            style={"color": "#6e6b63", "fontSize": "1rem"},
         ),
     ],
 )
 
-DARK_LAYOUT = dict(
-    paper_bgcolor="#1e1e1e",
-    plot_bgcolor="#1e1e1e",
-    font_color="#ffffff",
+CHART_LAYOUT = dict(
+    paper_bgcolor="#eeeadf",
+    plot_bgcolor="#eeeadf",
+    font_color="#25251f",
     margin=dict(l=16, r=24, t=24, b=48),
 )
 
@@ -77,20 +77,20 @@ def render_bump_chart(
         ))
 
     fig.update_layout(
-        **DARK_LAYOUT,
+        **CHART_LAYOUT,
         height=460,
         yaxis=dict(
             title="Rank",
             autorange="reversed",
             tickmode="linear",
             dtick=1,
-            color="#b3b3b3",
+            color="#6e6b63",
             showgrid=False,
         ),
-        xaxis=dict(color="#b3b3b3", showgrid=False),
+        xaxis=dict(color="#6e6b63", showgrid=False),
         legend=dict(
-            bgcolor="#1e1e1e",
-            font=dict(color="#ffffff", size=11),
+            bgcolor="#eeeadf",
+            font=dict(color="#25251f", size=11),
         ),
         hovermode="x unified",
     )
@@ -138,17 +138,17 @@ def render_area_chart(snapshots: list[dict]) -> dcc.Graph | html.Div:
         ))
 
     fig.update_layout(
-        **DARK_LAYOUT,
+        **CHART_LAYOUT,
         height=400,
         yaxis=dict(
             title="Artist count",
-            color="#b3b3b3",
+            color="#6e6b63",
             showgrid=False,
         ),
-        xaxis=dict(color="#b3b3b3", showgrid=False),
+        xaxis=dict(color="#6e6b63", showgrid=False),
         legend=dict(
-            bgcolor="#1e1e1e",
-            font=dict(color="#ffffff", size=11),
+            bgcolor="#eeeadf",
+            font=dict(color="#25251f", size=11),
         ),
         hovermode="x unified",
     )

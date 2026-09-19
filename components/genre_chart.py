@@ -6,9 +6,9 @@ def render_genre_chart(genres: list[dict]) -> dcc.Graph:
     if not genres:
         fig = go.Figure()
         fig.update_layout(
-            paper_bgcolor="#1e1e1e",
-            plot_bgcolor="#1e1e1e",
-            font_color="#b3b3b3",
+            paper_bgcolor="#eeeadf",
+            plot_bgcolor="#eeeadf",
+            font_color="#6e6b63",
             annotations=[{
                 "text": "No genre data available",
                 "xref": "paper",
@@ -16,7 +16,7 @@ def render_genre_chart(genres: list[dict]) -> dcc.Graph:
                 "x": 0.5,
                 "y": 0.5,
                 "showarrow": False,
-                "font": {"color": "#b3b3b3", "size": 14},
+                "font": {"color": "#6e6b63", "size": 14},
             }],
         )
         return dcc.Graph(figure=fig, className="genre-chart")
@@ -29,23 +29,23 @@ def render_genre_chart(genres: list[dict]) -> dcc.Graph:
         x=x,
         y=y,
         orientation="h",
-        marker_color="#1db954",
+        marker_color="#c4452b",
         hovertemplate="%{y}: %{x} artists<extra></extra>",
     ))
     fig.update_layout(
-        paper_bgcolor="#1e1e1e",
-        plot_bgcolor="#1e1e1e",
-        font_color="#ffffff",
+        paper_bgcolor="#eeeadf",
+        plot_bgcolor="#eeeadf",
+        font_color="#25251f",
         height=520,
         xaxis=dict(
             title="Number of top artists",
-            color="#b3b3b3",
+            color="#6e6b63",
             showgrid=False,
-            tickcolor="#b3b3b3",
+            tickcolor="#6e6b63",
             dtick=1,
         ),
         yaxis=dict(
-            color="#ffffff",
+            color="#25251f",
             showgrid=False,
             tickfont=dict(size=12),
         ),

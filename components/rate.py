@@ -34,6 +34,7 @@ RATE_SORTS = [
 
 def rate_sub_tabs():
     return dcc.Tabs(
+        mobile_breakpoint=0,
         id="rate-tabs",
         value="flip",
         className="rate-tabs",

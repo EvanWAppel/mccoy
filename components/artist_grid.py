@@ -18,6 +18,14 @@ def render_artist_card(artist: dict, rank: int) -> html.Div:
         children.append(
             html.Span(initial, className="artist-card__initial")
         )
+    genres = artist.get("genres", [])
+    if genres:
+        children.append(
+            html.Span(
+                " / ".join(genres[:2]),
+                className="artist-card__genre",
+            )
+        )
     children.append(
         html.Div(
             className="artist-card__overlay",
@@ -27,7 +35,10 @@ def render_artist_card(artist: dict, rank: int) -> html.Div:
             ],
         )
     )
-    return html.Div(className=class_name, style=style, children=children)
+    return html.Div(
+        className=class_name, style=style, children=children,
+        title=f"Rank {rank}: {name}",
+    )
 
 
 def render_grid(artists: list[dict]) -> html.Div:

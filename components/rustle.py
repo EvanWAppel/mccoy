@@ -3,6 +3,7 @@ from dash import dcc, html
 
 def mode_switcher():
     return dcc.Tabs(
+        mobile_breakpoint=0,
         id="mode-tabs",
         value="stats",
         className="mode-tabs",

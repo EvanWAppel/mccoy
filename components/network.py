@@ -21,11 +21,11 @@ logger = logging.getLogger(__name__)
 
 GRAPH_JSON = Path(__file__).parent.parent / "netviz" / "graph.json"
 
-# Genre bucket -> node color (Spotify-dark friendly palette). Keys match
+# Genre bucket -> node color (listening journal palette). Keys match
 # netviz.genre.GENRE_BUCKETS; unknown/None renders grey.
 _GENRE_COLORS = {
     # Top-level genres of the multi-genre atlas (Discogs dump).
-    "Jazz": "#1db954",              # Spotify green
+    "Jazz": "#c4452b",              # vermilion
     "Rock": "#e57373",              # red
     "Blues": "#4fc3f7",             # blue
     "Funk / Soul": "#ffb74d",       # orange
@@ -139,12 +139,12 @@ _STYLESHEET = [
             "label": "data(label)",
             "width": "data(size)",
             "height": "data(size)",
-            "color": "#ffffff",
+            "color": "#25251f",
             "font-size": "11px",
-            "text-outline-color": "#121212",
+            "text-outline-color": "#f4f1e9",
             "text-outline-width": 2,
             # a bg-colored ring separates touching same-color nodes
-            "border-color": "#121212",
+            "border-color": "#f4f1e9",
             "border-width": 2,
             # labels only when zoomed in enough, so it isn't a wall of
             # text at the default fit — hubs + highlights override this.
@@ -172,7 +172,7 @@ _STYLESHEET = [
     {
         "selector": "node:selected",
         "style": {
-            "border-color": "#ffffff",
+            "border-color": "#25251f",
             "border-width": 3,
         },
     },
@@ -187,12 +187,12 @@ _STYLESHEET = [
     },
     {
         "selector": "edge.highlight",
-        "style": {"opacity": 0.9, "line-color": "#1db954", "width": 3},
+        "style": {"opacity": 0.9, "line-color": "#c4452b", "width": 3},
     },
     {
         "selector": "node.ego",
         "style": {
-            "border-color": "#1db954",
+            "border-color": "#c4452b",
             "border-width": 5,
             "min-zoomed-font-size": 0,
             "font-size": "16px",
