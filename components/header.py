@@ -1,11 +1,16 @@
 from dash import html
 
+from components.editorial import wordmark
+
 
 def render_header(profile: dict) -> html.Div:
     avatar_url = profile.get("avatar_url")
 
     avatar = (
-        html.Img(src=avatar_url, className="app-header__avatar")
+        html.Img(
+            src=avatar_url, alt="",
+            className="app-header__avatar",
+        )
         if avatar_url
         else html.Div(
             className="app-header__avatar",
@@ -16,6 +21,7 @@ def render_header(profile: dict) -> html.Div:
     return html.Div(
         className="app-header",
         children=[
+            wordmark(),
             html.Div(
                 className="app-header__identity",
                 children=[

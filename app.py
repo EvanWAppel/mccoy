@@ -32,6 +32,13 @@ from auth import (
 )
 from components.about import about_tab
 from components.artist_grid import render_grid
+from components.editorial import (
+    collection_heading,
+    journal_footer,
+    listening_intro,
+    listening_summary,
+    wordmark,
+)
 from components.header import render_header
 from components.network import (
     filter_graph,
@@ -100,7 +107,7 @@ app = Dash(
             "content": "width=device-width, initial-scale=1, "
             "viewport-fit=cover",
         },
-        {"name": "theme-color", "content": "#1db954"},
+        {"name": "theme-color", "content": "#c4452b"},
         {"name": "mobile-web-app-capable", "content": "yes"},
         {"name": "apple-mobile-web-app-capable", "content": "yes"},
         {"name": "apple-mobile-web-app-title", "content": "mccoy"},
@@ -230,8 +237,8 @@ TIME_WINDOWS = [
 ]
 
 TAB_STYLE = {
-    "backgroundColor": "#121212",
-    "color": "#b3b3b3",
+    "backgroundColor": "#f4f1e9",
+    "color": "#6e6b63",
     "border": "none",
     "borderBottom": "2px solid transparent",
     "padding": "10px 20px",
@@ -243,9 +250,9 @@ TAB_STYLE = {
 
 TAB_SELECTED_STYLE = {
     **TAB_STYLE,
-    "color": "#ffffff",
-    "borderBottom": "2px solid #1db954",
-    "backgroundColor": "#121212",
+    "color": "#25251f",
+    "borderBottom": "2px solid #c4452b",
+    "backgroundColor": "#f4f1e9",
 }
 
 LOGIN_PAGE = html.Div(
@@ -280,13 +287,6 @@ PUBLIC_DEMO_CAPTION = (
     "here once mccoy's weekly snapshot pipeline captures it."
 )
 
-PUBLIC_CAPTION_STYLE = {
-    "color": "#b3b3b3",
-    "fontSize": "0.85rem",
-    "margin": "12px 0",
-}
-
-
 def _public_header():
     return html.Div(
         className="app-header",
@@ -294,7 +294,11 @@ def _public_header():
             html.Div(
                 className="app-header__identity",
                 children=[
-                    html.Span("mccoy", className="app-header__name"),
+                    wordmark(),
+                    html.Span(
+                        "FOR THE LOVE OF THE RECORD",
+                        className="brand-caption",
+                    ),
                 ],
             ),
             html.A(
@@ -338,7 +342,7 @@ def _public_rustle_sandbox():
             ],
         ),
         dcc.Loading(
-            type="circle", color="#1db954",
+            type="circle", color="#c4452b",
             children=html.Div(id="public-rustle-content"),
         ),
         dcc.Store(id="public-rustle-gesture", data=None),
@@ -387,15 +391,16 @@ def _public_stats_tabs(snapshot_count):
 def _public_demo():
     return html.Div([
         dcc.Tabs(
+            mobile_breakpoint=0,
             id="public-mode-tabs",
             value="stats",
             children=[
                 dcc.Tab(
-                    label="Stats", value="stats",
+                    label="Listening stats", value="stats",
                     style=TAB_STYLE, selected_style=TAB_SELECTED_STYLE,
                 ),
                 dcc.Tab(
-                    label="Rustle", value="rustle",
+                    label="Rustle / discover records", value="rustle",
                     style=TAB_STYLE, selected_style=TAB_SELECTED_STYLE,
                 ),
             ],
@@ -406,6 +411,7 @@ def _public_demo():
                 # LL: Trends only appears once there are >=2 snapshots,
                 # so recruiters never see the empty "check back" state.
                 dcc.Tabs(
+                    mobile_breakpoint=0,
                     id="public-content-tabs",
                     value="artists",
                     children=_public_stats_tabs(_safe_snapshot_count()),
@@ -415,6 +421,7 @@ def _public_demo():
                     id="public-stats-artists",
                     children=[
                         dcc.Tabs(
+                            mobile_breakpoint=0,
                             id="public-time-tabs",
                             value="short_term",
                             children=[
@@ -430,7 +437,7 @@ def _public_demo():
                         # it can reflect real vs. demo data (see
                         # render_public_stats).
                         dcc.Loading(
-                            type="circle", color="#1db954",
+                            type="circle", color="#c4452b",
                             children=html.Div(
                                 id="public-artist-grid",
                                 style={"marginTop": "8px"},
@@ -446,12 +453,12 @@ def _public_demo():
                             "Top-artist rank movement across weekly "
                             "snapshots (4-week window).",
                             style={
-                                "color": "#b3b3b3", "fontSize": "0.85rem",
+                                "color": "#6e6b63", "fontSize": "0.85rem",
                                 "margin": "12px 0",
                             },
                         ),
                         dcc.Loading(
-                            type="circle", color="#1db954",
+                            type="circle", color="#c4452b",
                             children=html.Div(id="public-bump-container"),
                         ),
                     ],
@@ -470,33 +477,38 @@ def public_layout():
     return html.Div([
         _public_header(),
         html.Div(
-            style={
-                "maxWidth": "1100px", "margin": "0 auto",
-                "padding": "24px 16px",
-            },
+            className="journal-main",
             children=[
                 dcc.Tabs(
+                    mobile_breakpoint=0,
                     id="public-tabs",
                     value="demo",
                     children=[
                         dcc.Tab(
-                            label="Demo", value="demo",
+                            label="Listening room", value="demo",
                             style=TAB_STYLE,
                             selected_style=TAB_SELECTED_STYLE,
                         ),
                         dcc.Tab(
-                            label="About", value="about",
+                            label="The project", value="about",
                             style=TAB_STYLE,
                             selected_style=TAB_SELECTED_STYLE,
                         ),
                         dcc.Tab(
-                            label="Network", value="network",
+                            label="Artist connections", value="network",
                             style=TAB_STYLE,
                             selected_style=TAB_SELECTED_STYLE,
                         ),
                     ],
                 ),
-                html.Div(id="public-demo", children=_public_demo()),
+                html.Div(
+                    id="public-demo",
+                    children=[
+                        listening_intro(),
+                        collection_heading(),
+                        _public_demo(),
+                    ],
+                ),
                 html.Div(
                     id="public-about",
                     style={"display": "none"},
@@ -507,6 +519,7 @@ def public_layout():
                     style={"display": "none"},
                     children=network_page(load_graph()),
                 ),
+                journal_footer(),
             ],
         ),
     ])
@@ -522,7 +535,7 @@ def _next_snapshot_utc() -> str:
 
 app.layout = html.Div(
     id="app-root",
-    style={"background": "#121212", "minHeight": "100vh"},
+    style={"background": "#f4f1e9", "minHeight": "100vh"},
     children=[
         dcc.Location(id="url", refresh=False),
         html.Div(id="page-content"),
@@ -551,17 +564,16 @@ def render_page(pathname):
     return html.Div([
         render_header(profile),
         html.Div(
-            style={
-                "maxWidth": "1100px",
-                "margin": "0 auto",
-                "padding": "24px 16px",
-            },
+            className="journal-main",
             children=[
+                listening_intro(),
+                collection_heading(),
                 mode_switcher(),
                 html.Div(
                     id="stats-content",
                     children=[
                         dcc.Tabs(
+                            mobile_breakpoint=0,
                             id="time-window-tabs",
                             value="short_term",
                             children=[
@@ -575,6 +587,7 @@ def render_page(pathname):
                             ],
                         ),
                         dcc.Tabs(
+                            mobile_breakpoint=0,
                             id="content-tabs",
                             value="artists",
                             children=[
@@ -596,7 +609,7 @@ def render_page(pathname):
                         dcc.Loading(
                             id="loading",
                             type="circle",
-                            color="#1db954",
+                            color="#c4452b",
                             children=html.Div(
                                 id="tab-content",
                                 style={"marginTop": "16px"},
@@ -609,7 +622,7 @@ def render_page(pathname):
                     style={"display": "none"},
                     children=dcc.Loading(
                         type="circle",
-                        color="#1db954",
+                        color="#c4452b",
                         children=html.Div(id="rustle-content"),
                     ),
                 ),
@@ -654,7 +667,7 @@ def render_page(pathname):
                         rate_sub_tabs(),
                         dcc.Loading(
                             type="circle",
-                            color="#1db954",
+                            color="#c4452b",
                             children=html.Div(
                                 id="rate-content",
                                 style={"marginTop": "16px"},
@@ -961,8 +974,9 @@ def render_public_stats(time_range):
     return html.Div(
         id="public-artist-grid-inner",
         children=[
-            html.P(caption, style=PUBLIC_CAPTION_STYLE),
+            listening_summary(snap["artists"]),
             render_grid(snap["artists"]),
+            html.P(caption, className="data-caption"),
         ],
     )
 
@@ -990,7 +1004,7 @@ def _public_gesture_area(children):
 def _public_caption(text):
     return html.P(
         text,
-        style={"color": "#b3b3b3", "fontSize": "0.8rem",
+        style={"color": "#6e6b63", "fontSize": "0.8rem",
                "marginTop": "8px"},
     )
 
@@ -1002,7 +1016,7 @@ def _public_search_view(queue, idx, query):
         return html.P(
             "Search Spotify and flip through real albums — "
             "no login needed.",
-            style={"color": "#b3b3b3", "marginTop": "16px"},
+            style={"color": "#6e6b63", "marginTop": "16px"},
         )
     if idx >= len(queue):
         return _public_gesture_area([end_of_queue_card(SEARCH_END_MESSAGE)])
@@ -1179,7 +1193,7 @@ def handle_public_gesture(
 def update_content(time_range, content_tab):
     sp = get_sp_from_session(flask.session)
     if sp is None:
-        return html.P("Not authenticated.", style={"color": "#b3b3b3"})
+        return html.P("Not authenticated.", style={"color": "#6e6b63"})
 
     if content_tab == "trends":
         try:
@@ -1203,11 +1217,11 @@ def update_content(time_range, content_tab):
                     html.P(
                         "Snapshots are taken daily. Come back after "
                         "your first snapshot to see trends.",
-                        style={"color": "#b3b3b3", "marginBottom": "8px"},
+                        style={"color": "#6e6b63", "marginBottom": "8px"},
                     ),
                     html.P(
                         f"Next snapshot: {next_date}",
-                        style={"color": "#1db954", "fontWeight": "600"},
+                        style={"color": "#c4452b", "fontWeight": "600"},
                     ),
                 ],
             )
@@ -1225,14 +1239,14 @@ def update_content(time_range, content_tab):
             html.P(
                 "Short term (4 weeks) — top artists by rank over time",
                 style={
-                    "color": "#b3b3b3",
+                    "color": "#6e6b63",
                     "marginBottom": "8px",
                     "fontSize": "0.85rem",
                 },
             ),
             html.Label(
                 "Artists shown:",
-                style={"color": "#b3b3b3", "fontSize": "0.8rem"},
+                style={"color": "#6e6b63", "fontSize": "0.8rem"},
             ),
             html.Div(n_slider, style={"marginBottom": "16px"}),
             html.Div(id="bump-chart-container"),
@@ -1303,7 +1317,7 @@ def _rustle_search_view(queue, idx, recents=None, query=""):
             children.append(
                 html.P(
                     "Type a search to flip through playlists.",
-                    style={"color": "#b3b3b3", "marginTop": "16px"},
+                    style={"color": "#6e6b63", "marginTop": "16px"},
                 )
             )
             if recents:
@@ -1325,7 +1339,7 @@ def _rustle_search_view(queue, idx, recents=None, query=""):
     children.append(
         html.P(
             f"{idx + 1} of {len(queue)} — {GESTURE_HINT}",
-            style={"color": "#b3b3b3", "fontSize": "0.8rem"},
+            style={"color": "#6e6b63", "fontSize": "0.8rem"},
         )
     )
     return html.Div(children)
@@ -1357,7 +1371,7 @@ def _rustle_track_view(queue, idx, audio_unlocked=False, target_uris=None):
     children.append(
         html.P(
             f"{idx + 1} of {len(queue)} — {GESTURE_HINT}",
-            style={"color": "#b3b3b3", "fontSize": "0.8rem"},
+            style={"color": "#6e6b63", "fontSize": "0.8rem"},
         )
     )
     return html.Div(children)
@@ -1383,7 +1397,7 @@ def _rustle_album_view(queue, idx, target_uris=None):
     children.append(
         html.P(
             f"{idx + 1} of {len(queue)} — {GESTURE_HINT}",
-            style={"color": "#b3b3b3", "fontSize": "0.8rem"},
+            style={"color": "#6e6b63", "fontSize": "0.8rem"},
         )
     )
     return html.Div(children)
@@ -1418,7 +1432,7 @@ def render_rustle_content(
         return None
     sp = get_sp_from_session(flask.session)
     if sp is None:
-        return html.P("Not authenticated.", style={"color": "#b3b3b3"})
+        return html.P("Not authenticated.", style={"color": "#6e6b63"})
     if not target:
         if picker_mode == "create":
             body = create_playlist_form()
@@ -2065,7 +2079,7 @@ def _rate_gesture_area(children):
 def _rate_caption(text):
     return html.P(
         text,
-        style={"color": "#b3b3b3", "fontSize": "0.8rem", "marginTop": "8px"},
+        style={"color": "#6e6b63", "fontSize": "0.8rem", "marginTop": "8px"},
     )
 
 
@@ -2079,7 +2093,7 @@ def _rate_search_view(queue, idx, query):
                 html.P(
                     "Search Spotify for an album and flip through its "
                     "covers to start rating.",
-                    style={"color": "#b3b3b3", "marginTop": "16px"},
+                    style={"color": "#6e6b63", "marginTop": "16px"},
                 )
             )
         return html.Div(children)
@@ -2310,7 +2324,7 @@ def render_rate_content(
         return None
     sp = get_sp_from_session(flask.session)
     if sp is None:
-        return html.P("Not authenticated.", style={"color": "#b3b3b3"})
+        return html.P("Not authenticated.", style={"color": "#6e6b63"})
     if tab == "rated":
         try:
             ratings = db.get_ratings(user_id, sort_by) if user_id else []
