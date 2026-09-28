@@ -1,5 +1,6 @@
 import logging
 import os
+import random
 from datetime import datetime, timedelta, timezone
 
 from dotenv import load_dotenv
@@ -44,6 +45,7 @@ from components.network import (
     filter_graph,
     load_graph,
     network_page,
+    render_path_result,
     to_cytoscape_elements,
 )
 from components.rate import (
@@ -76,6 +78,7 @@ from components.rustle import (
     track_card,
 )
 from components.trends import render_bump_chart
+from netviz.paths import random_interesting_pair
 from spotify import (
     add_track_to_playlist,
     create_playlist,
@@ -769,7 +772,7 @@ _NETWORK_FIT_JS = """
             if (cy.__mccoyBound) { return; }
             cy.__mccoyBound = true;
             function clear() {
-                cy.elements().removeClass('faded highlight ego');
+                cy.elements().removeClass('faded highlight ego path');
             }
             function highlight(node) {
                 cy.batch(function () {
@@ -786,6 +789,31 @@ _NETWORK_FIT_JS = """
             cy.on('tap', function (e) { if (e.target === cy) { clear(); } });
             window.__mccoyNet = {
                 clear: clear,
+                showPath: function (ids) {
+                    clear();
+                    if (!ids || ids.length < 2) { return; }
+                    var chain = cy.collection();
+                    cy.batch(function () {
+                        cy.elements().addClass('faded');
+                        for (var i = 0; i < ids.length; i++) {
+                            var n = cy.getElementById(String(ids[i]));
+                            chain = chain.union(n);
+                            if (i > 0) {
+                                var prev = cy.getElementById(
+                                    String(ids[i - 1])
+                                );
+                                chain = chain.union(n.edgesWith(prev));
+                            }
+                        }
+                        chain.removeClass('faded').addClass('path');
+                    });
+                    if (chain.length) {
+                        cy.animate(
+                            {fit: {eles: chain, padding: 60}},
+                            {duration: 400}
+                        );
+                    }
+                },
                 focusById: function (id) {
                     if (!id) {
                         clear();
@@ -854,6 +882,72 @@ def filter_network(era_range, instruments, min_weight, genres, graph):
         genres=genres,
     )
     return to_cytoscape_elements(subgraph)
+
+
+def network_path_outputs(trigger, a, b, filters, graph, rng):
+    """Six degrees: (result children, path ids, from value, to value).
+
+    "Surprise me" picks a random far-apart pair and fills the dropdowns;
+    "Find chain" searches the chosen pair. Either way the search runs on
+    the full graph and the filters only decide what's reported hidden.
+    """
+    if trigger == "network-path-surprise":
+        pair = random_interesting_pair(graph, rng)
+        if pair is None:
+            logger.warning("surprise: no pair >= 3 hops in graph")
+            raise PreventUpdate
+        a, b = pair
+    visible = filter_graph(
+        graph,
+        era_range=filters.get("era"),
+        instruments=filters.get("instruments"),
+        min_weight=filters.get("min_weight") or 1,
+        genres=filters.get("genres"),
+    )
+    children, ids = render_path_result(graph, a, b, visible)
+    return children, ids, a, b
+
+
+@app.callback(
+    Output("network-path-result", "children"),
+    Output("network-path-ids", "data"),
+    Output("network-path-from", "value"),
+    Output("network-path-to", "value"),
+    Input("network-path-find", "n_clicks"),
+    Input("network-path-surprise", "n_clicks"),
+    State("network-path-from", "value"),
+    State("network-path-to", "value"),
+    State("network-era", "value"),
+    State("network-instrument", "value"),
+    State("network-min-weight", "value"),
+    State("network-genre", "value"),
+    State("network-graph-data", "data"),
+    prevent_initial_call=True,
+)
+def find_network_path(
+    _find, _surprise, a, b, era, instruments, min_weight, genres, graph
+):
+    if not graph:
+        raise PreventUpdate
+    filters = {"era": era, "instruments": instruments,
+               "min_weight": min_weight, "genres": genres}
+    return network_path_outputs(
+        ctx.triggered_id, a, b, filters, graph, random.Random()
+    )
+
+
+# Draw the chosen chain over the faded graph (JS bridge set up above).
+app.clientside_callback(
+    """
+    function(ids) {
+        if (window.__mccoyNet) { window.__mccoyNet.showPath(ids); }
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output("network-path-dummy", "data"),
+    Input("network-path-ids", "data"),
+    prevent_initial_call=True,
+)
 
 
 def _find_node(graph, node_id):

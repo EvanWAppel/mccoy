@@ -808,16 +808,16 @@ tasks that don't share files.
 ## Group VV — Six Degrees (network path-finding)
 > No dependencies. Branch: `six-degrees`.
 
-- [ ] **VV-01** Write `tests/test_netviz_paths.py` — `shortest_path(graph, a, b)` returns the node-id chain for a known pair (TDD red)
-- [ ] **VV-02** Tests: no path across components returns `None`; `a == b` raises `ValueError`; unknown id raises `KeyError`
-- [ ] **VV-03** Tests: equal-length ties resolve to the strongest chain (max min-weight, then max total weight), deterministically
-- [ ] **VV-04** Tests: `describe_path(graph, path)` yields hops with names + one sample release per edge
-- [ ] **VV-05** Implement `netviz/paths.py` (pure-Python BFS; no new dep) — green
-- [ ] **VV-06** Tests + impl: `random_interesting_pair(graph, rng, min_hops=3)` for "Surprise me"
-- [ ] **VV-07** Tests + impl: path UI in `components/network.py` — From/To dropdowns, Find + Surprise buttons, result area
-- [ ] **VV-08** Callback in `app.py`: compute over the full graph, render the chain text, note nodes hidden by filters, handle no-path / same-node
-- [ ] **VV-09** Clientside highlight: new `path` cytoscape class, fade the rest, fit to the path
-- [ ] **VV-10** Style in `assets/style.css` (editorial palette); lint + full suite green
+- [x] **VV-01** Write `tests/test_netviz_paths.py` — `shortest_path(graph, a, b)` returns the node-id chain for a known pair (TDD red)
+- [x] **VV-02** Tests: no path across components returns `None`; `a == b` raises `ValueError`; unknown id raises `KeyError`
+- [x] **VV-03** Tests: equal-length ties resolve to the strongest chain (max min-weight, then max total weight), deterministically
+- [x] **VV-04** Tests: `describe_path(graph, path)` yields hops with names + one sample release per edge
+- [x] **VV-05** Implement `netviz/paths.py` (pure-Python BFS; no new dep) — green
+- [x] **VV-06** Tests + impl: `random_interesting_pair(graph, rng, min_hops=3)` for "Surprise me"
+- [x] **VV-07** Tests + impl: path UI in `components/network.py` — From/To dropdowns, Find + Surprise buttons, result area
+- [x] **VV-08** Callback in `app.py`: compute over the full graph, render the chain text, note nodes hidden by filters, handle no-path / same-node
+- [x] **VV-09** Clientside highlight: new `path` cytoscape class, fade the rest, fit to the path
+- [x] **VV-10** Style in `assets/style.css` (editorial palette); lint + full suite green
 - [ ] **VV-11** Independent review → PR → Evan merges
 
 ## Group WW — Play-History Pipeline (dbt-core + Postgres)

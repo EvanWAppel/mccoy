@@ -16,6 +16,7 @@ from dash import dcc, html
 
 from netviz.db import get_graph
 from netviz.ingest import cap_by_degree, prune_isolated
+from netviz.paths import describe_path, shortest_path
 
 logger = logging.getLogger(__name__)
 
@@ -199,6 +200,27 @@ _STYLESHEET = [
             "font-weight": "bold",
         },
     },
+    # --- six degrees: the chosen chain, drawn over the faded graph ---
+    {
+        "selector": "node.path",
+        "style": {
+            "opacity": 1,
+            "min-zoomed-font-size": 0,
+            "font-size": "15px",
+            "font-weight": "bold",
+            "border-color": "#c4452b",
+            "border-width": 4,
+        },
+    },
+    {
+        "selector": "edge.path",
+        "style": {
+            "opacity": 1,
+            "line-color": "#c4452b",
+            "width": 5,
+            "z-index": 10,
+        },
+    },
 ]
 
 
@@ -263,6 +285,131 @@ def _musician_options(graph: dict) -> list[dict]:
         graph.get("nodes", []), key=lambda n: n.get("name", "").lower()
     )
     return [{"label": n["name"], "value": str(n["id"])} for n in nodes]
+
+
+def _path_controls(graph: dict) -> html.Div:
+    """Six degrees: From/To pickers, Find + Surprise, result area."""
+    options = _musician_options(graph)
+    return html.Div(
+        className="network-path",
+        children=[
+            html.H3("Six degrees", className="network-path-title"),
+            html.P(
+                "Pick any two musicians to find the shortest chain of "
+                "shared sessions between them.",
+                className="network-path-blurb",
+            ),
+            html.Div(
+                className="network-path-row",
+                children=[
+                    dcc.Dropdown(
+                        id="network-path-from",
+                        options=options,
+                        value=None,
+                        placeholder="From…",
+                        className="network-dropdown network-path-pick",
+                    ),
+                    dcc.Dropdown(
+                        id="network-path-to",
+                        options=options,
+                        value=None,
+                        placeholder="To…",
+                        className="network-dropdown network-path-pick",
+                    ),
+                    html.Button(
+                        "Find chain",
+                        id="network-path-find",
+                        n_clicks=0,
+                        className="network-path-btn",
+                    ),
+                    html.Button(
+                        "Surprise me",
+                        id="network-path-surprise",
+                        n_clicks=0,
+                        className="network-path-btn network-path-btn-alt",
+                    ),
+                ],
+            ),
+            dcc.Store(id="network-path-ids", data=[]),
+            dcc.Store(id="network-path-dummy"),
+            html.Div(id="network-path-result",
+                     className="network-path-result"),
+        ],
+    )
+
+
+def _path_message(text: str) -> html.P:
+    return html.P(text, className="network-path-msg")
+
+
+def render_path_result(
+    graph: dict, a, b, visible: dict
+) -> tuple[list, list[str]]:
+    """Result children + highlighted node ids for a From/To choice.
+
+    ``visible`` is the subgraph left by the current filters; the search
+    itself always runs on the full graph, and anything on the chain the
+    filters hide is called out.
+    """
+    if not a or not b:
+        return [_path_message("Pick two musicians to connect.")], []
+    if str(a) == str(b):
+        return [_path_message("Pick two different musicians.")], []
+    names = {str(n["id"]): n["name"] for n in graph.get("nodes", [])}
+    path = shortest_path(graph, a, b)
+    if path is None:
+        return [_path_message(
+            "No recorded collaboration chain between "
+            f"{names[str(a)]} and {names[str(b)]}."
+        )], []
+
+    hops = describe_path(graph, path)
+    n = len(hops)
+    unit = "degree" if n == 1 else "degrees"
+    steps = []
+    for hop in hops:
+        parts = [
+            html.Span(hop["from"], className="network-path-name"),
+            html.Span(" played with ", className="network-path-via"),
+            html.Span(hop["to"], className="network-path-name"),
+        ]
+        if hop["release"]:
+            parts += [
+                html.Span(" on ", className="network-path-via"),
+                html.Em(hop["release"], className="network-path-release"),
+            ]
+        steps.append(html.Li(parts, className="network-path-hop"))
+    children = [
+        html.P(f"{n} {unit} of separation",
+               className="network-path-degrees"),
+        html.Ol(steps, className="network-path-chain"),
+    ]
+    visible_ids = {str(n["id"]) for n in visible.get("nodes", [])}
+    visible_links = {
+        frozenset((str(e["source"]), str(e["target"])))
+        for e in visible.get("edges", [])
+    }
+    hidden = [names[i] for i in path if i not in visible_ids]
+    if hidden:
+        children.append(_path_message(
+            f"{', '.join(hidden)} "
+            f"{'is' if len(hidden) == 1 else 'are'} "
+            "hidden by the current filters."
+        ))
+    # Links whose endpoints are both visible but the edge itself was
+    # filtered out (e.g. by the min-shared-sessions slider).
+    cut = sum(
+        1 for u, v in zip(path, path[1:])
+        if u in visible_ids and v in visible_ids
+        and frozenset((u, v)) not in visible_links
+    )
+    if cut:
+        children.append(_path_message(
+            f"{cut} {'link' if cut == 1 else 'links'} in this chain "
+            f"{'is' if cut == 1 else 'are'} hidden by the current "
+            "filters."
+        ))
+    return children, path
 
 
 def network_page(graph: dict) -> html.Div:
@@ -402,6 +549,7 @@ def network_page(graph: dict) -> html.Div:
                     ),
                 ],
             ),
+            _path_controls(graph),
             html.Div(
                 className="network-canvas-wrap",
                 children=[

@@ -9,6 +9,7 @@ from components.network import (
     filter_graph,
     load_graph,
     network_page,
+    render_path_result,
     to_cytoscape_elements,
 )
 
@@ -191,3 +192,76 @@ def _contains_type(component, target_type):
         for c in children
         if hasattr(c, "children") or isinstance(c, target_type)
     )
+
+
+class TestPathControls:
+    def test_page_has_six_degrees_controls(self, component_ids):
+        ids = component_ids(network_page(SAMPLE_GRAPH))
+        assert {
+            "network-path-from",
+            "network-path-to",
+            "network-path-find",
+            "network-path-surprise",
+            "network-path-result",
+            "network-path-ids",
+        } <= ids
+
+
+ALL_VISIBLE = SAMPLE_GRAPH
+
+
+class TestRenderPathResult:
+    def test_prompts_when_selection_incomplete(self, component_text):
+        children, ids = render_path_result(SAMPLE_GRAPH, "1", None,
+                                           ALL_VISIBLE)
+        assert ids == []
+        assert "Pick two musicians" in component_text(children)
+
+    def test_same_musician_twice(self, component_text):
+        children, ids = render_path_result(SAMPLE_GRAPH, "1", "1",
+                                           ALL_VISIBLE)
+        assert ids == []
+        assert "two different musicians" in component_text(children)
+
+    def test_no_path(self, component_text):
+        graph = {
+            "nodes": SAMPLE_GRAPH["nodes"] + [{"id": 9, "name": "Loner"}],
+            "edges": SAMPLE_GRAPH["edges"],
+        }
+        children, ids = render_path_result(graph, "2", "9", graph)
+        assert ids == []
+        text = component_text(children)
+        assert "No recorded collaboration chain" in text
+        assert "Art Blakey" in text and "Loner" in text
+
+    def test_found_path_lists_chain(self, component_text):
+        # Art Blakey -(Sidewinder)- Lee Morgan -(Search...)- Shorter
+        children, ids = render_path_result(SAMPLE_GRAPH, "2", "3",
+                                           ALL_VISIBLE)
+        assert ids == ["2", "1", "3"]
+        text = component_text(children)
+        assert "2 degrees of separation" in text
+        for name in ("Art Blakey", "Lee Morgan", "Wayne Shorter"):
+            assert name in text
+        assert "The Sidewinder" in text
+        assert "Search for the New Land" in text
+        assert "hidden" not in text
+
+    def test_one_degree_is_singular(self, component_text):
+        children, _ = render_path_result(SAMPLE_GRAPH, "1", "2",
+                                         ALL_VISIBLE)
+        assert "1 degree of separation" in component_text(children)
+
+    def test_notes_path_nodes_hidden_by_filters(self, component_text):
+        visible = filter_graph(SAMPLE_GRAPH, era_range=[1950, 1957])
+        children, ids = render_path_result(SAMPLE_GRAPH, "2", "3",
+                                           visible)
+        assert ids == ["2", "1", "3"]
+        text = component_text(children)
+        assert "Wayne Shorter is hidden by the current filters" in text
+
+    def test_notes_path_links_hidden_by_filters(self, component_text):
+        visible = filter_graph(SAMPLE_GRAPH, min_weight=3)
+        children, _ = render_path_result(SAMPLE_GRAPH, "2", "3", visible)
+        text = component_text(children)
+        assert "1 link in this chain is hidden" in text

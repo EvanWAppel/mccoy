@@ -95,3 +95,39 @@ def stale_scope_token():
         "expires_at": 9999999999,
         "scope": "user-top-read",
     }
+
+
+def _walk_components(component):
+    """Yield every Dash component in a tree (depth-first)."""
+    if component is None or isinstance(component, (str, int, float)):
+        return
+    if isinstance(component, (list, tuple)):
+        for child in component:
+            yield from _walk_components(child)
+        return
+    yield component
+    yield from _walk_components(getattr(component, "children", None))
+
+
+@pytest.fixture
+def component_ids():
+    """Function: set of every component id in a Dash tree."""
+    def collect(tree):
+        return {
+            c.id for c in _walk_components(tree)
+            if getattr(c, "id", None)
+        }
+    return collect
+
+
+@pytest.fixture
+def component_text():
+    """Function: all string children in a Dash tree, space-joined."""
+    def collect(tree):
+        parts = [tree] if isinstance(tree, str) else []
+        for c in _walk_components(tree):
+            kids = getattr(c, "children", None)
+            kids = kids if isinstance(kids, (list, tuple)) else [kids]
+            parts.extend(k for k in kids if isinstance(k, (str, int)))
+        return " ".join(str(p) for p in parts)
+    return collect
