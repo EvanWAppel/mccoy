@@ -830,7 +830,7 @@ tasks that don't share files.
 - [x] **WW-05** `uv add dbt-postgres`; scaffold `analytics/` dbt project + profile from env vars
 - [x] **WW-06** Models: `stg_plays`, `stg_tracks`, `stg_artists` + schema tests
 - [x] **WW-07** Models: `fct_listening_sessions` (30-min gap), `mart_daily_listening`, `mart_hour_of_week`, `mart_artist_streaks` + tests
-- [x] **WW-08** Freshness check on `raw_plays`; pytest runs `dbt build` against a throwaway Postgres in CI
+- [x] **WW-08** ~~Freshness check~~ (dropped — staleness shown on the health panel; see DECISIONS); pytest runs `dbt build` against a throwaway Postgres in CI
 - [x] **WW-09** Cron entrypoint: ingest then `dbt build`; document the Railway service in DEPLOYMENT.md
 - [x] **WW-10** Tests + impl: "Listening Patterns" view (heatmap, daily minutes, streaks) with demo fallback data
 - [x] **WW-11** Tests + impl: Pipeline health panel on About (last run, status, 24h rows, dbt test count)

@@ -61,5 +61,20 @@ dependency group (Railway builds both services from one lockfile).
 ## 2026-09-30 — Local-time bucketing and freshness *(draft)*
 Days/hours are bucketed in `listening_tz` = America/Los_Angeles (dbt var,
 mirrored in components/patterns.py with a test keeping them in sync).
-Freshness is measured on the last successful ingest run, not the last
-play — a day without listening isn't stale data.
+Staleness is surfaced by the About health panel ("last successful
+ingest", failed/stuck-run warnings), not a dbt source-freshness check:
+nothing would run `dbt source freshness` meaningfully right after a
+successful ingest, so that config was removed rather than left as an
+unexecuted claim (review finding, 2026-09-30).
+
+## 2026-09-30 — Review fixes on the pipeline branch *(draft)*
+- **Owner gate:** only the Spotify account in `OWNER_SPOTIFY_ID` may
+  save the cron's refresh token or see real Patterns; fails closed when
+  unset. Rejected leaving "any logged-in user = owner" (allowlisted
+  users could overwrite the token and mix their plays into raw_plays).
+- **Late plays:** always fetch the latest 50 and let the idempotent
+  insert absorb overlap, instead of `after=watermark`, so late-synced
+  plays within the last 50 are kept. Costs a few redundant rows per run.
+- **Left as-is:** friendly messages on DB outages (logged at warning,
+  matches Trends) and `dbt_env` dropping extra DSN params (fine on
+  Railway's internal network).

@@ -1063,8 +1063,9 @@ real incremental event pipeline:
 - `fct_listening_sessions` — plays grouped into sessions (gap > 30 min
   starts a new session).
 - `mart_daily_listening`, `mart_hour_of_week`, `mart_artist_streaks`.
-- dbt tests: `unique`/`not_null` on keys, `accepted_values` where
-  relevant, a freshness check on `raw_plays`.
+- dbt tests: `unique`/`not_null` on keys, `accepted_values` and
+  `relationships` where relevant. Staleness shows on the About health
+  panel rather than via `dbt source freshness`.
 - dbt runs after each ingest in the same cron command.
 
 **App.** A "Listening Patterns" sub-tab (owner-live; the public view
