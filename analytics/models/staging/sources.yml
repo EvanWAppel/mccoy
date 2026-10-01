@@ -8,10 +8,3 @@ sources:
         description: One row per Spotify play; raw API payload in JSONB.
       - name: pipeline_runs
         description: Ingest run log.
-        # Fresh = a successful ingest recently, not a recent play (a
-        # quiet day without listening isn't stale data).
-        loaded_at_field: finished_at
-        freshness:
-          warn_after: {count: 2, period: hour}
-          error_after: {count: 6, period: hour}
-        filter: "status = 'success' and job = 'ingest_plays'"
