@@ -1067,11 +1067,11 @@ real incremental event pipeline:
   relevant, a freshness check on `raw_plays`.
 - dbt runs after each ingest in the same cron command.
 
-**App.** A "Listening Patterns" sub-tab (owner-live; the public view is always
-demo data, by Evan's choice): hour-of-week heatmap, daily
+**App.** A "Listening Patterns" sub-tab (owner-live; the public view
+is always demo data, by Evan's choice): hour-of-week heatmap, daily
 minutes, current/longest streaks. A small **Pipeline health** panel on
-the About tab: last run time, status, rows in the last 24h, dbt test
-pass count.
+the About tab: last successful run, status, 7-day success rate, dbt
+model/test counts (no play counts — see DECISIONS.md).
 
 **Honesty.** About-tab copy says: an hourly personal cron, dbt models
 in Postgres, single user. No "production-scale" language.
