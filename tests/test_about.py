@@ -44,6 +44,8 @@ HEALTH = {
     "runs_7d": 168,
     "successes_7d": 166,
     "dbt": {"models_built": 8, "tests_passed": 19, "tests_failed": 0},
+    "last_dbt_status": "success",
+    "ingest_stuck_since": None,
 }
 
 
@@ -71,6 +73,46 @@ class TestPipelineHealth:
     def test_not_reported_yet(self, component_text):
         text = component_text(pipeline_health(None, now=NOW))
         assert "hasn't reported yet" in text
+
+    def test_failed_dbt_build_is_flagged(self, component_text):
+        health = dict(HEALTH, last_dbt_status="failed")
+        rendered = pipeline_health(health, now=NOW)
+        text = component_text(rendered)
+        assert (
+            "Last dbt build failed — listening marts may be stale."
+            in text
+        )
+        assert "about__health-warn" in str(rendered)
+        assert (
+            "Last successful dbt build: 8 models, 19 tests passing"
+            in text
+        )
+
+    def test_successful_dbt_build_has_no_warning(self, component_text):
+        text = component_text(pipeline_health(HEALTH, now=NOW))
+        assert "dbt build failed" not in text
+        assert "Last successful dbt build" not in text
+
+    def test_stuck_ingest_is_flagged(self, component_text):
+        health = dict(
+            HEALTH,
+            last_ingest_status="running",
+            ingest_stuck_since=datetime(
+                2026, 9, 30, 15, 0, tzinfo=timezone.utc
+            ),
+        )
+        rendered = pipeline_health(health, now=NOW)
+        text = component_text(rendered)
+        assert (
+            "An ingest run has been stuck since 3 hours ago." in text
+        )
+        assert "about__health-warn" in str(rendered)
+
+    def test_fresh_running_ingest_has_no_warning(self, component_text):
+        health = dict(HEALTH, last_ingest_status="running")
+        rendered = pipeline_health(health, now=NOW)
+        assert "stuck" not in component_text(rendered)
+        assert "about__health-warn" not in str(rendered)
 
     def test_about_tab_includes_health(self, component_ids):
         assert "pipeline-health" in component_ids(about_tab(HEALTH))
