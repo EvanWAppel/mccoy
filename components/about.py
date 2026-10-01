@@ -73,6 +73,18 @@ def pipeline_health(health: dict | None, now: datetime | None = None):
             "Last run failed — it's logged and will retry next hour.",
             className="about__health-warn",
         ))
+    if health.get("ingest_stuck_since"):
+        items.append(html.Li(
+            "An ingest run has been stuck since "
+            f"{_ago(health['ingest_stuck_since'], now)}.",
+            className="about__health-warn",
+        ))
+    dbt_failed = health.get("last_dbt_status") == "failed"
+    if dbt_failed:
+        items.append(html.Li(
+            "Last dbt build failed — listening marts may be stale.",
+            className="about__health-warn",
+        ))
     if health.get("last_success_at"):
         items.append(html.Li(
             "Last successful ingest: "
@@ -84,8 +96,9 @@ def pipeline_health(health: dict | None, now: datetime | None = None):
     ))
     dbt = health.get("dbt")
     if dbt:
+        label = "Last successful dbt build" if dbt_failed else "dbt"
         items.append(html.Li(
-            f"dbt: {dbt['models_built']} models, "
+            f"{label}: {dbt['models_built']} models, "
             f"{dbt['tests_passed']} tests passing"
         ))
     return html.Div(

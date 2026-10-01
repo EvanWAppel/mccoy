@@ -31,6 +31,15 @@ def _full_page(recently_played, oldest):
     return dict(recently_played, items=items)
 
 
+def _execute(dsn, sql):
+    conn = psycopg2.connect(dsn)
+    try:
+        with conn, conn.cursor() as cur:
+            cur.execute(sql)
+    finally:
+        conn.close()
+
+
 class TestFetchRecentPlays:
     def test_always_fetches_latest_page(self, recently_played):
         sp = MagicMock()
@@ -232,3 +241,57 @@ class TestPipelineHealthQuery:
         assert health["last_success_at"] is not None
         assert (health["runs_7d"], health["successes_7d"]) == (2, 1)
         assert health["dbt"]["tests_passed"] == 19
+
+    def test_last_dbt_status_reports_failed_build(self, pg_db):
+        ok = db.start_pipeline_run("ingest_plays")
+        db.finish_pipeline_run(ok, "success", 3, 3)
+        good = db.start_pipeline_run("dbt_build")
+        db.finish_pipeline_run(
+            good, "success",
+            details={"models_built": 8, "tests_passed": 19,
+                     "tests_failed": 0},
+        )
+        bad = db.start_pipeline_run("dbt_build")
+        db.finish_pipeline_run(bad, "failed", error="boom")
+        health = db.get_pipeline_health()
+        assert health["last_dbt_status"] == "failed"
+        assert health["dbt"]["models_built"] == 8
+
+    def test_last_dbt_status_none_without_builds(self, pg_db):
+        ok = db.start_pipeline_run("ingest_plays")
+        db.finish_pipeline_run(ok, "success", 3, 3)
+        assert db.get_pipeline_health()["last_dbt_status"] is None
+
+    def test_stale_running_ingest_is_stuck(self, pg_db):
+        stuck = db.start_pipeline_run("ingest_plays")
+        _execute(
+            pg_db,
+            "UPDATE pipeline_runs SET started_at = now() - "
+            f"interval '3 hours' WHERE id = {int(stuck)}",
+        )
+        health = db.get_pipeline_health()
+        assert health["last_ingest_status"] == "running"
+        assert health["ingest_stuck_since"] is not None
+
+    def test_fresh_running_ingest_is_not_stuck(self, pg_db):
+        db.start_pipeline_run("ingest_plays")
+        health = db.get_pipeline_health()
+        assert health["last_ingest_status"] == "running"
+        assert health["ingest_stuck_since"] is None
+
+    def test_finished_latest_run_is_not_stuck(self, pg_db):
+        ok = db.start_pipeline_run("ingest_plays")
+        db.finish_pipeline_run(ok, "success", 3, 3)
+        _execute(
+            pg_db,
+            "UPDATE pipeline_runs SET started_at = now() - "
+            "interval '3 hours'",
+        )
+        assert db.get_pipeline_health()["ingest_stuck_since"] is None
+
+    def test_running_rows_excluded_from_7d_counts(self, pg_db):
+        ok = db.start_pipeline_run("ingest_plays")
+        db.finish_pipeline_run(ok, "success", 3, 3)
+        db.start_pipeline_run("ingest_plays")
+        health = db.get_pipeline_health()
+        assert (health["runs_7d"], health["successes_7d"]) == (1, 1)

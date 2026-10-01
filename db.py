@@ -496,8 +496,16 @@ def get_pipeline_health() -> dict | None:
                   (SELECT max(finished_at) FROM pipeline_runs
                     WHERE job = 'ingest_plays' AND status = 'success')
                     AS last_success_at,
+                  (SELECT started_at FROM pipeline_runs
+                    WHERE id = (SELECT id FROM pipeline_runs
+                                 WHERE job = 'ingest_plays'
+                                 ORDER BY started_at DESC, id DESC
+                                 LIMIT 1)
+                      AND status = 'running'
+                      AND started_at < now() - interval '2 hours')
+                    AS ingest_stuck_since,
                   (SELECT count(*) FROM pipeline_runs
-                    WHERE job = 'ingest_plays'
+                    WHERE job = 'ingest_plays' AND status <> 'running'
                       AND started_at > now() - interval '7 days')
                     AS runs_7d,
                   (SELECT count(*) FROM pipeline_runs
@@ -507,7 +515,11 @@ def get_pipeline_health() -> dict | None:
                   (SELECT details FROM pipeline_runs
                     WHERE job = 'dbt_build' AND status = 'success'
                     ORDER BY finished_at DESC LIMIT 1)
-                    AS dbt
+                    AS dbt,
+                  (SELECT status FROM pipeline_runs
+                    WHERE job = 'dbt_build'
+                    ORDER BY started_at DESC, id DESC LIMIT 1)
+                    AS last_dbt_status
                 """
             )
             row = dict(cur.fetchone())
@@ -515,4 +527,11 @@ def get_pipeline_health() -> dict | None:
         conn.close()
     if row["last_ingest_status"] is None:
         return None
+    if row["ingest_stuck_since"] is not None:
+        logger.warning(
+            "pipeline health: ingest_plays running since %s (stuck)",
+            row["ingest_stuck_since"],
+        )
+    if row["last_dbt_status"] == "failed":
+        logger.warning("pipeline health: last dbt_build failed")
     return row
