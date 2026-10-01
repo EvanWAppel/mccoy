@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: public
+    tables:
+      - name: raw_plays
+        description: One row per Spotify play; raw API payload in JSONB.
+      - name: pipeline_runs
+        description: Ingest run log.

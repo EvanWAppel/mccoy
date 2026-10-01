@@ -3,6 +3,8 @@
 Draft prose (Evan to edit the voice). Content is sourced from the
 codebase architecture and the career source doc.
 """
+from datetime import datetime, timezone
+
 from dash import html
 
 REPO_URL = "https://github.com/EvanWAppel/mccoy"
@@ -43,7 +45,81 @@ def _links_row():
     )
 
 
-def about_tab():
+def _ago(then: datetime, now: datetime) -> str:
+    minutes = int((now - then).total_seconds() // 60)
+    if minutes < 60:
+        return f"{minutes} minute{'s' if minutes != 1 else ''} ago"
+    hours = minutes // 60
+    if hours < 48:
+        return f"{hours} hour{'s' if hours != 1 else ''} ago"
+    return f"{hours // 24} days ago"
+
+
+def pipeline_health(health: dict | None, now: datetime | None = None):
+    """Live status of the hourly play-history pipeline.
+
+    Public-safe by construction: run status and dbt counts only — no
+    play counts, no error text.
+    """
+    if not health:
+        return html.Div(
+            id="pipeline-health", className="about__health",
+            children=_p("The hourly pipeline hasn't reported yet."),
+        )
+    now = now or datetime.now(timezone.utc)
+    items = []
+    if health.get("last_ingest_status") == "failed":
+        items.append(html.Li(
+            "Last run failed — it's logged and will retry next hour.",
+            className="about__health-warn",
+        ))
+    stuck = health.get("stuck_ingest_7d") or 0
+    if stuck:
+        runs = "run" if stuck == 1 else "runs"
+        items.append(html.Li(
+            f"{stuck} ingest {runs} never finished in the last 7 days.",
+            className="about__health-warn",
+        ))
+    stuck_dbt = health.get("stuck_dbt_7d") or 0
+    if stuck_dbt:
+        builds = "build" if stuck_dbt == 1 else "builds"
+        items.append(html.Li(
+            f"{stuck_dbt} dbt {builds} never finished in the last 7 "
+            "days — listening marts may be stale.",
+            className="about__health-warn",
+        ))
+    dbt_failed = health.get("last_dbt_status") == "failed"
+    if dbt_failed:
+        items.append(html.Li(
+            "Last dbt build failed — listening marts may be stale.",
+            className="about__health-warn",
+        ))
+    if health.get("last_success_at"):
+        items.append(html.Li(
+            "Last successful ingest: "
+            f"{_ago(health['last_success_at'], now)}"
+        ))
+    items.append(html.Li(
+        f"{health['successes_7d']} of {health['runs_7d']} hourly runs "
+        "succeeded in the last 7 days"
+    ))
+    dbt = health.get("dbt")
+    if dbt:
+        label = "Last successful dbt build" if dbt_failed else "dbt"
+        items.append(html.Li(
+            f"{label}: {dbt['models_built']} models, "
+            f"{dbt['tests_passed']} tests passing"
+        ))
+    return html.Div(
+        id="pipeline-health", className="about__health",
+        children=[
+            html.H3("Pipeline health (live)", className="about__h3"),
+            html.Ul(items, className="about__list"),
+        ],
+    )
+
+
+def about_tab(health: dict | None = None):
     return html.Div(
         className="about",
         children=[
@@ -93,16 +169,26 @@ def about_tab():
             ]),
             _section("Data pipeline", [
                 _p(
-                    "A small but real scheduled-ingest pipeline sits "
-                    "under the Trends charts: a weekly Railway cron "
-                    "snapshots my top-artist rankings into Postgres, and "
-                    "both the Trends bump chart and this public demo read "
-                    "that history. The write is idempotent per week, so "
-                    "re-runs extend the record without duplicating it. "
-                    "It's a personal weekly cron — not production data "
-                    "engineering — but it's the same snapshot-into-a-"
-                    "warehouse shape, honestly scoped."
+                    "Two small but real scheduled pipelines feed "
+                    "Postgres. A weekly Railway cron snapshots my "
+                    "top-artist rankings for the Trends charts. An "
+                    "hourly cron pulls my recently-played history "
+                    "(Spotify only keeps the last 50 plays, hence "
+                    "hourly), loads it incrementally from a watermark "
+                    "into a raw table — idempotent, so re-runs never "
+                    "duplicate — and then runs dbt to model it into "
+                    "staging views and marts: listening sessions, daily "
+                    "minutes, an hour-of-week grid, and artist streaks, "
+                    "all covered by dbt tests."
                 ),
+                _p(
+                    "It's a single-user personal pipeline, not "
+                    "production data engineering — but it's the same "
+                    "ingest → model → test shape, honestly scoped. The "
+                    "Patterns tab in the demo uses sample data; my real "
+                    "listening hours stay private."
+                ),
+                pipeline_health(health),
             ]),
             _section("Tradeoffs worth calling out", [
                 html.Ul(className="about__list", children=[

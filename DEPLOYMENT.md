@@ -13,6 +13,9 @@ Create or confirm these services in the same Railway project:
      - `SPOTIPY_REDIRECT_URI`
      - `FLASK_SECRET_KEY`
      - `DATABASE_URL`
+     - `OWNER_SPOTIFY_ID` — the owner's Spotify user id; only this
+       login's refresh token is stored and sees the Patterns tab
+       (unset = nobody is the owner)
 
 2. Postgres service
    - Add a Railway PostgreSQL database to the project.
@@ -27,6 +30,36 @@ Create or confirm these services in the same Railway project:
      - `SPOTIPY_CLIENT_SECRET`
      - `SPOTIPY_REDIRECT_URI`
      - `DATABASE_URL`
+
+4. Play-history pipeline cron service (Group WW)
+   - Source: `EvanWAppel/mccoy`
+   - Start command: `python pipeline.py`
+     (hourly recently-played ingest, then `dbt build` in `analytics/`)
+   - Cron schedule: `0 * * * *` (hourly — Spotify only returns the
+     last 50 plays, so less often risks gaps)
+   - Environment variables: same four as the snapshot cron.
+   - Needs the `user-read-recently-played` grant: log in to the live
+     app once after this deploys so the stored refresh token carries it.
+   - Every run writes to `pipeline_runs`; a failed run exits non-zero
+     and shows as "Last run failed" in the About tab's health panel.
+
+### Owner gate: deploy order (Group WW)
+
+1. Set `OWNER_SPOTIFY_ID` on the web service **before** deploying.
+   Without it the app fails closed: no login's refresh token is saved
+   and the Patterns tab is private to everyone.
+2. Deploy, then **log out and log back in** as the owner. Sessions
+   from before this change carry no Spotify user id, so Patterns shows
+   "private to the site owner" until you re-login (it fails safe). The
+   new `user-read-recently-played` scope forces this re-login anyway.
+3. That owner login overwrites `stored_token`, replacing any refresh
+   token a non-owner may have saved before the gate existed. If the
+   pipeline ever ran before the gate, check `raw_plays` for plays that
+   aren't yours (`payload->'track'` you don't recognize) and delete
+   them; on a fresh deploy the table is new, so there is nothing to
+   clean.
+4. A failed owner refresh-token save now raises at login (error page)
+   instead of being logged and ignored — check the web logs if it does.
 
 ## One-time database initialization
 

@@ -344,3 +344,202 @@ def get_ratings_for_uris(user_id: str, uris: list[str]) -> dict:
             return {uri: rating for uri, rating in cur.fetchall()}
     finally:
         conn.close()
+
+
+# --- Play-history pipeline (Group WW) ---
+
+
+def get_play_watermark():
+    """Latest stored ``played_at`` (aware datetime), or None if empty."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT max(played_at) FROM raw_plays")
+            return cur.fetchone()[0]
+    finally:
+        conn.close()
+
+
+def insert_plays(items: list[dict]) -> int:
+    """Upsert recently-played items; returns how many were new.
+
+    Local files have no Spotify track id and are skipped (logged).
+    """
+    rows = [
+        (item["played_at"], item["track"]["id"],
+         psycopg2.extras.Json(item))
+        for item in items
+        if item.get("track") and item["track"].get("id")
+    ]
+    skipped = len(items) - len(rows)
+    if skipped:
+        logger.info("insert_plays: skipped %d item(s) without id", skipped)
+    conn = get_connection()
+    try:
+        inserted = 0
+        with conn.cursor() as cur:
+            for row in rows:
+                cur.execute(
+                    """
+                    INSERT INTO raw_plays (played_at, track_id, payload)
+                    VALUES (%s, %s, %s)
+                    ON CONFLICT (played_at, track_id) DO NOTHING
+                    """,
+                    row,
+                )
+                inserted += cur.rowcount
+        conn.commit()
+        return inserted
+    finally:
+        conn.close()
+
+
+def start_pipeline_run(job: str) -> int:
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO pipeline_runs (job, status) "
+                "VALUES (%s, 'running') RETURNING id",
+                (job,),
+            )
+            run_id = cur.fetchone()[0]
+        conn.commit()
+        return run_id
+    finally:
+        conn.close()
+
+
+def finish_pipeline_run(
+    run_id: int,
+    status: str,
+    rows_fetched: int | None = None,
+    rows_inserted: int | None = None,
+    error: str | None = None,
+    details: dict | None = None,
+) -> None:
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                UPDATE pipeline_runs
+                   SET status = %s, rows_fetched = %s,
+                       rows_inserted = %s, error = %s, details = %s,
+                       finished_at = now()
+                 WHERE id = %s
+                """,
+                (status, rows_fetched, rows_inserted, error,
+                 psycopg2.extras.Json(details) if details else None,
+                 run_id),
+            )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def get_listening_patterns() -> dict:
+    """Read the dbt marts behind the Listening Patterns view.
+
+    Raises if the marts don't exist yet (pipeline never ran); callers
+    decide how to present that.
+    """
+    conn = get_connection()
+    try:
+        with conn.cursor(
+            cursor_factory=psycopg2.extras.RealDictCursor
+        ) as cur:
+            cur.execute(
+                "SELECT iso_dow, hour, plays, minutes::float AS minutes "
+                "FROM marts.mart_hour_of_week ORDER BY iso_dow, hour"
+            )
+            hour_of_week = [dict(r) for r in cur.fetchall()]
+            cur.execute(
+                "SELECT listen_date, plays, minutes::float AS minutes "
+                "FROM marts.mart_daily_listening "
+                "ORDER BY listen_date"
+            )
+            daily = [dict(r) for r in cur.fetchall()]
+            cur.execute(
+                "SELECT artist_name, streak_start, streak_end, "
+                "streak_days FROM marts.mart_artist_streaks "
+                "ORDER BY streak_days DESC, streak_end DESC LIMIT 10"
+            )
+            streaks = [dict(r) for r in cur.fetchall()]
+        return {
+            "hour_of_week": hour_of_week,
+            "daily": daily,
+            "streaks": streaks,
+        }
+    finally:
+        conn.close()
+
+
+def get_pipeline_health() -> dict | None:
+    """Public-safe pipeline summary for the About tab, or None.
+
+    Deliberately excludes play counts and error text: the About tab is
+    public and Evan's listening volume stays private.
+    """
+    conn = get_connection()
+    try:
+        with conn.cursor(
+            cursor_factory=psycopg2.extras.RealDictCursor
+        ) as cur:
+            cur.execute(
+                """
+                SELECT
+                  (SELECT status FROM pipeline_runs
+                    WHERE job = 'ingest_plays'
+                    ORDER BY started_at DESC, id DESC LIMIT 1)
+                    AS last_ingest_status,
+                  (SELECT max(finished_at) FROM pipeline_runs
+                    WHERE job = 'ingest_plays' AND status = 'success')
+                    AS last_success_at,
+                  (SELECT count(*) FROM pipeline_runs
+                    WHERE job = 'ingest_plays' AND status = 'running'
+                      AND started_at < now() - interval '2 hours'
+                      AND started_at > now() - interval '7 days')
+                    AS stuck_ingest_7d,
+                  (SELECT count(*) FROM pipeline_runs
+                    WHERE job = 'dbt_build' AND status = 'running'
+                      AND started_at < now() - interval '2 hours'
+                      AND started_at > now() - interval '7 days')
+                    AS stuck_dbt_7d,
+                  -- Only in-flight runs (running, < 2h old) are left
+                  -- out; a stale 'running' row is a run that died and
+                  -- counts against the success rate.
+                  (SELECT count(*) FROM pipeline_runs
+                    WHERE job = 'ingest_plays'
+                      AND started_at > now() - interval '7 days'
+                      AND NOT (status = 'running' AND
+                               started_at > now() - interval '2 hours'))
+                    AS runs_7d,
+                  (SELECT count(*) FROM pipeline_runs
+                    WHERE job = 'ingest_plays' AND status = 'success'
+                      AND started_at > now() - interval '7 days')
+                    AS successes_7d,
+                  (SELECT details FROM pipeline_runs
+                    WHERE job = 'dbt_build' AND status = 'success'
+                    ORDER BY finished_at DESC LIMIT 1)
+                    AS dbt,
+                  (SELECT status FROM pipeline_runs
+                    WHERE job = 'dbt_build'
+                    ORDER BY started_at DESC, id DESC LIMIT 1)
+                    AS last_dbt_status
+                """
+            )
+            row = dict(cur.fetchone())
+    finally:
+        conn.close()
+    if row["last_ingest_status"] is None:
+        return None
+    if row["stuck_ingest_7d"] or row["stuck_dbt_7d"]:
+        logger.warning(
+            "pipeline health: %s ingest / %s dbt runs never finished "
+            "in 7 days",
+            row["stuck_ingest_7d"], row["stuck_dbt_7d"],
+        )
+    if row["last_dbt_status"] == "failed":
+        logger.warning("pipeline health: last dbt_build failed")
+    return row

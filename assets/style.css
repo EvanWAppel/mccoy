@@ -1616,3 +1616,44 @@ a { color: var(--accent); }
     white-space: nowrap;
   }
 }
+
+/* Listening Patterns (Group WW) */
+.patterns-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 8px 0 16px;
+}
+.patterns-stat {
+  flex: 1 1 160px;
+  background: var(--bg-surface, #eeeadf);
+  border: 1px solid var(--rule, #d2cec3);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.patterns-stat-value {
+  font: 22px var(--serif, Georgia, serif);
+  color: var(--accent, #c4452b);
+}
+.patterns-stat-label {
+  color: var(--text-secondary, #6e6b63);
+  font-size: 0.8rem;
+  margin-top: 2px;
+}
+.patterns-h {
+  font: 18px var(--serif, Georgia, serif);
+  margin: 16px 0 4px;
+  color: var(--text-primary, #25251f);
+}
+
+/* Pipeline health on the About tab */
+.about__health {
+  border-left: 3px solid var(--accent, #c4452b);
+  padding: 4px 0 4px 14px;
+  margin-top: 12px;
+}
+.about__h3 {
+  font: 17px var(--serif, Georgia, serif);
+  margin: 0 0 6px;
+}
+.about__health-warn { color: var(--accent, #c4452b); }

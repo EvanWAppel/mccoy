@@ -74,3 +74,57 @@ def demo_snapshots(time_range: str = "short_term") -> list[dict]:
 def demo_latest_snapshot(time_range: str = "short_term") -> dict:
     """The most recent demo snapshot for the stats grid."""
     return demo_snapshots(time_range)[-1]
+
+
+def demo_patterns(today=None) -> dict:
+    """Synthetic Listening Patterns (public view is demo-only).
+
+    Evenings and weekend late mornings are busiest; 30 listening days
+    over the last 32 (two quiet days), ending today.
+    """
+    from zoneinfo import ZoneInfo
+
+    from components.patterns import LISTENING_TZ
+
+    # Same local "today" the chart windows on, not the server's date
+    # (Railway is UTC), so the newest demo bar is never filtered out.
+    today = today or datetime.now(ZoneInfo(LISTENING_TZ)).date()
+    hour_of_week = []
+    for dow in range(1, 8):
+        weekend = dow >= 6
+        for hour in range(24):
+            if 1 <= hour <= 6:
+                continue
+            base = 1
+            if 18 <= hour <= 23:
+                base = 6
+            elif weekend and 10 <= hour <= 13:
+                base = 5
+            elif not weekend and 9 <= hour <= 17:
+                base = 3
+            plays = base + (dow * 7 + hour * 3) % 4
+            hour_of_week.append({
+                "iso_dow": dow, "hour": hour, "plays": plays,
+                "minutes": round(plays * 3.9, 2),
+            })
+    quiet = {5, 17}
+    daily = []
+    for back in range(31, -1, -1):
+        if back in quiet:
+            continue
+        plays = 12 + (back * 11) % 23
+        daily.append({
+            "listen_date": today - timedelta(days=back),
+            "plays": plays,
+            "minutes": round(plays * 3.9, 2),
+        })
+    streaks = [
+        {"artist_name": name, "streak_days": days,
+         "streak_start": today - timedelta(days=days - 1 + lag),
+         "streak_end": today - timedelta(days=lag)}
+        for (name, _), days, lag in zip(
+            _ARTISTS[:5], (6, 4, 3, 3, 2), (0, 1, 0, 9, 2)
+        )
+    ]
+    return {"hour_of_week": hour_of_week, "daily": daily,
+            "streaks": streaks}

@@ -34,3 +34,9 @@ netviz/data/
 
 # Discogs dump files (huge, downloaded locally)
 *.xml.gz
+
+# dbt build output
+analytics/target/
+analytics/logs/
+analytics/dbt_packages/
+analytics/.user.yml

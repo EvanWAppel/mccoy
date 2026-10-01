@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: stg_plays
+    columns:
+      - name: play_id
+        tests: [unique, not_null]
+      - name: played_at
+        tests: [not_null]
+      - name: track_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_tracks')
+                field: track_id
+      - name: duration_ms
+        tests: [not_null]
+  - name: stg_tracks
+    columns:
+      - name: track_id
+        tests: [unique, not_null]
+  - name: stg_artists
+    columns:
+      - name: artist_id
+        tests: [unique, not_null]

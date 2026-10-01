@@ -1,5 +1,7 @@
 """Group KK — About tab (engineering narrative + recruiter hooks)."""
-from components.about import about_tab
+from datetime import datetime, timezone
+
+from components.about import about_tab, pipeline_health
 
 
 def _all_text(node):
@@ -34,3 +36,95 @@ class TestAboutTab:
         assert "pipeline" in text
         assert "idempotent" in text
         assert "postgres" in text
+
+
+HEALTH = {
+    "last_ingest_status": "success",
+    "last_success_at": datetime(2026, 9, 30, 17, 0, tzinfo=timezone.utc),
+    "runs_7d": 168,
+    "successes_7d": 166,
+    "dbt": {"models_built": 8, "tests_passed": 19, "tests_failed": 0},
+    "last_dbt_status": "success",
+    "stuck_ingest_7d": 0,
+    "stuck_dbt_7d": 0,
+}
+
+
+class TestPipelineHealth:
+    def test_shows_status_and_success_rate(self, component_text):
+        text = component_text(pipeline_health(HEALTH, now=NOW))
+        assert "166 of 168" in text
+        assert "1 hour ago" in text
+
+    def test_shows_dbt_counts(self, component_text):
+        text = component_text(pipeline_health(HEALTH, now=NOW))
+        assert "8 models" in text and "19 tests passing" in text
+
+    def test_never_shows_play_counts_or_errors(self):
+        health = dict(HEALTH, last_ingest_status="failed")
+        rendered = str(pipeline_health(health, now=NOW))
+        assert "rows" not in rendered.lower()
+        assert "plays" not in rendered.lower()
+
+    def test_failed_last_run_is_flagged(self, component_text):
+        health = dict(HEALTH, last_ingest_status="failed")
+        text = component_text(pipeline_health(health, now=NOW))
+        assert "last run failed" in text.lower()
+
+    def test_not_reported_yet(self, component_text):
+        text = component_text(pipeline_health(None, now=NOW))
+        assert "hasn't reported yet" in text
+
+    def test_failed_dbt_build_is_flagged(self, component_text):
+        health = dict(HEALTH, last_dbt_status="failed")
+        rendered = pipeline_health(health, now=NOW)
+        text = component_text(rendered)
+        assert (
+            "Last dbt build failed — listening marts may be stale."
+            in text
+        )
+        assert "about__health-warn" in str(rendered)
+        assert (
+            "Last successful dbt build: 8 models, 19 tests passing"
+            in text
+        )
+
+    def test_successful_dbt_build_has_no_warning(self, component_text):
+        text = component_text(pipeline_health(HEALTH, now=NOW))
+        assert "dbt build failed" not in text
+        assert "Last successful dbt build" not in text
+
+    def test_stuck_ingest_runs_are_flagged(self, component_text):
+        health = dict(HEALTH, stuck_ingest_7d=22)
+        rendered = pipeline_health(health, now=NOW)
+        assert (
+            "22 ingest runs never finished in the last 7 days."
+            in component_text(rendered)
+        )
+        assert "about__health-warn" in str(rendered)
+
+    def test_single_stuck_run_is_singular(self, component_text):
+        health = dict(HEALTH, stuck_ingest_7d=1)
+        assert "1 ingest run never finished" in component_text(
+            pipeline_health(health, now=NOW)
+        )
+
+    def test_stuck_dbt_builds_are_flagged(self, component_text):
+        health = dict(HEALTH, stuck_dbt_7d=2)
+        text = component_text(pipeline_health(health, now=NOW))
+        assert (
+            "2 dbt builds never finished in the last 7 days — "
+            "listening marts may be stale." in text
+        )
+
+    def test_fresh_running_ingest_has_no_warning(self, component_text):
+        health = dict(HEALTH, last_ingest_status="running")
+        rendered = pipeline_health(health, now=NOW)
+        assert "never finished" not in component_text(rendered)
+        assert "about__health-warn" not in str(rendered)
+
+    def test_about_tab_includes_health(self, component_ids):
+        assert "pipeline-health" in component_ids(about_tab(HEALTH))
+
+
+NOW = datetime(2026, 9, 30, 18, 5, tzinfo=timezone.utc)

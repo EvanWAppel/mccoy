@@ -1063,15 +1063,16 @@ real incremental event pipeline:
 - `fct_listening_sessions` — plays grouped into sessions (gap > 30 min
   starts a new session).
 - `mart_daily_listening`, `mart_hour_of_week`, `mart_artist_streaks`.
-- dbt tests: `unique`/`not_null` on keys, `accepted_values` where
-  relevant, a freshness check on `raw_plays`.
+- dbt tests: `unique`/`not_null` on keys, `accepted_values` and
+  `relationships` where relevant. Staleness shows on the About health
+  panel rather than via `dbt source freshness`.
 - dbt runs after each ingest in the same cron command.
 
-**App.** A "Listening Patterns" view (owner-live, public from the same
-snapshot/demo fallback pattern as Trends): hour-of-week heatmap, daily
+**App.** A "Listening Patterns" sub-tab (owner-live; the public view
+is always demo data, by Evan's choice): hour-of-week heatmap, daily
 minutes, current/longest streaks. A small **Pipeline health** panel on
-the About tab: last run time, status, rows in the last 24h, dbt test
-pass count.
+the About tab: last successful run, status, 7-day success rate, dbt
+model/test counts (no play counts — see DECISIONS.md).
 
 **Honesty.** About-tab copy says: an hourly personal cron, dbt models
 in Postgres, single user. No "production-scale" language.

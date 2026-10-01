@@ -1,0 +1,23 @@
+name: mccoy
+version: "1.0.0"
+config-version: 2
+profile: mccoy
+
+model-paths: ["models"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+
+vars:
+  # Day/hour buckets are in the listener's local time.
+  listening_tz: "America/Los_Angeles"
+  # A gap longer than this starts a new listening session.
+  session_gap_minutes: 30
+
+models:
+  mccoy:
+    staging:
+      +schema: staging
+      +materialized: view
+    marts:
+      +schema: marts
+      +materialized: table
