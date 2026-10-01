@@ -7,7 +7,7 @@ import psycopg2
 import pytest
 
 import db
-from ingest_plays import fetch_recent_plays, run_ingest, to_epoch_ms
+from ingest_plays import PAGE_LIMIT, fetch_recent_plays, run_ingest
 
 
 def _rows(dsn, sql):
@@ -20,39 +20,67 @@ def _rows(dsn, sql):
         conn.close()
 
 
+WATERMARK = datetime(2026, 9, 27, 8, 0, tzinfo=timezone.utc)
+
+
+def _full_page(recently_played, oldest):
+    """A 50-item page whose oldest play is at ``oldest``."""
+    item = recently_played["items"][0]
+    items = [dict(item) for _ in range(PAGE_LIMIT - 1)]
+    items.append(dict(item, played_at=oldest))
+    return dict(recently_played, items=items)
+
+
 class TestFetchRecentPlays:
-    def test_passes_after_cursor(self, recently_played):
+    def test_always_fetches_latest_page(self, recently_played):
         sp = MagicMock()
         sp.current_user_recently_played.return_value = recently_played
-        items = fetch_recent_plays(sp, after_ms=1790000000000)
-        sp.current_user_recently_played.assert_called_once_with(
-            limit=50, after=1790000000000
-        )
+        items = fetch_recent_plays(sp, WATERMARK)
+        sp.current_user_recently_played.assert_called_once_with(limit=50)
         assert items == recently_played["items"]
 
-    def test_omits_after_on_first_run(self, recently_played):
+    def test_first_run_fetches_latest_page(self, recently_played):
         sp = MagicMock()
         sp.current_user_recently_played.return_value = recently_played
-        fetch_recent_plays(sp, after_ms=None)
+        fetch_recent_plays(sp, None)
         sp.current_user_recently_played.assert_called_once_with(limit=50)
 
-    def test_warns_when_page_is_full(self, recently_played, caplog):
-        full = dict(recently_played,
-                    items=recently_played["items"][:1] * 50)
+    def test_warns_when_full_page_misses_watermark(
+        self, recently_played, caplog
+    ):
+        page = _full_page(recently_played, "2026-09-27T08:05:00.000Z")
         sp = MagicMock()
-        sp.current_user_recently_played.return_value = full
+        sp.current_user_recently_played.return_value = page
         with caplog.at_level(logging.WARNING):
-            fetch_recent_plays(sp, after_ms=None)
+            fetch_recent_plays(sp, WATERMARK)
         assert "possible gap" in caplog.text
 
+    def test_no_warning_when_full_page_overlaps_watermark(
+        self, recently_played, caplog
+    ):
+        page = _full_page(recently_played, "2026-09-27T07:55:00.000Z")
+        sp = MagicMock()
+        sp.current_user_recently_played.return_value = page
+        with caplog.at_level(logging.WARNING):
+            fetch_recent_plays(sp, WATERMARK)
+        assert "possible gap" not in caplog.text
 
-class TestToEpochMs:
-    def test_converts_aware_datetime(self):
-        ts = datetime(2026, 9, 27, 8, 0, tzinfo=timezone.utc)
-        assert to_epoch_ms(ts) == 1790496000000
+    def test_no_warning_for_partial_page(self, recently_played, caplog):
+        sp = MagicMock()
+        sp.current_user_recently_played.return_value = recently_played
+        with caplog.at_level(logging.WARNING):
+            fetch_recent_plays(
+                sp, datetime(2020, 1, 1, tzinfo=timezone.utc)
+            )
+        assert "possible gap" not in caplog.text
 
-    def test_none_passes_through(self):
-        assert to_epoch_ms(None) is None
+    def test_no_warning_on_first_run(self, recently_played, caplog):
+        page = _full_page(recently_played, "2026-09-27T08:05:00.000Z")
+        sp = MagicMock()
+        sp.current_user_recently_played.return_value = page
+        with caplog.at_level(logging.WARNING):
+            fetch_recent_plays(sp, None)
+        assert "possible gap" not in caplog.text
 
 
 class TestPlayStorage:
@@ -109,13 +137,57 @@ class TestRunIngest:
         )
         assert finished is not None
 
-    def test_second_run_uses_watermark(self, pg_db, ingest_sp):
+    def test_never_passes_after_cursor(self, pg_db, ingest_sp):
         run_ingest()
         run_ingest()
-        last_call = ingest_sp.current_user_recently_played.call_args
-        assert last_call.kwargs["after"] == to_epoch_ms(
-            datetime(2026, 9, 27, 8, 15, 9, tzinfo=timezone.utc)
+        for call in ingest_sp.current_user_recently_played.call_args_list:
+            assert "after" not in call.kwargs
+            assert call.kwargs == {"limit": 50}
+
+    def test_second_run_refetch_is_harmless(self, pg_db, ingest_sp):
+        run_ingest()
+        run_ingest()
+        runs = _rows(
+            pg_db,
+            "SELECT status, rows_fetched, rows_inserted "
+            "FROM pipeline_runs ORDER BY id",
         )
+        assert runs == [("success", 6, 5), ("success", 6, 0)]
+        assert _rows(pg_db, "SELECT count(*) FROM raw_plays")[0][0] == 5
+
+    def test_late_synced_play_is_captured(
+        self, pg_db, ingest_sp, recently_played
+    ):
+        run_ingest()
+        # An offline play syncs later, older than the stored watermark.
+        late = dict(
+            recently_played["items"][0],
+            played_at="2026-09-27T07:30:00.000Z",
+        )
+        items = recently_played["items"]
+        page = items[:2] + [late] + items[2:]
+
+        def spotify(limit, after=None):
+            # Like Spotify: an ``after`` cursor hides older plays.
+            if after is None:
+                return dict(recently_played, items=page)
+            return dict(recently_played, items=[
+                i for i in page
+                if datetime.fromisoformat(i["played_at"]).timestamp()
+                * 1000 > after
+            ])
+
+        ingest_sp.current_user_recently_played.side_effect = spotify
+        run_ingest()
+        assert _rows(
+            pg_db,
+            "SELECT count(*) FROM raw_plays "
+            "WHERE played_at = '2026-09-27T07:30:00Z'",
+        )[0][0] == 1
+        assert _rows(
+            pg_db,
+            "SELECT rows_inserted FROM pipeline_runs ORDER BY id DESC",
+        )[0][0] == 1
 
     def test_failure_is_recorded_and_reraised(self, pg_db, ingest_sp):
         ingest_sp.current_user_recently_played.side_effect = RuntimeError(
