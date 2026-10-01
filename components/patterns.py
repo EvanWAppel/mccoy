@@ -64,8 +64,13 @@ def _heatmap(hour_of_week: list[dict]) -> dcc.Graph:
                      config={"displayModeBar": False})
 
 
-def _daily(daily: list[dict]) -> dcc.Graph:
-    recent = daily[-30:]
+def _daily(daily: list[dict], today: date) -> dcc.Graph:
+    # Last 30 calendar days (today - 29 .. today), not the last 30
+    # listening days, which could reach back months.
+    start = today - timedelta(days=29)
+    recent = [d for d in daily if start <= d["listen_date"] <= today]
+    logger.debug("daily chart: %d of %d rows in %s..%s",
+                 len(recent), len(daily), start, today)
     fig = go.Figure(go.Bar(
         x=[d["listen_date"] for d in recent],
         y=[d["minutes"] for d in recent],
@@ -119,5 +124,5 @@ def render_patterns(data: dict, is_demo: bool, today=None) -> html.Div:
         html.H3("When I listen", className="patterns-h"),
         _heatmap(hour_of_week),
         html.H3("Minutes per day, last 30 days", className="patterns-h"),
-        _daily(daily),
+        _daily(daily, today),
     ])

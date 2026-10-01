@@ -1,5 +1,5 @@
 """Group WW — Listening Patterns view (heatmap, daily minutes, streaks)."""
-from datetime import date
+from datetime import date, timedelta
 
 from dash import dcc
 
@@ -80,6 +80,40 @@ class TestRenderPatterns:
         data = {"hour_of_week": [], "daily": [], "streaks": []}
         text = component_text(render_patterns(data, is_demo=False))
         assert "No play history yet" in text
+
+
+class TestDailyWindow:
+    """Daily chart covers the last 30 calendar days, not 30 rows."""
+
+    TODAY = date(2026, 9, 30)
+
+    def _dates(self, daily):
+        data = {"hour_of_week": [], "daily": daily, "streaks": []}
+        tree = render_patterns(data, is_demo=False, today=self.TODAY)
+        return list(_find(tree, "patterns-daily").figure.data[0].x)
+
+    def _row(self, back):
+        return {"listen_date": self.TODAY - timedelta(days=back),
+                "plays": 1, "minutes": 3.9}
+
+    def test_row_40_days_old_excluded(self):
+        dates = self._dates([self._row(40), self._row(1)])
+        assert dates == [self.TODAY - timedelta(days=1)]
+
+    def test_row_exactly_29_days_old_included(self):
+        dates = self._dates([self._row(30), self._row(29)])
+        assert dates == [self.TODAY - timedelta(days=29)]
+
+    def test_demo_data_within_window(self):
+        data = demo_data.demo_patterns(today=self.TODAY)
+        tree = render_patterns(data, is_demo=True, today=self.TODAY)
+        dates = list(_find(tree, "patterns-daily").figure.data[0].x)
+        assert dates
+        start = self.TODAY - timedelta(days=29)
+        assert all(start <= d <= self.TODAY for d in dates)
+        expected = [r["listen_date"] for r in data["daily"]
+                    if r["listen_date"] >= start]
+        assert dates == expected
 
 
 def _find(tree, target):
