@@ -7,6 +7,21 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      # Throwaway Postgres for the play-history pipeline tests
+      # (raw_plays upserts + dbt models). Tests create their own DB.
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+      # Fail rather than skip if the Postgres tests can't run here.
+      REQUIRE_PG_TESTS: "1"
     steps:
       - uses: actions/checkout@v4
       - name: Install uv

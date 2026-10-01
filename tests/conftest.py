@@ -160,6 +160,8 @@ def recently_played():
 def pg_dsn():
     base = os.environ.get("TEST_DATABASE_URL")
     if not base:
+        if os.environ.get("REQUIRE_PG_TESTS"):
+            pytest.fail("REQUIRE_PG_TESTS set but TEST_DATABASE_URL isn't")
         pytest.skip("TEST_DATABASE_URL not set; Postgres tests skipped")
     name = f"mccoy_test_{uuid.uuid4().hex[:8]}"
     admin = psycopg2.connect(base)

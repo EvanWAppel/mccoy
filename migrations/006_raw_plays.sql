@@ -20,5 +20,6 @@ CREATE TABLE IF NOT EXISTS pipeline_runs (
         CHECK (status IN ('running', 'success', 'failed')),
     rows_fetched  INTEGER,
     rows_inserted INTEGER,
+    details       JSONB,
     error         TEXT
 );

@@ -416,6 +416,7 @@ def finish_pipeline_run(
     rows_fetched: int | None = None,
     rows_inserted: int | None = None,
     error: str | None = None,
+    details: dict | None = None,
 ) -> None:
     conn = get_connection()
     try:
@@ -424,11 +425,13 @@ def finish_pipeline_run(
                 """
                 UPDATE pipeline_runs
                    SET status = %s, rows_fetched = %s,
-                       rows_inserted = %s, error = %s,
+                       rows_inserted = %s, error = %s, details = %s,
                        finished_at = now()
                  WHERE id = %s
                 """,
-                (status, rows_fetched, rows_inserted, error, run_id),
+                (status, rows_fetched, rows_inserted, error,
+                 psycopg2.extras.Json(details) if details else None,
+                 run_id),
             )
         conn.commit()
     finally:

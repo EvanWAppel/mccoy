@@ -1,0 +1,34 @@
+version: 2
+
+models:
+  - name: fct_plays
+    columns:
+      - name: play_id
+        tests: [unique, not_null]
+      - name: session_id
+        tests: [not_null]
+  - name: fct_listening_sessions
+    columns:
+      - name: session_id
+        tests: [unique, not_null]
+      - name: plays
+        tests: [not_null]
+  - name: mart_daily_listening
+    columns:
+      - name: listen_date
+        tests: [unique, not_null]
+  - name: mart_hour_of_week
+    columns:
+      - name: iso_dow
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5, 6, 7]
+                quote: false
+  - name: mart_artist_streaks
+    columns:
+      - name: artist_id
+        tests: [not_null]
+      - name: streak_days
+        tests: [not_null]
