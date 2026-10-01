@@ -34,6 +34,12 @@ dashboard and the full Rustle playlist builder with write access.
 - **Real external-API integration** — Spotify OAuth via Spotipy for the
   owner, plus a client-credentials token for the no-login demo, with
   graceful degradation under real dev-mode API constraints.
+- **An hourly ingest → dbt pipeline** — a Railway cron pulls
+  recently-played history incrementally (watermark + idempotent upsert)
+  into Postgres, then `dbt build` models it into sessions, daily
+  listening, an hour-of-week grid, and artist streaks, with dbt tests
+  and a live health panel on the About tab. Single-user, honestly
+  scoped.
 - **A scheduled ingest pipeline** — a weekly Railway cron snapshots
   top-artist rankings into Postgres; the Trends charts and public demo
   read that history. Idempotent per week. Small but real, not more than
@@ -73,7 +79,7 @@ meantime._
 ## Tech
 
 Python · Plotly Dash · Spotipy (Spotify Web API) · Flask ·
-Postgres · dash-cytoscape · gunicorn · Railway (web + weekly cron) ·
+Postgres · dash-cytoscape · gunicorn · Railway (web + weekly and hourly crons) · dbt-core ·
 GitHub Actions · pytest.
 
 ## Local development

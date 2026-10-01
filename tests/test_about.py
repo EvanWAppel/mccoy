@@ -1,5 +1,7 @@
 """Group KK — About tab (engineering narrative + recruiter hooks)."""
-from components.about import about_tab
+from datetime import datetime, timezone
+
+from components.about import about_tab, pipeline_health
 
 
 def _all_text(node):
@@ -34,3 +36,44 @@ class TestAboutTab:
         assert "pipeline" in text
         assert "idempotent" in text
         assert "postgres" in text
+
+
+HEALTH = {
+    "last_ingest_status": "success",
+    "last_success_at": datetime(2026, 9, 30, 17, 0, tzinfo=timezone.utc),
+    "runs_7d": 168,
+    "successes_7d": 166,
+    "dbt": {"models_built": 8, "tests_passed": 19, "tests_failed": 0},
+}
+
+
+class TestPipelineHealth:
+    def test_shows_status_and_success_rate(self, component_text):
+        text = component_text(pipeline_health(HEALTH, now=NOW))
+        assert "166 of 168" in text
+        assert "1 hour ago" in text
+
+    def test_shows_dbt_counts(self, component_text):
+        text = component_text(pipeline_health(HEALTH, now=NOW))
+        assert "8 models" in text and "19 tests passing" in text
+
+    def test_never_shows_play_counts_or_errors(self):
+        health = dict(HEALTH, last_ingest_status="failed")
+        rendered = str(pipeline_health(health, now=NOW))
+        assert "rows" not in rendered.lower()
+        assert "plays" not in rendered.lower()
+
+    def test_failed_last_run_is_flagged(self, component_text):
+        health = dict(HEALTH, last_ingest_status="failed")
+        text = component_text(pipeline_health(health, now=NOW))
+        assert "last run failed" in text.lower()
+
+    def test_not_reported_yet(self, component_text):
+        text = component_text(pipeline_health(None, now=NOW))
+        assert "hasn't reported yet" in text
+
+    def test_about_tab_includes_health(self, component_ids):
+        assert "pipeline-health" in component_ids(about_tab(HEALTH))
+
+
+NOW = datetime(2026, 9, 30, 18, 5, tzinfo=timezone.utc)

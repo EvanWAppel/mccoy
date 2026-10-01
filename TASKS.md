@@ -823,17 +823,17 @@ tasks that don't share files.
 ## Group WW — Play-History Pipeline (dbt-core + Postgres)
 > Branch: `play-history-pipeline`. Needs Evan: re-consent for new scope, Railway cron, migration (BLOCKED.md).
 
-- [ ] **WW-01** Migration `006_raw_plays.sql`: `raw_plays` (unique `(played_at, track_id)`, JSONB payload) + `pipeline_runs`
-- [ ] **WW-02** Tests: `fetch_recent_plays(sp, after_ms)` uses the `after` cursor; fixture payloads in `tests/fixtures/`
-- [ ] **WW-03** Tests: watermark read, idempotent upsert, `pipeline_runs` row on success and on failure (error recorded + re-raised)
-- [ ] **WW-04** Implement `ingest_plays.py` + db helpers; add `user-read-recently-played` to `auth.SCOPE`
-- [ ] **WW-05** `uv add dbt-postgres`; scaffold `analytics/` dbt project + profile from env vars
-- [ ] **WW-06** Models: `stg_plays`, `stg_tracks`, `stg_artists` + schema tests
-- [ ] **WW-07** Models: `fct_listening_sessions` (30-min gap), `mart_daily_listening`, `mart_hour_of_week`, `mart_artist_streaks` + tests
-- [ ] **WW-08** Freshness check on `raw_plays`; pytest runs `dbt build` against a throwaway Postgres in CI
-- [ ] **WW-09** Cron entrypoint: ingest then `dbt build`; document the Railway service in DEPLOYMENT.md
-- [ ] **WW-10** Tests + impl: "Listening Patterns" view (heatmap, daily minutes, streaks) with demo fallback data
-- [ ] **WW-11** Tests + impl: Pipeline health panel on About (last run, status, 24h rows, dbt test count)
+- [x] **WW-01** Migration `006_raw_plays.sql`: `raw_plays` (unique `(played_at, track_id)`, JSONB payload) + `pipeline_runs`
+- [x] **WW-02** Tests: `fetch_recent_plays(sp, after_ms)` uses the `after` cursor; fixture payloads in `tests/fixtures/`
+- [x] **WW-03** Tests: watermark read, idempotent upsert, `pipeline_runs` row on success and on failure (error recorded + re-raised)
+- [x] **WW-04** Implement `ingest_plays.py` + db helpers; add `user-read-recently-played` to `auth.SCOPE`
+- [x] **WW-05** `uv add dbt-postgres`; scaffold `analytics/` dbt project + profile from env vars
+- [x] **WW-06** Models: `stg_plays`, `stg_tracks`, `stg_artists` + schema tests
+- [x] **WW-07** Models: `fct_listening_sessions` (30-min gap), `mart_daily_listening`, `mart_hour_of_week`, `mart_artist_streaks` + tests
+- [x] **WW-08** Freshness check on `raw_plays`; pytest runs `dbt build` against a throwaway Postgres in CI
+- [x] **WW-09** Cron entrypoint: ingest then `dbt build`; document the Railway service in DEPLOYMENT.md
+- [x] **WW-10** Tests + impl: "Listening Patterns" view (heatmap, daily minutes, streaks) with demo fallback data
+- [x] **WW-11** Tests + impl: Pipeline health panel on About (last run, status, 24h rows, dbt test count)
 - [ ] **WW-12** About/README copy at true scale; independent review → PR → Evan merges
 
 ## Group XX — Ask Your Listening (Claude NL → SQL)

@@ -28,6 +28,18 @@ Create or confirm these services in the same Railway project:
      - `SPOTIPY_REDIRECT_URI`
      - `DATABASE_URL`
 
+4. Play-history pipeline cron service (Group WW)
+   - Source: `EvanWAppel/mccoy`
+   - Start command: `python pipeline.py`
+     (hourly recently-played ingest, then `dbt build` in `analytics/`)
+   - Cron schedule: `0 * * * *` (hourly — Spotify only returns the
+     last 50 plays, so less often risks gaps)
+   - Environment variables: same four as the snapshot cron.
+   - Needs the `user-read-recently-played` grant: log in to the live
+     app once after this deploys so the stored refresh token carries it.
+   - Every run writes to `pipeline_runs`; a failed run exits non-zero
+     and shows as "Last run failed" in the About tab's health panel.
+
 ## One-time database initialization
 
 After Railway Postgres is attached, run the migration once against the

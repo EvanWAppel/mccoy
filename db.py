@@ -436,3 +436,83 @@ def finish_pipeline_run(
         conn.commit()
     finally:
         conn.close()
+
+
+def get_listening_patterns() -> dict:
+    """Read the dbt marts behind the Listening Patterns view.
+
+    Raises if the marts don't exist yet (pipeline never ran); callers
+    decide how to present that.
+    """
+    conn = get_connection()
+    try:
+        with conn.cursor(
+            cursor_factory=psycopg2.extras.RealDictCursor
+        ) as cur:
+            cur.execute(
+                "SELECT iso_dow, hour, plays, minutes::float AS minutes "
+                "FROM marts.mart_hour_of_week ORDER BY iso_dow, hour"
+            )
+            hour_of_week = [dict(r) for r in cur.fetchall()]
+            cur.execute(
+                "SELECT listen_date, plays, minutes::float AS minutes "
+                "FROM marts.mart_daily_listening "
+                "ORDER BY listen_date"
+            )
+            daily = [dict(r) for r in cur.fetchall()]
+            cur.execute(
+                "SELECT artist_name, streak_start, streak_end, "
+                "streak_days FROM marts.mart_artist_streaks "
+                "ORDER BY streak_days DESC, streak_end DESC LIMIT 10"
+            )
+            streaks = [dict(r) for r in cur.fetchall()]
+        return {
+            "hour_of_week": hour_of_week,
+            "daily": daily,
+            "streaks": streaks,
+        }
+    finally:
+        conn.close()
+
+
+def get_pipeline_health() -> dict | None:
+    """Public-safe pipeline summary for the About tab, or None.
+
+    Deliberately excludes play counts and error text: the About tab is
+    public and Evan's listening volume stays private.
+    """
+    conn = get_connection()
+    try:
+        with conn.cursor(
+            cursor_factory=psycopg2.extras.RealDictCursor
+        ) as cur:
+            cur.execute(
+                """
+                SELECT
+                  (SELECT status FROM pipeline_runs
+                    WHERE job = 'ingest_plays'
+                    ORDER BY started_at DESC, id DESC LIMIT 1)
+                    AS last_ingest_status,
+                  (SELECT max(finished_at) FROM pipeline_runs
+                    WHERE job = 'ingest_plays' AND status = 'success')
+                    AS last_success_at,
+                  (SELECT count(*) FROM pipeline_runs
+                    WHERE job = 'ingest_plays'
+                      AND started_at > now() - interval '7 days')
+                    AS runs_7d,
+                  (SELECT count(*) FROM pipeline_runs
+                    WHERE job = 'ingest_plays' AND status = 'success'
+                      AND started_at > now() - interval '7 days')
+                    AS successes_7d,
+                  (SELECT details FROM pipeline_runs
+                    WHERE job = 'dbt_build' AND status = 'success'
+                    ORDER BY finished_at DESC LIMIT 1)
+                    AS dbt
+                """
+            )
+            row = dict(cur.fetchone())
+    finally:
+        conn.close()
+    if row["last_ingest_status"] is None:
+        return None
+    return row

@@ -230,26 +230,65 @@ class TestPublicTrendsGating:
     def test_trends_hidden_when_under_two_snapshots(self):
         tabs = app_module._public_stats_tabs(1)
         values = [t.value for t in tabs]
-        assert values == ["artists"]
+        assert values == ["artists", "patterns"]
 
     def test_trends_shown_with_two_or_more_snapshots(self):
         tabs = app_module._public_stats_tabs(2)
         values = [t.value for t in tabs]
-        assert "artists" in values and "trends" in values
+        assert values == ["artists", "trends", "patterns"]
 
     def test_content_toggle_shows_trends(self):
-        artists_style, trends_style = app_module.toggle_public_content(
+        artists, trends, patterns = app_module.toggle_public_content(
             "trends"
         )
-        assert trends_style == {"display": "block"}
-        assert artists_style == {"display": "none"}
+        assert trends == {"display": "block"}
+        assert artists == patterns == {"display": "none"}
+
+    def test_content_toggle_shows_patterns(self):
+        artists, trends, patterns = app_module.toggle_public_content(
+            "patterns"
+        )
+        assert patterns == {"display": "block"}
+        assert artists == trends == {"display": "none"}
 
     def test_content_toggle_defaults_to_artists(self):
-        artists_style, trends_style = app_module.toggle_public_content(
+        artists, trends, patterns = app_module.toggle_public_content(
             "artists"
         )
-        assert artists_style == {"display": "block"}
-        assert trends_style == {"display": "none"}
+        assert artists == {"display": "block"}
+        assert trends == patterns == {"display": "none"}
+
+    def test_public_patterns_never_reads_marts(self, mocker):
+        # Evan's choice: logged-out visitors only ever see demo data.
+        spy = mocker.patch.object(app_module.db, "get_listening_patterns")
+        with patch.object(app_module.flask, "session", {}):
+            tree = app_module.render_page("/")
+        assert _find_id(tree, "public-stats-patterns")
+        spy.assert_not_called()
+
+
+class TestOwnerPatterns:
+    def test_patterns_tab_reads_marts(self, mocker):
+        mocker.patch.object(
+            app_module, "get_sp_from_session", return_value=MagicMock()
+        )
+        mocker.patch.object(
+            app_module.db, "get_listening_patterns",
+            return_value=app_module.demo_data.demo_patterns(),
+        )
+        tree = app_module.update_content("short_term", "patterns")
+        assert _find_id(tree, "patterns-heatmap")
+
+    def test_patterns_tab_when_pipeline_never_ran(self, mocker):
+        mocker.patch.object(
+            app_module, "get_sp_from_session", return_value=MagicMock()
+        )
+        mocker.patch.object(
+            app_module.db, "get_listening_patterns",
+            side_effect=RuntimeError('relation "marts.fct_plays" missing'),
+        )
+        tree = app_module.update_content("short_term", "patterns")
+        assert "pipeline" in repr(tree).lower()
 
 
 class TestOwnerModeToggle:

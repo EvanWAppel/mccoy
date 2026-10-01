@@ -48,6 +48,7 @@ from components.network import (
     render_path_result,
     to_cytoscape_elements,
 )
+from components.patterns import render_patterns
 from components.rate import (
     RATE_ALBUM_END_MESSAGE,
     RATE_SEARCH_END_MESSAGE,
@@ -361,8 +362,14 @@ def _public_rustle_sandbox():
 
 
 def _public_about_placeholder():
-    # KK: the engineering narrative + recruiter hooks.
-    return about_tab()
+    # KK: the engineering narrative + recruiter hooks, plus live
+    # pipeline health (public-safe summary; see db.get_pipeline_health).
+    try:
+        health = db.get_pipeline_health()
+    except Exception as e:
+        logger.warning("pipeline health unavailable: %s", e)
+        health = None
+    return about_tab(health)
 
 
 def _safe_snapshot_count(time_range="short_term"):
@@ -388,6 +395,12 @@ def _public_stats_tabs(snapshot_count):
                 style=TAB_STYLE, selected_style=TAB_SELECTED_STYLE,
             )
         )
+    tabs.append(
+        dcc.Tab(
+            label="Patterns", value="patterns",
+            style=TAB_STYLE, selected_style=TAB_SELECTED_STYLE,
+        )
+    )
     return tabs
 
 
@@ -465,6 +478,15 @@ def _public_demo():
                             children=html.Div(id="public-bump-container"),
                         ),
                     ],
+                ),
+                # Public Patterns is always demo data (Evan's choice:
+                # real listening hours stay owner-only).
+                html.Div(
+                    id="public-stats-patterns",
+                    style={"display": "none", "marginTop": "12px"},
+                    children=render_patterns(
+                        demo_data.demo_patterns(), is_demo=True
+                    ),
                 ),
             ],
         ),
@@ -603,6 +625,12 @@ def render_page(pathname):
                                 dcc.Tab(
                                     label="Trends",
                                     value="trends",
+                                    style=TAB_STYLE,
+                                    selected_style=TAB_SELECTED_STYLE,
+                                ),
+                                dcc.Tab(
+                                    label="Patterns",
+                                    value="patterns",
                                     style=TAB_STYLE,
                                     selected_style=TAB_SELECTED_STYLE,
                                 ),
@@ -1020,12 +1048,15 @@ def toggle_public_mode(mode):
 @app.callback(
     Output("public-stats-artists", "style"),
     Output("public-stats-trends", "style"),
+    Output("public-stats-patterns", "style"),
     Input("public-content-tabs", "value"),
 )
 def toggle_public_content(tab):
-    if tab == "trends":
-        return {"display": "none"}, {"display": "block"}
-    return {"display": "block"}, {"display": "none"}
+    shown = tab if tab in ("trends", "patterns") else "artists"
+    return tuple(
+        {"display": "block" if name == shown else "none"}
+        for name in ("artists", "trends", "patterns")
+    )
 
 
 @app.callback(
@@ -1288,6 +1319,20 @@ def update_content(time_range, content_tab):
     sp = get_sp_from_session(flask.session)
     if sp is None:
         return html.P("Not authenticated.", style={"color": "#6e6b63"})
+
+    if content_tab == "patterns":
+        try:
+            data = db.get_listening_patterns()
+        except Exception as e:
+            # Marts don't exist until the play-history pipeline runs.
+            logger.warning("Could not load listening patterns: %s", e)
+            return html.P(
+                "Listening patterns appear after the hourly play-history "
+                "pipeline has run.",
+                style={"color": "#6e6b63", "padding": "48px 0",
+                       "textAlign": "center"},
+            )
+        return render_patterns(data, is_demo=False)
 
     if content_tab == "trends":
         try:

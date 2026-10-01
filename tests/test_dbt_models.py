@@ -124,6 +124,20 @@ class TestDbtBuild:
         } <= tables
 
 
+class TestGetListeningPatterns:
+    def test_reads_marts(self, built):
+        data = db.get_listening_patterns()
+        assert {"iso_dow": 6, "hour": 14, "plays": 3,
+                "minutes": 26.43} in data["hour_of_week"]
+        assert [d["listen_date"] for d in data["daily"]] == [
+            date(2026, 9, 26), date(2026, 9, 27)
+        ]
+        top = data["streaks"][0]
+        assert (top["artist_name"], top["streak_days"]) == (
+            "Wayne Shorter", 2
+        )
+
+
 class TestDbtFailure:
     def test_failed_build_raises(self, pg_db):
         # Point dbt at a database that doesn't exist.

@@ -138,3 +138,25 @@ class TestRunIngest:
         assert _rows(pg_db, "SELECT status FROM pipeline_runs")[0][0] == (
             "failed"
         )
+
+
+class TestPipelineHealthQuery:
+    def test_none_before_any_run(self, pg_db):
+        assert db.get_pipeline_health() is None
+
+    def test_summarizes_runs(self, pg_db):
+        ok = db.start_pipeline_run("ingest_plays")
+        db.finish_pipeline_run(ok, "success", 3, 3)
+        bad = db.start_pipeline_run("ingest_plays")
+        db.finish_pipeline_run(bad, "failed", error="403")
+        build = db.start_pipeline_run("dbt_build")
+        db.finish_pipeline_run(
+            build, "success",
+            details={"models_built": 8, "tests_passed": 19,
+                     "tests_failed": 0},
+        )
+        health = db.get_pipeline_health()
+        assert health["last_ingest_status"] == "failed"
+        assert health["last_success_at"] is not None
+        assert (health["runs_7d"], health["successes_7d"]) == (2, 1)
+        assert health["dbt"]["tests_passed"] == 19

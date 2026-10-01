@@ -35,3 +35,31 @@ max total weight); search the full graph, not the filtered view. Pure
 Python, no networkx. Rejected weighted-shortest-path as the default
 (less intuitive "degrees") and adding networkx (unneeded at ~240 nodes;
 revisit if centrality/communities land in v2).
+
+## 2026-09-30 — Public Patterns is demo-only; Patterns is a sub-tab (confirmed)
+Logged-out visitors see synthetic listening patterns labeled as sample
+data; real hour-of-week/daily data is owner-only. Rejected real data
+(reveals listening hours) and coarsened real data.
+
+## 2026-09-30 — Pipeline health shows no play counts *(draft)*
+The public About panel shows run status, last success, 7-day success
+rate, and dbt model/test counts — not "rows in the last 24h" from the
+PRD, which would reveal listening volume. Follows the demo-only call
+above.
+
+## 2026-09-30 — Real-Postgres integration tests *(draft)*
+Upsert idempotency and dbt models are tested against a throwaway
+database (TEST_DATABASE_URL; CI runs a postgres:17 service and fails
+rather than skips). Rejected mocking the cursor for these: mocks can't
+prove ON CONFLICT or SQL model semantics.
+
+## 2026-09-30 — dbt is a runtime dependency *(draft)*
+dbt-core/dbt-postgres are main deps so the Railway cron can run them,
+at the cost of a larger web image. Rejected a separate cron-only
+dependency group (Railway builds both services from one lockfile).
+
+## 2026-09-30 — Local-time bucketing and freshness *(draft)*
+Days/hours are bucketed in `listening_tz` = America/Los_Angeles (dbt var,
+mirrored in components/patterns.py with a test keeping them in sync).
+Freshness is measured on the last successful ingest run, not the last
+play — a day without listening isn't stale data.
