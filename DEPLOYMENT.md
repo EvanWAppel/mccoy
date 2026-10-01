@@ -43,6 +43,24 @@ Create or confirm these services in the same Railway project:
    - Every run writes to `pipeline_runs`; a failed run exits non-zero
      and shows as "Last run failed" in the About tab's health panel.
 
+### Owner gate: deploy order (Group WW)
+
+1. Set `OWNER_SPOTIFY_ID` on the web service **before** deploying.
+   Without it the app fails closed: no login's refresh token is saved
+   and the Patterns tab is private to everyone.
+2. Deploy, then **log out and log back in** as the owner. Sessions
+   from before this change carry no Spotify user id, so Patterns shows
+   "private to the site owner" until you re-login (it fails safe). The
+   new `user-read-recently-played` scope forces this re-login anyway.
+3. That owner login overwrites `stored_token`, replacing any refresh
+   token a non-owner may have saved before the gate existed. If the
+   pipeline ever ran before the gate, check `raw_plays` for plays that
+   aren't yours (`payload->'track'` you don't recognize) and delete
+   them; on a fresh deploy the table is new, so there is nothing to
+   clean.
+4. A failed owner refresh-token save now raises at login (error page)
+   instead of being logged and ignored — check the web logs if it does.
+
 ## One-time database initialization
 
 After Railway Postgres is attached, run the migration once against the

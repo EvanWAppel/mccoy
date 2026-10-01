@@ -73,10 +73,19 @@ def pipeline_health(health: dict | None, now: datetime | None = None):
             "Last run failed — it's logged and will retry next hour.",
             className="about__health-warn",
         ))
-    if health.get("ingest_stuck_since"):
+    stuck = health.get("stuck_ingest_7d") or 0
+    if stuck:
+        runs = "run" if stuck == 1 else "runs"
         items.append(html.Li(
-            "An ingest run has been stuck since "
-            f"{_ago(health['ingest_stuck_since'], now)}.",
+            f"{stuck} ingest {runs} never finished in the last 7 days.",
+            className="about__health-warn",
+        ))
+    stuck_dbt = health.get("stuck_dbt_7d") or 0
+    if stuck_dbt:
+        builds = "build" if stuck_dbt == 1 else "builds"
+        items.append(html.Li(
+            f"{stuck_dbt} dbt {builds} never finished in the last 7 "
+            "days — listening marts may be stale.",
             className="about__health-warn",
         ))
     dbt_failed = health.get("last_dbt_status") == "failed"

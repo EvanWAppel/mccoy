@@ -262,36 +262,54 @@ class TestPipelineHealthQuery:
         db.finish_pipeline_run(ok, "success", 3, 3)
         assert db.get_pipeline_health()["last_dbt_status"] is None
 
+    def _age(self, dsn, run_id, hours):
+        _execute(
+            dsn,
+            "UPDATE pipeline_runs SET started_at = now() - "
+            f"interval '{int(hours)} hours' WHERE id = {int(run_id)}",
+        )
+
     def test_stale_running_ingest_is_stuck(self, pg_db):
         stuck = db.start_pipeline_run("ingest_plays")
-        _execute(
-            pg_db,
-            "UPDATE pipeline_runs SET started_at = now() - "
-            f"interval '3 hours' WHERE id = {int(stuck)}",
-        )
+        self._age(pg_db, stuck, 3)
         health = db.get_pipeline_health()
-        assert health["last_ingest_status"] == "running"
-        assert health["ingest_stuck_since"] is not None
+        assert health["stuck_ingest_7d"] == 1
 
     def test_fresh_running_ingest_is_not_stuck(self, pg_db):
         db.start_pipeline_run("ingest_plays")
+        assert db.get_pipeline_health()["stuck_ingest_7d"] == 0
+
+    def test_finished_old_run_is_not_stuck(self, pg_db):
+        ok = db.start_pipeline_run("ingest_plays")
+        db.finish_pipeline_run(ok, "success", 3, 3)
+        self._age(pg_db, ok, 3)
+        assert db.get_pipeline_health()["stuck_ingest_7d"] == 0
+
+    def test_hourly_orphans_are_all_counted(self, pg_db):
+        # Review scenario: cron killed every hour; each new orphan
+        # replaces the last as "latest", so latest-only checks miss it.
+        ok = db.start_pipeline_run("ingest_plays")
+        db.finish_pipeline_run(ok, "success", 3, 3)
+        self._age(pg_db, ok, 30)
+        for hours in range(24, 2, -1):  # 22 orphans, 3h-24h old
+            self._age(pg_db, db.start_pipeline_run("ingest_plays"), hours)
+        self._age(pg_db, db.start_pipeline_run("ingest_plays"), 1)
+        db.start_pipeline_run("ingest_plays")  # fresh, in flight
         health = db.get_pipeline_health()
-        assert health["last_ingest_status"] == "running"
-        assert health["ingest_stuck_since"] is None
+        # The 1h-old and fresh runs are still in flight, not stuck.
+        assert health["stuck_ingest_7d"] == 22
+        assert (health["runs_7d"], health["successes_7d"]) == (23, 1)
 
-    def test_finished_latest_run_is_not_stuck(self, pg_db):
+    def test_only_fresh_running_rows_excluded_from_7d(self, pg_db):
         ok = db.start_pipeline_run("ingest_plays")
         db.finish_pipeline_run(ok, "success", 3, 3)
-        _execute(
-            pg_db,
-            "UPDATE pipeline_runs SET started_at = now() - "
-            "interval '3 hours'",
-        )
-        assert db.get_pipeline_health()["ingest_stuck_since"] is None
-
-    def test_running_rows_excluded_from_7d_counts(self, pg_db):
-        ok = db.start_pipeline_run("ingest_plays")
-        db.finish_pipeline_run(ok, "success", 3, 3)
-        db.start_pipeline_run("ingest_plays")
+        db.start_pipeline_run("ingest_plays")  # fresh: excluded
         health = db.get_pipeline_health()
         assert (health["runs_7d"], health["successes_7d"]) == (1, 1)
+
+    def test_stale_running_dbt_build_is_stuck(self, pg_db):
+        ok = db.start_pipeline_run("ingest_plays")
+        db.finish_pipeline_run(ok, "success", 3, 3)
+        self._age(pg_db, db.start_pipeline_run("dbt_build"), 3)
+        db.start_pipeline_run("dbt_build")  # fresh, in flight
+        assert db.get_pipeline_health()["stuck_dbt_7d"] == 1

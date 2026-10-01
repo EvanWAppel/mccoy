@@ -45,7 +45,8 @@ HEALTH = {
     "successes_7d": 166,
     "dbt": {"models_built": 8, "tests_passed": 19, "tests_failed": 0},
     "last_dbt_status": "success",
-    "ingest_stuck_since": None,
+    "stuck_ingest_7d": 0,
+    "stuck_dbt_7d": 0,
 }
 
 
@@ -93,25 +94,33 @@ class TestPipelineHealth:
         assert "dbt build failed" not in text
         assert "Last successful dbt build" not in text
 
-    def test_stuck_ingest_is_flagged(self, component_text):
-        health = dict(
-            HEALTH,
-            last_ingest_status="running",
-            ingest_stuck_since=datetime(
-                2026, 9, 30, 15, 0, tzinfo=timezone.utc
-            ),
-        )
+    def test_stuck_ingest_runs_are_flagged(self, component_text):
+        health = dict(HEALTH, stuck_ingest_7d=22)
         rendered = pipeline_health(health, now=NOW)
-        text = component_text(rendered)
         assert (
-            "An ingest run has been stuck since 3 hours ago." in text
+            "22 ingest runs never finished in the last 7 days."
+            in component_text(rendered)
         )
         assert "about__health-warn" in str(rendered)
+
+    def test_single_stuck_run_is_singular(self, component_text):
+        health = dict(HEALTH, stuck_ingest_7d=1)
+        assert "1 ingest run never finished" in component_text(
+            pipeline_health(health, now=NOW)
+        )
+
+    def test_stuck_dbt_builds_are_flagged(self, component_text):
+        health = dict(HEALTH, stuck_dbt_7d=2)
+        text = component_text(pipeline_health(health, now=NOW))
+        assert (
+            "2 dbt builds never finished in the last 7 days — "
+            "listening marts may be stale." in text
+        )
 
     def test_fresh_running_ingest_has_no_warning(self, component_text):
         health = dict(HEALTH, last_ingest_status="running")
         rendered = pipeline_health(health, now=NOW)
-        assert "stuck" not in component_text(rendered)
+        assert "never finished" not in component_text(rendered)
         assert "about__health-warn" not in str(rendered)
 
     def test_about_tab_includes_health(self, component_ids):

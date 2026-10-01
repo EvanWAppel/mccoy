@@ -131,3 +131,17 @@ def test_tz_matches_dbt_project():
     cfg = (Path(__file__).parent.parent / "analytics"
            / "dbt_project.yml").read_text()
     assert f'listening_tz: "{LISTENING_TZ}"' in cfg
+
+
+def test_demo_today_matches_chart_timezone(mocker):
+    # Railway runs in UTC; at 01:00 UTC it's still yesterday in LA. The
+    # demo's newest day must be the chart's "today" or the bar drops.
+    from datetime import datetime, timezone
+
+    from components.patterns import LISTENING_TZ
+    utc_1am = datetime(2026, 10, 1, 1, 0, tzinfo=timezone.utc)
+    fake = mocker.patch("demo_data.datetime")
+    fake.now.side_effect = lambda tz=None: utc_1am.astimezone(tz)
+    data = demo_data.demo_patterns()
+    assert data["daily"][-1]["listen_date"] == date(2026, 9, 30)
+    assert LISTENING_TZ == "America/Los_Angeles"

@@ -496,17 +496,24 @@ def get_pipeline_health() -> dict | None:
                   (SELECT max(finished_at) FROM pipeline_runs
                     WHERE job = 'ingest_plays' AND status = 'success')
                     AS last_success_at,
-                  (SELECT started_at FROM pipeline_runs
-                    WHERE id = (SELECT id FROM pipeline_runs
-                                 WHERE job = 'ingest_plays'
-                                 ORDER BY started_at DESC, id DESC
-                                 LIMIT 1)
-                      AND status = 'running'
-                      AND started_at < now() - interval '2 hours')
-                    AS ingest_stuck_since,
                   (SELECT count(*) FROM pipeline_runs
-                    WHERE job = 'ingest_plays' AND status <> 'running'
+                    WHERE job = 'ingest_plays' AND status = 'running'
+                      AND started_at < now() - interval '2 hours'
                       AND started_at > now() - interval '7 days')
+                    AS stuck_ingest_7d,
+                  (SELECT count(*) FROM pipeline_runs
+                    WHERE job = 'dbt_build' AND status = 'running'
+                      AND started_at < now() - interval '2 hours'
+                      AND started_at > now() - interval '7 days')
+                    AS stuck_dbt_7d,
+                  -- Only in-flight runs (running, < 2h old) are left
+                  -- out; a stale 'running' row is a run that died and
+                  -- counts against the success rate.
+                  (SELECT count(*) FROM pipeline_runs
+                    WHERE job = 'ingest_plays'
+                      AND started_at > now() - interval '7 days'
+                      AND NOT (status = 'running' AND
+                               started_at > now() - interval '2 hours'))
                     AS runs_7d,
                   (SELECT count(*) FROM pipeline_runs
                     WHERE job = 'ingest_plays' AND status = 'success'
@@ -527,10 +534,11 @@ def get_pipeline_health() -> dict | None:
         conn.close()
     if row["last_ingest_status"] is None:
         return None
-    if row["ingest_stuck_since"] is not None:
+    if row["stuck_ingest_7d"] or row["stuck_dbt_7d"]:
         logger.warning(
-            "pipeline health: ingest_plays running since %s (stuck)",
-            row["ingest_stuck_since"],
+            "pipeline health: %s ingest / %s dbt runs never finished "
+            "in 7 days",
+            row["stuck_ingest_7d"], row["stuck_dbt_7d"],
         )
     if row["last_dbt_status"] == "failed":
         logger.warning("pipeline health: last dbt_build failed")

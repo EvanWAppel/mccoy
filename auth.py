@@ -73,11 +73,10 @@ def handle_callback(code: str) -> tuple[dict, str]:
         return token, user_id
     refresh_token = token.get("refresh_token")
     if refresh_token:
-        try:
-            import db
-            db.save_refresh_token(refresh_token)
-        except Exception as e:
-            logger.warning("Could not save refresh token to DB: %s", e)
+        import db
+        # Let a failed save surface: the hourly cron depends on it.
+        db.save_refresh_token(refresh_token)
+        logger.info("Saved owner refresh token for the cron")
     return token, user_id
 
 

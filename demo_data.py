@@ -82,9 +82,13 @@ def demo_patterns(today=None) -> dict:
     Evenings and weekend late mornings are busiest; 30 listening days
     over the last 32 (two quiet days), ending today.
     """
-    from datetime import date
+    from zoneinfo import ZoneInfo
 
-    today = today or date.today()
+    from components.patterns import LISTENING_TZ
+
+    # Same local "today" the chart windows on, not the server's date
+    # (Railway is UTC), so the newest demo bar is never filtered out.
+    today = today or datetime.now(ZoneInfo(LISTENING_TZ)).date()
     hour_of_week = []
     for dow in range(1, 8):
         weekend = dow >= 6

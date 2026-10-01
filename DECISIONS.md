@@ -78,3 +78,12 @@ unexecuted claim (review finding, 2026-09-30).
 - **Left as-is:** friendly messages on DB outages (logged at warning,
   matches Trends) and `dbt_env` dropping extra DSN params (fine on
   Railway's internal network).
+
+## 2026-10-01 — Second-round review fixes *(draft)*
+- **Stuck runs:** count every `running` row older than 2h in the 7-day
+  window (ingest and dbt), and exclude only fresh in-flight runs from
+  the success rate. Rejected latest-row-only detection: an hourly
+  crash makes each new orphan the "latest", hiding all of them.
+- **Owner token save raises:** a failed save at owner login now errors
+  instead of logging a warning, since the cron silently keeps a stale
+  token otherwise. Cost: local owner login needs a reachable DB.

@@ -106,6 +106,24 @@ class TestHandleCallback:
         assert user_id == "owner_id"
         mock_save.assert_called_once_with("ref-secret")
 
+    def test_owner_save_failure_raises(self, owner_env):
+        # The cron depends on this token; a failed save must not be
+        # swallowed (house rule: don't hide errors).
+        with patch("auth._oauth_manager") as mock_oauth_manager, patch(
+            "auth.spotipy.Spotify"
+        ) as mock_spotify, patch(
+            "db.save_refresh_token",
+            side_effect=RuntimeError("db down"),
+        ):
+            mock_oauth_manager.return_value.get_access_token.return_value = (
+                dict(self.TOKEN)
+            )
+            mock_spotify.return_value.current_user.return_value = {
+                "id": "owner_id"
+            }
+            with pytest.raises(RuntimeError, match="db down"):
+                handle_callback("code")
+
     def test_looks_up_user_with_access_token(self, owner_env):
         _, _, mock_spotify = self._run("owner_id")
         mock_spotify.assert_called_once_with(auth="acc-secret")
