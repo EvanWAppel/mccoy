@@ -43,8 +43,34 @@ def get_app_token_client() -> spotipy.Spotify:
     return spotipy.Spotify(client_credentials_manager=manager)
 
 
-def handle_callback(code: str) -> dict:
+def is_owner(user_id: str | None) -> bool:
+    """True only when OWNER_SPOTIFY_ID is set and equals user_id.
+
+    Fails closed: with no configured owner, nobody is the owner.
+    """
+    owner_id = os.environ.get("OWNER_SPOTIFY_ID")
+    return bool(owner_id) and user_id == owner_id
+
+
+def handle_callback(code: str) -> tuple[dict, str]:
+    """Exchange the OAuth code; return (token, spotify_user_id).
+
+    Only the site owner's refresh token is persisted, so the hourly
+    play-history cron never ingests another user's listening.
+    """
     token = _oauth_manager().get_access_token(code, as_dict=True)
+    profile = spotipy.Spotify(auth=token["access_token"]).current_user()
+    user_id = profile["id"]
+    if not is_owner(user_id):
+        if os.environ.get("OWNER_SPOTIFY_ID"):
+            logger.info(
+                "Login by non-owner Spotify user; refresh token not saved"
+            )
+        else:
+            logger.error(
+                "OWNER_SPOTIFY_ID is unset; refresh token not saved"
+            )
+        return token, user_id
     refresh_token = token.get("refresh_token")
     if refresh_token:
         try:
@@ -52,7 +78,7 @@ def handle_callback(code: str) -> dict:
             db.save_refresh_token(refresh_token)
         except Exception as e:
             logger.warning("Could not save refresh token to DB: %s", e)
-    return token
+    return token, user_id
 
 
 def get_sp_from_session(session: dict):

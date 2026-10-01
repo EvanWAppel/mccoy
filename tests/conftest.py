@@ -12,6 +12,13 @@ from db import MIGRATIONS_DIR
 
 
 @pytest.fixture
+def owner_env(monkeypatch):
+    """Configure the site owner's Spotify id (owner identity gate)."""
+    monkeypatch.setenv("OWNER_SPOTIFY_ID", "owner_id")
+    return "owner_id"
+
+
+@pytest.fixture
 def listening_artists():
     return [
         {"name": "Radiohead", "rank": 1, "genres": ["rock", "art rock"]},

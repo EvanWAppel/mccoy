@@ -8,6 +8,7 @@ from auth import (
     get_auth_url,
     get_sp_from_session,
     handle_callback,
+    is_owner,
 )
 
 
@@ -60,18 +61,78 @@ class TestGetAuthUrl:
         assert "show_dialog=true" in url.lower()
 
 
-class TestHandleCallback:
-    def test_saves_refresh_token(self):
-        token = {"access_token": "access", "refresh_token": "refresh"}
-        with patch("auth._oauth_manager") as mock_oauth_manager:
-            mock_oauth_manager.return_value.get_access_token.return_value = (
-                token
-            )
-            with patch("db.save_refresh_token") as mock_save:
-                result = handle_callback("code")
+class TestIsOwner:
+    def test_true_when_id_matches(self, owner_env):
+        assert is_owner("owner_id") is True
 
-        assert result == token
-        mock_save.assert_called_once_with("refresh")
+    def test_false_for_other_user(self, owner_env):
+        assert is_owner("someone_else") is False
+
+    def test_false_when_owner_unset(self, monkeypatch):
+        # Fail closed: no configured owner means nobody is the owner.
+        monkeypatch.delenv("OWNER_SPOTIFY_ID", raising=False)
+        assert is_owner("owner_id") is False
+
+    def test_false_when_owner_empty(self, monkeypatch):
+        monkeypatch.setenv("OWNER_SPOTIFY_ID", "")
+        assert is_owner("") is False
+
+    def test_false_for_none_user(self, owner_env):
+        assert is_owner(None) is False
+
+
+class TestHandleCallback:
+    TOKEN = {
+        "access_token": "acc-secret",
+        "refresh_token": "ref-secret",
+    }
+
+    def _run(self, user_id):
+        with patch("auth._oauth_manager") as mock_oauth_manager, patch(
+            "auth.spotipy.Spotify"
+        ) as mock_spotify, patch("db.save_refresh_token") as mock_save:
+            mock_oauth_manager.return_value.get_access_token.return_value = (
+                dict(self.TOKEN)
+            )
+            mock_spotify.return_value.current_user.return_value = {
+                "id": user_id
+            }
+            result = handle_callback("code")
+        return result, mock_save, mock_spotify
+
+    def test_saves_refresh_token_for_owner(self, owner_env):
+        (token, user_id), mock_save, _ = self._run("owner_id")
+        assert token == self.TOKEN
+        assert user_id == "owner_id"
+        mock_save.assert_called_once_with("ref-secret")
+
+    def test_looks_up_user_with_access_token(self, owner_env):
+        _, _, mock_spotify = self._run("owner_id")
+        mock_spotify.assert_called_once_with(auth="acc-secret")
+
+    def test_non_owner_token_not_saved(self, owner_env, caplog):
+        caplog.set_level("INFO", logger="auth")
+        (token, user_id), mock_save, _ = self._run("intruder")
+        assert token == self.TOKEN
+        assert user_id == "intruder"
+        mock_save.assert_not_called()
+        assert any(
+            r.levelname == "INFO" and "non-owner" in r.getMessage()
+            for r in caplog.records
+        )
+        assert "secret" not in caplog.text
+
+    def test_owner_unset_token_not_saved(self, monkeypatch, caplog):
+        monkeypatch.delenv("OWNER_SPOTIFY_ID", raising=False)
+        caplog.set_level("INFO", logger="auth")
+        (_, user_id), mock_save, _ = self._run("owner_id")
+        assert user_id == "owner_id"
+        mock_save.assert_not_called()
+        assert any(
+            r.levelname == "ERROR" and "OWNER_SPOTIFY_ID" in r.getMessage()
+            for r in caplog.records
+        )
+        assert "secret" not in caplog.text
 
 
 class TestGetAppTokenClient:

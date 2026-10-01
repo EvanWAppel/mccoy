@@ -7,6 +7,8 @@ import os
 import random
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 os.environ.setdefault("FLASK_SECRET_KEY", "test_secret")
 
 import app as app_module  # noqa: E402
@@ -268,10 +270,16 @@ class TestPublicTrendsGating:
 
 
 class TestOwnerPatterns:
-    def test_patterns_tab_reads_marts(self, mocker):
+    @pytest.fixture(autouse=True)
+    def owner_session(self, owner_env, mocker):
         mocker.patch.object(
             app_module, "get_sp_from_session", return_value=MagicMock()
         )
+        mocker.patch.object(
+            app_module.flask, "session", {"spotify_user_id": owner_env}
+        )
+
+    def test_patterns_tab_reads_marts(self, mocker):
         mocker.patch.object(
             app_module.db, "get_listening_patterns",
             return_value=app_module.demo_data.demo_patterns(),
@@ -281,14 +289,63 @@ class TestOwnerPatterns:
 
     def test_patterns_tab_when_pipeline_never_ran(self, mocker):
         mocker.patch.object(
-            app_module, "get_sp_from_session", return_value=MagicMock()
-        )
-        mocker.patch.object(
             app_module.db, "get_listening_patterns",
             side_effect=RuntimeError('relation "marts.fct_plays" missing'),
         )
         tree = app_module.update_content("short_term", "patterns")
         assert "pipeline" in repr(tree).lower()
+
+
+class TestNonOwnerPatterns:
+    PRIVATE = "Listening patterns are private to the site owner."
+
+    @pytest.fixture(autouse=True)
+    def logged_in(self, owner_env, mocker):
+        mocker.patch.object(
+            app_module, "get_sp_from_session", return_value=MagicMock()
+        )
+
+    @pytest.mark.parametrize(
+        "session", [{"spotify_user_id": "intruder"}, {}]
+    )
+    def test_non_owner_sees_private_message(self, mocker, session):
+        mocker.patch.object(app_module.flask, "session", session)
+        spy = mocker.patch.object(app_module.db, "get_listening_patterns")
+        tree = app_module.update_content("short_term", "patterns")
+        assert self.PRIVATE in repr(tree)
+        assert not _find_id(tree, "patterns-heatmap")
+        spy.assert_not_called()
+
+    def test_owner_unset_hides_patterns(self, mocker, monkeypatch):
+        monkeypatch.delenv("OWNER_SPOTIFY_ID", raising=False)
+        mocker.patch.object(
+            app_module.flask, "session", {"spotify_user_id": "owner_id"}
+        )
+        spy = mocker.patch.object(app_module.db, "get_listening_patterns")
+        tree = app_module.update_content("short_term", "patterns")
+        assert self.PRIVATE in repr(tree)
+        spy.assert_not_called()
+
+
+class TestCallbackRoute:
+    def test_stores_spotify_user_id_in_session(self, mocker):
+        token = {"access_token": "a", "refresh_token": "r"}
+        mocker.patch.object(
+            app_module, "handle_callback", return_value=(token, "u123")
+        )
+        client = app_module.server.test_client()
+        resp = client.get("/callback?code=abc")
+        assert resp.status_code == 302
+        with client.session_transaction() as sess:
+            assert sess["token"] == token
+            assert sess["spotify_user_id"] == "u123"
+
+    def test_missing_code_redirects_home(self, mocker):
+        spy = mocker.patch.object(app_module, "handle_callback")
+        client = app_module.server.test_client()
+        resp = client.get("/callback")
+        assert resp.status_code == 302
+        spy.assert_not_called()
 
 
 class TestOwnerModeToggle:

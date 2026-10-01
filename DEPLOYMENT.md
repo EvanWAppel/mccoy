@@ -13,6 +13,9 @@ Create or confirm these services in the same Railway project:
      - `SPOTIPY_REDIRECT_URI`
      - `FLASK_SECRET_KEY`
      - `DATABASE_URL`
+     - `OWNER_SPOTIFY_ID` — the owner's Spotify user id; only this
+       login's refresh token is stored and sees the Patterns tab
+       (unset = nobody is the owner)
 
 2. Postgres service
    - Add a Railway PostgreSQL database to the project.
