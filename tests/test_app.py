@@ -4,6 +4,7 @@ These exercise the layout/branch logic in app.render_page and the
 public Stats callback. The owner (logged-in) path must stay intact.
 """
 import os
+import random
 from unittest.mock import MagicMock, patch
 
 os.environ.setdefault("FLASK_SECRET_KEY", "test_secret")
@@ -283,3 +284,52 @@ class TestPublicTabToggle:
         assert demo == {"display": "none"}
         assert about == {"display": "none"}
         assert network == {"display": "block"}
+
+
+PATH_GRAPH = {
+    "nodes": [
+        {"id": 1, "name": "Lee Morgan", "era": 1956, "genre": "Jazz"},
+        {"id": 2, "name": "Art Blakey", "era": 1954, "genre": "Jazz"},
+        {"id": 3, "name": "Wayne Shorter", "era": 1959, "genre": "Jazz"},
+        {"id": 4, "name": "Freddie Hubbard", "era": 1960, "genre": "Jazz"},
+    ],
+    "edges": [
+        {"source": 2, "target": 1, "weight": 4,
+         "sample_releases": ["Moanin'"]},
+        {"source": 1, "target": 3, "weight": 2,
+         "sample_releases": ["Search for the New Land"]},
+        {"source": 3, "target": 4, "weight": 3,
+         "sample_releases": ["Speak No Evil"]},
+    ],
+}
+NO_FILTERS = {"era": None, "instruments": [], "min_weight": 1,
+              "genres": []}
+
+
+class TestNetworkPathCallback:
+    def test_find_returns_chain_and_keeps_selection(self):
+        result, ids, a, b = app_module.network_path_outputs(
+            "network-path-find", "2", "4", NO_FILTERS, PATH_GRAPH,
+            random.Random(0),
+        )
+        assert ids == ["2", "1", "3", "4"]
+        assert (a, b) == ("2", "4")
+
+    def test_surprise_picks_far_pair_and_fills_dropdowns(self):
+        result, ids, a, b = app_module.network_path_outputs(
+            "network-path-surprise", None, None, NO_FILTERS, PATH_GRAPH,
+            random.Random(0),
+        )
+        assert len(ids) - 1 >= 3
+        assert (a, b) == (ids[0], ids[-1])
+
+    def test_filters_mark_hidden_nodes(self):
+        # Era cap hides Freddie Hubbard (1960).
+        filters = dict(NO_FILTERS, era=[1950, 1959])
+        result, ids, _, _ = app_module.network_path_outputs(
+            "network-path-find", "2", "4", filters, PATH_GRAPH,
+            random.Random(0),
+        )
+        # Search still runs on the full graph.
+        assert ids == ["2", "1", "3", "4"]
+        assert "hidden by the current filters" in repr(result)

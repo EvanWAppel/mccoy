@@ -978,3 +978,169 @@ mccoy/
   Jimmy Smith …) — Evan to confirm or replace.
 - **`DISCOGS_TOKEN`** to be generated (discogs.com → Settings →
   Developers) and added to `.env` before the Discogs fetch step.
+
+---
+
+## Feature Set: Recruiter Expansion (2026-09-27)
+
+### Why this exists
+
+The recruiter *presentation* pass (RECRUITER-PRIMER.md) is largely done.
+These features add *substance* aimed at the target roles: data
+engineering (dbt/Dagster-shaped work), forward-deployed / customer
+engineering (Hex), DevRel, and AI-application roles. Every claim the
+app makes about these features must stay at true scale — a personal
+project, not production infrastructure.
+
+Build order (confirmed with Evan): **Six Degrees → Play-History
+Pipeline → Ask Your Listening → Public API → Recommendation Quality →
+Published Analysis.** Screenshots + Loom (primer tasks 3–4) remain
+higher-ROI than any feature and are tracked in BLOCKED.md for Evan.
+
+Each feature ships on its own branch off `main`, TDD-first, with an
+independent review before merge. Evan merges.
+
+---
+
+### Feature 1: Six Degrees (network path-finding)
+
+**What.** On the Network page, pick two musicians; the app finds the
+shortest collaboration chain between them and highlights it on the
+graph, with a readable chain below:
+`Lee Morgan —(The Sidewinder)— Joe Henderson —(…)— Herbie Hancock`.
+
+**Rules.**
+- Path = fewest hops (unweighted BFS over the currently loaded graph).
+  Ties are broken by the **strongest chain**: among equal-length paths,
+  prefer the one with the greatest minimum edge weight, then the
+  greatest total weight. Deterministic for a given graph.
+- Search runs over the **full** graph, not the filtered view, so a
+  filter can't silently change the answer. If the path includes nodes
+  hidden by the current filters, say so in the result text.
+- Each hop shows one example shared release from the edge's
+  `sample_releases`.
+- **No path** (the committed graph has a separate 3-node component):
+  show "No recorded collaboration chain between A and B."
+- **Same musician twice:** show "Pick two different musicians."
+- Pure Python BFS in `netviz/paths.py`; no new dependency (graph is
+  ~240 nodes / ~1.8k edges).
+- Works identically in the public (logged-out) and owner views.
+
+**UI.** Two dropdowns ("From", "To") + a "Find chain" button in a row
+under the existing focus control. The highlight reuses the existing
+`faded` / `highlight` cytoscape classes plus a new `path` class. A
+"Surprise me" button picks a random connected pair with a path of
+length ≥ 3 so a recruiter gets an interesting result in one click.
+
+**Out of scope (v1).** Weighted "strongest overall" paths as a separate
+mode; community detection; centrality rankings (candidates for v2).
+
+---
+
+### Feature 2: Play-History Pipeline (dbt-core + Postgres)
+
+**What.** Replace "one weekly snapshot" as the only data story with a
+real incremental event pipeline:
+`Spotify recently-played → raw_plays (Postgres) → dbt staging → marts`.
+
+**Ingest.**
+- New scope: `user-read-recently-played` (owner must re-consent once;
+  `auth.py` already clears sessions missing required scopes).
+- New Railway cron, **hourly**: `python ingest_plays.py`. Spotify
+  returns only the last 50 plays, so hourly polling is what makes the
+  history complete. Uses the `after` cursor from a stored watermark
+  (max `played_at`) and upserts on `(played_at, track_id)` —
+  idempotent, safe to re-run.
+- `raw_plays` stores the raw JSON payload plus extracted keys (append-
+  only raw layer; modeling happens in dbt).
+- Each run writes a row to `pipeline_runs` (started, finished, rows
+  fetched, rows inserted, status, error text). Errors are logged and
+  recorded, never swallowed.
+
+**Modeling (dbt-core, `dbt-postgres`).** In `analytics/` (dbt project):
+- `stg_plays` — typed, deduped plays.
+- `stg_tracks`, `stg_artists` — dimension staging from payloads.
+- `fct_listening_sessions` — plays grouped into sessions (gap > 30 min
+  starts a new session).
+- `mart_daily_listening`, `mart_hour_of_week`, `mart_artist_streaks`.
+- dbt tests: `unique`/`not_null` on keys, `accepted_values` where
+  relevant, a freshness check on `raw_plays`.
+- dbt runs after each ingest in the same cron command.
+
+**App.** A "Listening Patterns" view (owner-live, public from the same
+snapshot/demo fallback pattern as Trends): hour-of-week heatmap, daily
+minutes, current/longest streaks. A small **Pipeline health** panel on
+the About tab: last run time, status, rows in the last 24h, dbt test
+pass count.
+
+**Honesty.** About-tab copy says: an hourly personal cron, dbt models
+in Postgres, single user. No "production-scale" language.
+
+---
+
+### Feature 3: Ask Your Listening (Claude, NL → SQL)
+
+**What.** A question box: "What did I play most on Sunday nights this
+year?" Claude writes read-only SQL against the dbt marts, the app runs
+it, and shows the answer, the SQL, and a small table/chart.
+
+**Access model (confirmed).** **Owner-live, public-cached.** Live model
+calls happen only for the logged-in owner. Logged-out visitors see a
+curated set of pre-computed questions with their stored SQL + results
+(refreshed by an owner-triggered script). No public spend surface.
+
+**Safety.**
+- SQL runs as a dedicated **read-only Postgres role** limited to the
+  `marts` schema, with a statement timeout and a row limit.
+- Single `SELECT` statements only; anything else is rejected before
+  execution (parsed, not regex-matched).
+- The key follows Evan's API-key guardrail even though it's owner-only:
+  dedicated workspace, scoped key, spend cap + alert, Evan confirms it
+  isn't his personal key. Tracked in BLOCKED.md before any live call.
+
+**Evals.** `tests/evals/` holds a question set with expected result
+shapes/values over a fixture database. Runs offline in CI against
+recorded model outputs; a separate opt-in command runs it live.
+
+---
+
+### Feature 4: Public Read-Only API
+
+**What.** `/api/v1/*` routes on Dash's existing Flask server:
+`/network/graph`, `/network/path?from=&to=`, `/trends/artists`,
+`/listening/hour-of-week` (public-safe aggregates only — never raw
+plays). A hand-written OpenAPI 3.1 spec at `/api/openapi.json` with a
+rendered docs page at `/api/docs`, and an example notebook that calls
+the API.
+
+**Rules.** GET only, JSON only, CORS open for GET, simple per-IP rate
+limit, cache headers. A contract test validates every route's response
+against the OpenAPI schema.
+
+---
+
+### Feature 5: Recommendation Quality
+
+**What.** A metrics card measuring Rustle's recommendations, both
+reported separately (confirmed):
+- **Keep rate** — share of cards shown that were swiped into the
+  playlist.
+- **High-rating rate** — share of kept tracks later rated 4+ stars.
+
+Shown overall and by week, with sample sizes printed next to every rate
+(no bare percentages on small n). Requires logging "card shown" events
+if they aren't already stored — confirm during build.
+
+---
+
+### Feature 6: Published Analysis (Jupyter, then Hex)
+
+**What.** `analysis/listening.ipynb` committed to the repo, rendering on
+GitHub: a narrative analysis of Evan's listening built on the dbt marts
+(exported to a small parquet snapshot so the notebook runs without DB
+access). Evan later ports it to a published Hex project; the repo
+provides the data export and outline.
+
+**The human-inspects-data rule applies:** the agent builds the
+notebook's code and structure against fixture data; Evan runs it on his
+real data and decides what the narrative says.

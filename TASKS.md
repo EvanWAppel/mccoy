@@ -795,3 +795,83 @@ hand-made `graph.json` first if the crawl isn't ready).
 **Parallelism plan:** PP and QQ start day 1 (one agent each). SS follows
 PP; RR follows PP + QQ. TT is the integration moment and can begin
 against a stub graph. UU ships last.
+
+---
+
+## Feature Set: Recruiter Expansion (see PRD, 2026-09-27)
+
+Build order: VV → WW → XX → YY → ZZ → AAA. Each group ships on its own
+branch off `main`; independent review before merge; Evan merges.
+Parallel fan-out is not planned: no group has ≥3 genuinely independent
+tasks that don't share files.
+
+## Group VV — Six Degrees (network path-finding)
+> No dependencies. Branch: `six-degrees`.
+
+- [x] **VV-01** Write `tests/test_netviz_paths.py` — `shortest_path(graph, a, b)` returns the node-id chain for a known pair (TDD red)
+- [x] **VV-02** Tests: no path across components returns `None`; `a == b` raises `ValueError`; unknown id raises `KeyError`
+- [x] **VV-03** Tests: equal-length ties resolve to the strongest chain (max min-weight, then max total weight), deterministically
+- [x] **VV-04** Tests: `describe_path(graph, path)` yields hops with names + one sample release per edge
+- [x] **VV-05** Implement `netviz/paths.py` (pure-Python BFS; no new dep) — green
+- [x] **VV-06** Tests + impl: `random_interesting_pair(graph, rng, min_hops=3)` for "Surprise me"
+- [x] **VV-07** Tests + impl: path UI in `components/network.py` — From/To dropdowns, Find + Surprise buttons, result area
+- [x] **VV-08** Callback in `app.py`: compute over the full graph, render the chain text, note nodes hidden by filters, handle no-path / same-node
+- [x] **VV-09** Clientside highlight: new `path` cytoscape class, fade the rest, fit to the path
+- [x] **VV-10** Style in `assets/style.css` (editorial palette); lint + full suite green
+- [ ] **VV-11** Independent review → PR → Evan merges
+
+## Group WW — Play-History Pipeline (dbt-core + Postgres)
+> Branch: `play-history-pipeline`. Needs Evan: re-consent for new scope, Railway cron, migration (BLOCKED.md).
+
+- [ ] **WW-01** Migration `006_raw_plays.sql`: `raw_plays` (unique `(played_at, track_id)`, JSONB payload) + `pipeline_runs`
+- [ ] **WW-02** Tests: `fetch_recent_plays(sp, after_ms)` uses the `after` cursor; fixture payloads in `tests/fixtures/`
+- [ ] **WW-03** Tests: watermark read, idempotent upsert, `pipeline_runs` row on success and on failure (error recorded + re-raised)
+- [ ] **WW-04** Implement `ingest_plays.py` + db helpers; add `user-read-recently-played` to `auth.SCOPE`
+- [ ] **WW-05** `uv add dbt-postgres`; scaffold `analytics/` dbt project + profile from env vars
+- [ ] **WW-06** Models: `stg_plays`, `stg_tracks`, `stg_artists` + schema tests
+- [ ] **WW-07** Models: `fct_listening_sessions` (30-min gap), `mart_daily_listening`, `mart_hour_of_week`, `mart_artist_streaks` + tests
+- [ ] **WW-08** Freshness check on `raw_plays`; pytest runs `dbt build` against a throwaway Postgres in CI
+- [ ] **WW-09** Cron entrypoint: ingest then `dbt build`; document the Railway service in DEPLOYMENT.md
+- [ ] **WW-10** Tests + impl: "Listening Patterns" view (heatmap, daily minutes, streaks) with demo fallback data
+- [ ] **WW-11** Tests + impl: Pipeline health panel on About (last run, status, 24h rows, dbt test count)
+- [ ] **WW-12** About/README copy at true scale; independent review → PR → Evan merges
+
+## Group XX — Ask Your Listening (Claude NL → SQL)
+> Depends on WW. Branch: `ask-your-listening`. Needs Evan: guardrail checklist + key (BLOCKED.md).
+
+- [ ] **XX-01** Migration: read-only role limited to `marts` schema; statement timeout + row cap
+- [ ] **XX-02** Tests: SQL guard accepts a single SELECT, rejects DML/DDL/multi-statement (parser-based)
+- [ ] **XX-03** Tests: `ask(question)` builds a schema-aware prompt, runs the SQL through the guard + read-only role; model client mocked
+- [ ] **XX-04** `uv add anthropic`; implement `ask.py` with logging of prompt/SQL/row count (no secrets)
+- [ ] **XX-05** Eval set in `tests/evals/` over a fixture DB with recorded model outputs; runs in CI offline
+- [ ] **XX-06** Opt-in live eval command (`uv run python -m ask.evals --live`)
+- [ ] **XX-07** Owner UI: question box, answer, SQL disclosure, result table/chart
+- [ ] **XX-08** Public UI: curated cached Q&A; `scripts/refresh_ask_cache.py` (owner-run)
+- [ ] **XX-09** Independent review (security-focused, cross-model) → PR → Evan merges
+
+## Group YY — Public Read-Only API
+> Depends on VV (path endpoint) and WW (listening endpoint). Branch: `public-api`.
+
+- [ ] **YY-01** Hand-written `api/openapi.json` (3.1) for the four endpoints
+- [ ] **YY-02** Contract tests: every route's response validates against the spec
+- [ ] **YY-03** Implement `/api/v1/*` Flask routes on the Dash server; GET-only, JSON, CORS for GET, cache headers
+- [ ] **YY-04** Tests + impl: per-IP rate limit (429 with Retry-After)
+- [ ] **YY-05** `/api/docs` page rendering the spec
+- [ ] **YY-06** `examples/api_quickstart.ipynb` calling the live API
+- [ ] **YY-07** Independent review → PR → Evan merges
+
+## Group ZZ — Recommendation Quality
+> Branch: `rec-quality`.
+
+- [ ] **ZZ-01** Audit: are "card shown" events stored? If not, migration + logging (confirm with Evan)
+- [ ] **ZZ-02** Tests: keep rate and high-rating (4+) rate, overall and weekly, with n
+- [ ] **ZZ-03** Implement metrics queries + a card in the owner view (public: demo data)
+- [ ] **ZZ-04** Independent review → PR → Evan merges
+
+## Group AAA — Published Analysis (Jupyter → Hex)
+> Depends on WW. Branch: `listening-analysis`.
+
+- [ ] **AAA-01** `scripts/export_marts.py` → small parquet snapshot (tested against fixture DB)
+- [ ] **AAA-02** `analysis/listening.ipynb` code + structure against fixture data
+- [ ] **AAA-03** Evan runs on real data and writes the narrative (human inspects data)
+- [ ] **AAA-04** Evan ports to Hex and publishes; link from README + About

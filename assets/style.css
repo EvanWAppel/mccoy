@@ -1006,6 +1006,73 @@ button.dash-dropdown,
   flex: 1 1 320px;
   max-width: 420px;
 }
+/* Six degrees: path-finding between two musicians */
+.network-path {
+  background: var(--bg-surface, #eeeadf);
+  border: 1px solid var(--rule, #d2cec3);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.network-path-title {
+  margin: 0 0 4px;
+  font-family: var(--serif, Georgia, serif);
+  color: var(--text-primary, #25251f);
+}
+.network-path-blurb {
+  margin: 0 0 12px;
+  color: var(--text-secondary, #6e6b63);
+  font-size: 0.9rem;
+}
+.network-path-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.network-path-pick {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+.network-path-btn {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--accent, #c4452b);
+  background: var(--accent, #c4452b);
+  color: var(--bg-base, #f4f1e9);
+  cursor: pointer;
+}
+.network-path-btn-alt {
+  background: transparent;
+  color: var(--accent, #c4452b);
+}
+.network-path-btn:hover { opacity: 0.85; }
+.network-path-btn:focus-visible {
+  outline: 2px solid var(--ink, #25251f);
+  outline-offset: 2px;
+}
+.network-path-result:empty { display: none; }
+.network-path-result { margin-top: 12px; }
+.network-path-degrees {
+  margin: 0 0 6px;
+  font-weight: bold;
+  color: var(--accent, #c4452b);
+}
+.network-path-chain {
+  margin: 0;
+  padding-left: 1.4em;
+  line-height: 1.6;
+}
+.network-path-name { font-weight: bold; }
+.network-path-via { color: var(--text-secondary, #6e6b63); }
+.network-path-msg {
+  margin: 6px 0 0;
+  color: var(--text-secondary, #6e6b63);
+  font-size: 0.9rem;
+}
+@media (max-width: 600px) {
+  .network-path-btn { flex: 1 1 45%; }
+}
 .network-canvas-wrap {
   display: flex;
   gap: 16px;
