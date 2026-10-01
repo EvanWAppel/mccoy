@@ -834,7 +834,7 @@ tasks that don't share files.
 - [x] **WW-09** Cron entrypoint: ingest then `dbt build`; document the Railway service in DEPLOYMENT.md
 - [x] **WW-10** Tests + impl: "Listening Patterns" view (heatmap, daily minutes, streaks) with demo fallback data
 - [x] **WW-11** Tests + impl: Pipeline health panel on About (last run, status, 24h rows, dbt test count)
-- [ ] **WW-12** About/README copy at true scale; independent review → PR → Evan merges
+- [x] **WW-12** About/README copy at true scale; independent review → PR → Evan merges
 
 ## Group XX — Ask Your Listening (Claude NL → SQL)
 > Depends on WW. Branch: `ask-your-listening`. Needs Evan: guardrail checklist + key (BLOCKED.md).
