@@ -30,6 +30,7 @@ from auth import (
     get_auth_url,
     get_sp_from_session,
     handle_callback,
+    is_owner,
 )
 from components.about import about_tab
 from components.artist_grid import render_grid
@@ -211,8 +212,9 @@ def callback_route():
     code = flask.request.args.get("code")
     if not code:
         return flask.redirect("/")
-    token = handle_callback(code)
+    token, spotify_user_id = handle_callback(code)
     flask.session["token"] = token
+    flask.session["spotify_user_id"] = spotify_user_id
     return flask.redirect("/")
 
 
@@ -1321,6 +1323,14 @@ def update_content(time_range, content_tab):
         return html.P("Not authenticated.", style={"color": "#6e6b63"})
 
     if content_tab == "patterns":
+        # Owner identity gate: play history is the owner's alone.
+        if not is_owner(flask.session.get("spotify_user_id")):
+            logger.info("Patterns tab requested by non-owner; hidden")
+            return html.P(
+                "Listening patterns are private to the site owner.",
+                style={"color": "#6e6b63", "padding": "48px 0",
+                       "textAlign": "center"},
+            )
         try:
             data = db.get_listening_patterns()
         except Exception as e:
