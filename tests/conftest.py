@@ -1,6 +1,14 @@
+import json
+import os
+import uuid
+from pathlib import Path
 from unittest.mock import MagicMock
 
+import psycopg2
 import pytest
+from psycopg2.extensions import make_dsn
+
+from db import MIGRATIONS_DIR
 
 
 @pytest.fixture
@@ -131,3 +139,51 @@ def component_text():
             parts.extend(k for k in kids if isinstance(k, (str, int)))
         return " ".join(str(p) for p in parts)
     return collect
+
+
+# --- Postgres integration fixtures (play-history pipeline) ---------------
+# Tests that need real SQL semantics (upserts, dbt models) run against a
+# throwaway database created on the server named by TEST_DATABASE_URL.
+# Without it they skip with a stated reason; CI provides a Postgres
+# service so they always run there.
+
+RECENTLY_PLAYED = Path(__file__).parent / "fixtures" / "recently_played.json"
+
+
+@pytest.fixture
+def recently_played():
+    """Hand-built recently-played payload: 5 plays + 1 local file."""
+    return json.loads(RECENTLY_PLAYED.read_text())
+
+
+@pytest.fixture(scope="session")
+def pg_dsn():
+    base = os.environ.get("TEST_DATABASE_URL")
+    if not base:
+        pytest.skip("TEST_DATABASE_URL not set; Postgres tests skipped")
+    name = f"mccoy_test_{uuid.uuid4().hex[:8]}"
+    admin = psycopg2.connect(base)
+    admin.autocommit = True
+    with admin.cursor() as cur:
+        cur.execute(f'CREATE DATABASE "{name}"')
+    dsn = make_dsn(base, dbname=name)
+    conn = psycopg2.connect(dsn)
+    with conn, conn.cursor() as cur:
+        for path in sorted(MIGRATIONS_DIR.glob("*.sql")):
+            cur.execute(path.read_text())
+    conn.close()
+    yield dsn
+    with admin.cursor() as cur:
+        cur.execute(f'DROP DATABASE "{name}" WITH (FORCE)')
+    admin.close()
+
+
+@pytest.fixture
+def pg_db(pg_dsn, monkeypatch):
+    """A migrated, emptied database; DATABASE_URL points at it."""
+    monkeypatch.setenv("DATABASE_URL", pg_dsn)
+    conn = psycopg2.connect(pg_dsn)
+    with conn, conn.cursor() as cur:
+        cur.execute("TRUNCATE raw_plays, pipeline_runs RESTART IDENTITY")
+    conn.close()
+    return pg_dsn

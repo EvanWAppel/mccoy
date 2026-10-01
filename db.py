@@ -344,3 +344,92 @@ def get_ratings_for_uris(user_id: str, uris: list[str]) -> dict:
             return {uri: rating for uri, rating in cur.fetchall()}
     finally:
         conn.close()
+
+
+# --- Play-history pipeline (Group WW) ---
+
+
+def get_play_watermark():
+    """Latest stored ``played_at`` (aware datetime), or None if empty."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT max(played_at) FROM raw_plays")
+            return cur.fetchone()[0]
+    finally:
+        conn.close()
+
+
+def insert_plays(items: list[dict]) -> int:
+    """Upsert recently-played items; returns how many were new.
+
+    Local files have no Spotify track id and are skipped (logged).
+    """
+    rows = [
+        (item["played_at"], item["track"]["id"],
+         psycopg2.extras.Json(item))
+        for item in items
+        if item.get("track") and item["track"].get("id")
+    ]
+    skipped = len(items) - len(rows)
+    if skipped:
+        logger.info("insert_plays: skipped %d item(s) without id", skipped)
+    conn = get_connection()
+    try:
+        inserted = 0
+        with conn.cursor() as cur:
+            for row in rows:
+                cur.execute(
+                    """
+                    INSERT INTO raw_plays (played_at, track_id, payload)
+                    VALUES (%s, %s, %s)
+                    ON CONFLICT (played_at, track_id) DO NOTHING
+                    """,
+                    row,
+                )
+                inserted += cur.rowcount
+        conn.commit()
+        return inserted
+    finally:
+        conn.close()
+
+
+def start_pipeline_run(job: str) -> int:
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO pipeline_runs (job, status) "
+                "VALUES (%s, 'running') RETURNING id",
+                (job,),
+            )
+            run_id = cur.fetchone()[0]
+        conn.commit()
+        return run_id
+    finally:
+        conn.close()
+
+
+def finish_pipeline_run(
+    run_id: int,
+    status: str,
+    rows_fetched: int | None = None,
+    rows_inserted: int | None = None,
+    error: str | None = None,
+) -> None:
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                UPDATE pipeline_runs
+                   SET status = %s, rows_fetched = %s,
+                       rows_inserted = %s, error = %s,
+                       finished_at = now()
+                 WHERE id = %s
+                """,
+                (status, rows_fetched, rows_inserted, error, run_id),
+            )
+        conn.commit()
+    finally:
+        conn.close()

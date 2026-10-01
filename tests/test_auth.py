@@ -45,6 +45,10 @@ class TestGetAuthUrl:
         url = get_auth_url()
         assert scope in url
 
+    def test_url_contains_play_history_scope(self):
+        # Group WW: hourly recently-played ingest needs this grant.
+        assert "user-read-recently-played" in get_auth_url()
+
     def test_url_contains_redirect_uri(self):
         url = get_auth_url()
         assert "localhost" in url or "redirect_uri" in url

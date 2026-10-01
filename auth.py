@@ -14,6 +14,7 @@ SCOPE = " ".join(
         "playlist-modify-public",
         "streaming",
         "user-read-private",
+        "user-read-recently-played",
     ]
 )
 
