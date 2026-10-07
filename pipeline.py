@@ -1,6 +1,7 @@
 """Hourly play-history pipeline: ingest, then dbt build (Group WW).
 
-Run by the Railway cron as ``python pipeline.py``. The dbt project in
+Run by the Railway cron as ``python pipeline.py``. Each run applies
+the (idempotent) migrations first. The dbt project in
 analytics/ connects through DBT_* env vars derived from DATABASE_URL.
 Each dbt build is recorded in pipeline_runs (job 'dbt_build') with its
 model/test counts in ``details``. Failures are recorded and re-raised.
@@ -83,6 +84,9 @@ def run_dbt(args: list[str], dsn: str) -> dict:
 
 
 def run_pipeline() -> None:
+    # Apply migrations first (all IF NOT EXISTS) so a fresh or
+    # un-migrated database can't crash the run on a missing table.
+    db.init_db()
     run_ingest()
     dsn = os.environ["DATABASE_URL"]
     run_id = db.start_pipeline_run("dbt_build")

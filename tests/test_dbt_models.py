@@ -184,3 +184,27 @@ class TestRunPipeline:
         with pytest.raises(RuntimeError):
             run_pipeline()
         dbt.assert_not_called()
+
+
+class TestPipelineMigrates:
+    def test_init_db_runs_before_ingest(self, mocker):
+        calls = []
+
+        def ingest():
+            calls.append("ingest")
+            raise RuntimeError("stop after ingest")
+
+        mocker.patch(
+            "pipeline.db.init_db", side_effect=lambda: calls.append("init")
+        )
+        mocker.patch("pipeline.run_ingest", side_effect=ingest)
+        from pipeline import run_pipeline
+        with pytest.raises(RuntimeError):
+            run_pipeline()
+        assert calls == ["init", "ingest"]
+
+    def test_init_db_is_idempotent(self, pg_db):
+        import db
+        db.init_db()
+        db.init_db()
+        assert _query(pg_db, "SELECT to_regclass('pipeline_runs')")[0][0]
