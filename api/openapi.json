@@ -1,0 +1,555 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "mccoy public API",
+    "version": "1.0.0",
+    "description": "Read-only JSON over mccoy's public-safe aggregates: the musician collaboration network, six-degrees paths, top-artist trends and an hour-of-week listening heatmap. Never raw plays. GET only, CORS open, cache headers set, and a simple per-IP rate limit (60 requests/minute; 429 with Retry-After).",
+    "license": {
+      "name": "MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "The deployment serving this spec"
+    }
+  ],
+  "paths": {
+    "/api/v1/network/graph": {
+      "get": {
+        "operationId": "getNetworkGraph",
+        "summary": "The musician collaboration network",
+        "description": "Nodes are musicians, edges are shared releases (weight = number of shared releases). Served from the live database, or the committed demo graph when the database is empty or unreachable.",
+        "tags": [
+          "network"
+        ],
+        "responses": {
+          "200": {
+            "description": "The graph.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Graph"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (per client IP).",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until the next request is allowed.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/network/path": {
+      "get": {
+        "operationId": "getNetworkPath",
+        "summary": "Six degrees: the shortest collaboration chain",
+        "description": "Fewest hops between two musicians; among equally short chains, the strongest (greatest weakest link, then greatest total weight). `path` is null when the two are not connected.",
+        "tags": [
+          "network"
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "description": "Start musician id (from /api/v1/network/graph).",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "description": "End musician id.",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The chain, or null if unconnected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Path"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing parameter, or `from` equals `to`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown musician id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (per client IP).",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until the next request is allowed.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/trends/artists": {
+      "get": {
+        "operationId": "getArtistTrends",
+        "summary": "Top-artist ranks over time",
+        "description": "Weekly snapshots of the top artists, oldest first. Falls back to deterministic demo data (source = \"demo\") until at least two live snapshots exist, like the public Trends chart.",
+        "tags": [
+          "trends"
+        ],
+        "parameters": [
+          {
+            "name": "time_range",
+            "in": "query",
+            "required": false,
+            "description": "Spotify's window for the ranking.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "short_term",
+                "medium_term",
+                "long_term"
+              ],
+              "default": "short_term"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshots.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtistTrends"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unknown time_range.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (per client IP).",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until the next request is allowed.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/listening/hour-of-week": {
+      "get": {
+        "operationId": "getHourOfWeek",
+        "summary": "Listening heatmap by ISO weekday and hour",
+        "description": "Always sample data (source = \"demo\"): real listening hours are owner-only (DECISIONS 2026-09-30, \"Public Patterns is demo-only\").",
+        "tags": [
+          "listening"
+        ],
+        "responses": {
+          "200": {
+            "description": "Hour-of-week cells.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HourOfWeek"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded (per client IP).",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds until the next request is allowed.",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Source": {
+        "type": "string",
+        "enum": [
+          "live",
+          "demo"
+        ],
+        "description": "`demo` = deterministic sample data, not Evan's listening."
+      },
+      "Node": {
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "genre": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "style": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "era": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "degree": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        }
+      },
+      "Edge": {
+        "type": "object",
+        "required": [
+          "source",
+          "target",
+          "weight"
+        ],
+        "properties": {
+          "source": {
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "target": {
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "weight": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "sample_releases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Graph": {
+        "type": "object",
+        "required": [
+          "nodes",
+          "edges"
+        ],
+        "properties": {
+          "nodes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Node"
+            }
+          },
+          "edges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Edge"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "Hop": {
+        "type": "object",
+        "required": [
+          "from",
+          "to",
+          "release",
+          "weight"
+        ],
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "release": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "weight": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Path": {
+        "type": "object",
+        "required": [
+          "from",
+          "to",
+          "path",
+          "hops"
+        ],
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "path": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "description": "Musician ids, start to end."
+          },
+          "hops": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Hop"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "Artist": {
+        "type": "object",
+        "required": [
+          "rank",
+          "name",
+          "genres"
+        ],
+        "properties": {
+          "rank": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "name": {
+            "type": "string"
+          },
+          "artist_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "genres": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "Snapshot": {
+        "type": "object",
+        "required": [
+          "captured_at",
+          "artists"
+        ],
+        "properties": {
+          "captured_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "artists": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Artist"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "ArtistTrends": {
+        "type": "object",
+        "required": [
+          "time_range",
+          "source",
+          "snapshots"
+        ],
+        "properties": {
+          "time_range": {
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/components/schemas/Source"
+          },
+          "snapshots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Snapshot"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "Cell": {
+        "type": "object",
+        "required": [
+          "iso_dow",
+          "hour",
+          "plays",
+          "minutes"
+        ],
+        "properties": {
+          "iso_dow": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 7
+          },
+          "hour": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 23
+          },
+          "plays": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "minutes": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      },
+      "HourOfWeek": {
+        "type": "object",
+        "required": [
+          "source",
+          "hour_of_week"
+        ],
+        "properties": {
+          "source": {
+            "$ref": "#/components/schemas/Source"
+          },
+          "hour_of_week": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cell"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

@@ -81,6 +81,7 @@ from components.rustle import (
 )
 from components.trends import render_bump_chart
 from netviz.paths import random_interesting_pair
+from public_api import api_bp
 from spotify import (
     add_track_to_playlist,
     create_playlist,
@@ -124,6 +125,8 @@ app = Dash(
 )
 server = app.server
 server.secret_key = os.environ["FLASK_SECRET_KEY"]
+# YY: public read-only API (/api/v1/*, /api/openapi.json, /api/docs)
+server.register_blueprint(api_bp)
 
 # MM: Share & SEO. Absolute URLs need the deployed origin, which only
 # Railway knows — set PUBLIC_BASE_URL there (e.g.
