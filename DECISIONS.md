@@ -87,3 +87,20 @@ unexecuted claim (review finding, 2026-09-30).
 - **Owner token save raises:** a failed save at owner login now errors
   instead of logging a warning, since the cron silently keeps a stale
   token otherwise. Cost: local owner login needs a reachable DB.
+
+## 2026-10-17 — Public API details *(draft)*
+- **Hour-of-week is sample data.** `/api/v1/listening/hour-of-week`
+  always returns the demo heatmap (`source: "demo"`), following the
+  confirmed "Public Patterns is demo-only" call. Rejected serving real
+  hours through the API (the PRD lists the endpoint but predates that
+  decision).
+- **Trends fall back like the chart.** Fewer than two live snapshots
+  (or a DB error) returns demo snapshots, flagged `source: "demo"`.
+- **Rate limit in process memory.** 60 requests/minute per client IP,
+  sliding window, per gunicorn worker; the client IP is the last
+  `X-Forwarded-For` hop (Railway's proxy), since earlier hops are
+  client-supplied. Rejected Redis/flask-limiter (another service or
+  dependency for a personal project).
+- **Docs page renders the spec server-side** instead of Swagger UI or
+  Redoc from a CDN: no third-party script on the site.
+

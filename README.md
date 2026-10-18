@@ -75,6 +75,9 @@ meantime._
 - A Discogs/MusicBrainz musician collaboration graph at `/network`,
   loaded from Postgres with a committed `graph.json` fallback
 - A public, no-login portfolio mode for the whole thing
+- A read-only JSON API at `/api/v1/*` (network graph, six-degrees
+  path, artist trends, sample listening heatmap) with a hand-written
+  OpenAPI 3.1 spec at `/api/openapi.json` and docs at `/api/docs`
 
 ## Tech
 

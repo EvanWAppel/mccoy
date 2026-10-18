@@ -852,12 +852,12 @@ tasks that don't share files.
 ## Group YY — Public Read-Only API
 > Depends on VV (path endpoint) and WW (listening endpoint). Branch: `public-api`.
 
-- [ ] **YY-01** Hand-written `api/openapi.json` (3.1) for the four endpoints
-- [ ] **YY-02** Contract tests: every route's response validates against the spec
-- [ ] **YY-03** Implement `/api/v1/*` Flask routes on the Dash server; GET-only, JSON, CORS for GET, cache headers
-- [ ] **YY-04** Tests + impl: per-IP rate limit (429 with Retry-After)
-- [ ] **YY-05** `/api/docs` page rendering the spec
-- [ ] **YY-06** `examples/api_quickstart.ipynb` calling the live API
+- [x] **YY-01** Hand-written `api/openapi.json` (3.1) for the four endpoints
+- [x] **YY-02** Contract tests: every route's response validates against the spec (`tests/test_public_api.py`, jsonschema 2020-12)
+- [x] **YY-03** Implement `/api/v1/*` Flask routes on the Dash server; GET-only, JSON, CORS for GET, cache headers (`public_api.py` blueprint)
+- [x] **YY-04** Tests + impl: per-IP rate limit (429 with Retry-After) — 60/min sliding window, in memory per worker
+- [x] **YY-05** `/api/docs` page rendering the spec (server-rendered from the JSON, no third-party JS)
+- [ ] **YY-06** `examples/api_quickstart.ipynb` calling the live API — after the API is deployed (needs the live URL)
 - [ ] **YY-07** Independent review → PR → Evan merges
 
 ## Group ZZ — Recommendation Quality
