@@ -840,7 +840,7 @@ tasks that don't share files.
 > Depends on WW. Branch: `ask-your-listening`. Needs Evan: guardrail checklist + key (BLOCKED.md).
 
 - [ ] **XX-01** Migration: read-only role limited to `marts` schema; statement timeout + row cap
-- [ ] **XX-02** Tests: SQL guard accepts a single SELECT, rejects DML/DDL/multi-statement (parser-based)
+- [x] **XX-02** Tests: SQL guard accepts a single SELECT, rejects DML/DDL/multi-statement (parser-based) — `sql_guard.py` (sqlglot)
 - [ ] **XX-03** Tests: `ask(question)` builds a schema-aware prompt, runs the SQL through the guard + read-only role; model client mocked
 - [ ] **XX-04** `uv add anthropic`; implement `ask.py` with logging of prompt/SQL/row count (no secrets)
 - [ ] **XX-05** Eval set in `tests/evals/` over a fixture DB with recorded model outputs; runs in CI offline
