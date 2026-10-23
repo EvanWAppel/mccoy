@@ -53,6 +53,17 @@ REJECTED = [
     "WITH d AS (DELETE FROM marts.fct_plays RETURNING *) SELECT * FROM d",
     "WITH u AS (UPDATE t SET x = 1 RETURNING *) SELECT 1",
     "WITH i AS (INSERT INTO t VALUES (1) RETURNING *) SELECT 1",
+    # Functions that run SQL text, read other tables or the server,
+    # or change session settings from inside a SELECT
+    "SELECT query_to_xml('select * from stored_token', true, true, '')",
+    "SELECT table_to_xml('stored_token', true, true, '')",
+    "SELECT database_to_xml(true, true, '')",
+    "SELECT set_config('statement_timeout', '0', false)",
+    "SELECT current_setting('data_directory')",
+    "SELECT pg_sleep(60)",
+    "SELECT PG_READ_FILE('/etc/passwd')",
+    "SELECT lo_import('/etc/passwd')",
+    "SELECT * FROM dblink('host=x', 'select 1') AS t(a int)",
     # Not SQL at all / empty
     "",
     "   ",

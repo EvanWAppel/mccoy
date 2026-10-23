@@ -12,6 +12,7 @@ role with a statement timeout and row cap (XX-01) is the backstop.
 """
 
 import logging
+import re
 
 import sqlglot
 from sqlglot import exp
@@ -51,6 +52,14 @@ _DENIED_NODES = (
     exp.Uncache,
     exp.Refresh,
     exp.Comment,
+)
+
+# Postgres functions a SELECT can call to escape the guard: run SQL
+# text (query_to_xml), dump other tables (table_to_xml), touch the
+# server or files (pg_*, lo_*, dblink) or change session settings
+# (set_config). Matched on the lower-cased function name.
+_DENIED_FUNCTIONS = re.compile(
+    r"^(pg_|lo_|dblink)|_to_xml|^set_config$|^current_setting$"
 )
 
 
@@ -99,7 +108,19 @@ def check_sql(sql: str) -> str:
                 "only read-only SELECT is allowed; found "
                 f"{type(node).__name__}"
             )
+        if isinstance(node, exp.Func):
+            name = _func_name(node)
+            if _DENIED_FUNCTIONS.search(name):
+                log.warning("sql_guard: rejected function %s", name)
+                raise UnsafeSQLError(f"function {name}() is not allowed")
 
     cleaned = sql.strip().rstrip(";").strip()
     log.info("sql_guard: accepted SELECT (%d chars)", len(cleaned))
     return cleaned
+
+
+def _func_name(node: exp.Func) -> str:
+    """Lower-cased SQL name of a function call node."""
+    if isinstance(node, exp.Anonymous):
+        return node.name.lower()
+    return node.sql_name().lower()

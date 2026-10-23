@@ -118,6 +118,13 @@ def test_multi_statement_rejected(fake_model, ask_conn):
         "SELECT * FROM staging.stg_plays",
         "SELECT * FROM marts.not_a_mart",
         "SELECT * FROM pg_catalog.pg_roles",
+        # A CTE name only covers its own query scope: the outer
+        # `stored_token` here is the real table, not the inner CTE.
+        "SELECT * FROM stored_token, (WITH stored_token AS (SELECT 1) "
+        "SELECT * FROM stored_token) s",
+        # A CTE is not visible to the CTEs defined before it.
+        "WITH a AS (SELECT * FROM stored_token), "
+        "stored_token AS (SELECT 1) SELECT * FROM a",
     ],
 )
 def test_tables_outside_marts_rejected(sql):
@@ -133,6 +140,13 @@ def test_tables_outside_marts_rejected(sql):
         "SELECT a.* FROM marts.fct_plays a "
         "JOIN marts.fct_listening_sessions s USING (session_id)",
         "SELECT 1",
+        "WITH a AS (SELECT * FROM marts.fct_plays), "
+        "b AS (SELECT * FROM a) SELECT * FROM b",
+        "WITH t AS (SELECT 1 AS x) SELECT x FROM t UNION SELECT x FROM t",
+        "WITH RECURSIVE r AS (SELECT 1 AS n UNION ALL "
+        "SELECT n + 1 FROM r WHERE n < 3) SELECT * FROM r",
+        "SELECT * FROM (WITH t AS (SELECT * FROM marts.fct_plays) "
+        "SELECT * FROM t) s",
     ],
 )
 def test_marts_tables_and_ctes_accepted(sql):

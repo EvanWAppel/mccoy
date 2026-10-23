@@ -138,11 +138,10 @@ def check_marts_only(sql: str) -> None:
     the same query.
     """
     tree = sqlglot.parse_one(sql, read=DIALECT)
-    ctes = {cte.alias_or_name.lower() for cte in tree.find_all(exp.CTE)}
     for table in tree.find_all(exp.Table):
         name = table.name.lower()
         schema = table.db.lower()
-        if not schema and not table.catalog and name in ctes:
+        if not schema and not table.catalog and name in _visible_ctes(table):
             continue
         if table.catalog or schema != SCHEMA or name not in MARTS_SCHEMA:
             log.warning("ask: rejected table %s", table.sql(DIALECT))
@@ -150,6 +149,34 @@ def check_marts_only(sql: str) -> None:
                 f"only {SCHEMA}.* marts may be queried, got "
                 f"{table.sql(DIALECT)}"
             )
+
+
+def _with_clause(node: exp.Expression) -> exp.With | None:
+    return node.args.get("with_") or node.args.get("with")
+
+
+def _visible_ctes(table: exp.Table) -> set[str]:
+    """CTE names Postgres would resolve `table` against.
+
+    A CTE is visible inside the query that defines it and its nested
+    subqueries, but not outside it, and a CTE body sees only the CTEs
+    defined before it (plus itself under WITH RECURSIVE).
+    """
+    names: set[str] = set()
+    child: exp.Expression = table
+    node = table.parent
+    while node is not None:
+        if isinstance(node, exp.With):
+            ctes = node.expressions
+            idx = next(i for i, c in enumerate(ctes) if c is child)
+            stop = idx + 1 if node.args.get("recursive") else idx
+            names |= {c.alias_or_name.lower() for c in ctes[:stop]}
+        else:
+            with_ = _with_clause(node)
+            if with_ is not None and with_ is not child:
+                names |= {c.alias_or_name.lower() for c in with_.expressions}
+        child, node = node, node.parent
+    return names
 
 
 def connect_readonly():
