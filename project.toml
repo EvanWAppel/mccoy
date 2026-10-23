@@ -1,0 +1,42 @@
+# Drafted in mccoy's weekend-prep session 2026-10-22 (unverified).
+# Format: ~/Documents/_system/docs/project-toml.md
+
+[project]
+name = "mccoy"
+group = "portfolio"
+kind = "app"
+status = "active"
+repo = "EvanWAppel/mccoy"
+visibility = "public"
+on_site = true              # card in enki data/projects.ts
+verified = false
+
+[deploy]
+host = "railway"
+services = ["web"]          # origin web-production-bee9a.up.railway.app;
+                            # also Postgres + snapshot/pipeline crons
+                            # (DEPLOYMENT.md) — Railway names unknown
+domain = "mccoy.evanappel.me"
+origin_urls_closed = false  # origin returned HTTP 200 on 2026-10-22
+
+[auth]
+scheme = "oauth"            # Spotify OAuth (Spotipy); logged-out = demo
+access_list = "env:OWNER_SPOTIFY_ID + Spotify dev-mode user allowlist"
+target = "unknown"
+
+[data]
+db = "railway-postgres"
+
+[demo]
+status = "live"             # logged-out visitors get public_layout()
+url = "https://mccoy.evanappel.me/"
+path = "/"
+
+[keys]
+paid = []                   # Spotify + Discogs tokens are free; Anthropic
+                            # planned for Group XX (not yet wired)
+isolated = "n/a"
+spend_cap = "n/a"
+
+[platform]
+done = []
