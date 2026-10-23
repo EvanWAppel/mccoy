@@ -258,3 +258,106 @@ def eval_db_connect():
 
     with throwaway_db([FIXTURE_SQL]) as dsn:
         yield lambda: psycopg2.connect(dsn)
+
+
+# --- Marts parquet export (AAA-01) ---------------------------------------
+
+
+class FakeMartsConnection:
+    """A DB-API stand-in that serves fixture rows per mart.
+
+    `rows` maps a mart name to the tuples a `SELECT ... FROM marts.<name>`
+    returns. Every executed SQL string is kept in `queries`.
+    """
+
+    def __init__(self, rows):
+        self.rows = rows
+        self.queries = []
+        self.readonly = None
+        self.closed = False
+
+    def close(self):
+        self.closed = True
+
+    def set_session(self, readonly=None):
+        self.readonly = readonly
+
+    def cursor(self):
+        return _FakeMartsCursor(self)
+
+
+class _FakeMartsCursor:
+    def __init__(self, conn):
+        self.conn = conn
+        self._rows = []
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+    def execute(self, sql):
+        self.conn.queries.append(sql)
+        mart = sql.split("marts.", 1)[1].split()[0]
+        self._rows = list(self.conn.rows.get(mart, []))
+
+    def fetchall(self):
+        return self._rows
+
+
+@pytest.fixture
+def marts_rows():
+    """Two plays in one session, with the aggregates that agree."""
+    import datetime as dt
+    from decimal import Decimal
+
+    utc = dt.timezone.utc
+    return {
+        "fct_plays": [
+            (
+                "p01",
+                dt.datetime(2026, 10, 19, 4, 0, tzinfo=utc),
+                dt.datetime(2026, 10, 18, 21, 0),
+                "t01",
+                "Holocene",
+                337000,
+                "Bon Iver",
+                "a01",
+                "Bon Iver",
+                1,
+            ),
+            (
+                "p02",
+                dt.datetime(2026, 10, 19, 4, 6, tzinfo=utc),
+                dt.datetime(2026, 10, 18, 21, 6),
+                "t02",
+                "Lullaby",
+                240000,
+                None,
+                "a02",
+                "Low",
+                1,
+            ),
+        ],
+        "fct_listening_sessions": [
+            (
+                1,
+                dt.datetime(2026, 10, 19, 4, 0, tzinfo=utc),
+                dt.datetime(2026, 10, 19, 4, 10, tzinfo=utc),
+                2,
+                Decimal("9.62"),
+                2,
+            ),
+        ],
+        "mart_daily_listening": [
+            (dt.date(2026, 10, 18), 2, Decimal("9.62"), 2),
+        ],
+        "mart_hour_of_week": [(7, 21, 2, Decimal("9.62"))],
+        "mart_artist_streaks": [],
+    }
+
+
+@pytest.fixture
+def marts_conn(marts_rows):
+    return FakeMartsConnection(marts_rows)

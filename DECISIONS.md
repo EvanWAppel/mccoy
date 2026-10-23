@@ -144,3 +144,19 @@ unexecuted claim (review finding, 2026-09-30).
 - **Attacks are evals too.** Cases with `expect: {error: unsafe}`
   (DELETE, stacked DROP, non-marts tables) and `{error: refused}` must
   be stopped before any DB connection.
+
+
+## 2026-10-22 — Marts parquet export (AAA-01) *(draft)*
+- **One zstd parquet file per mart** under `analysis/data/`, columns
+  and order taken from `ask.MARTS_SCHEMA` (one source of truth for the
+  marts' shape), rows ordered by every column so re-exports diff
+  cleanly. Arrow types come from the Postgres types named there;
+  `numeric` (minutes) becomes `float64` for pandas/Hex.
+- **`analysis/data/` is gitignored.** It is real listening data; the
+  notebook (AAA-02) is built on fixture data and Evan runs it on the
+  real snapshot (AAA-03).
+- **`pyarrow` is a dev dependency**, not a runtime one: the export is
+  an analysis tool run locally (`uv run python -m
+  scripts.export_marts`), so the Railway image doesn't carry it.
+- **Read-only session on `DATABASE_URL`.** No separate role; the
+  export runs `set_session(readonly=True)` before its SELECTs.
