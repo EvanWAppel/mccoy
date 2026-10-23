@@ -160,3 +160,21 @@ unexecuted claim (review finding, 2026-09-30).
   scripts.export_marts`), so the Railway image doesn't carry it.
 - **Read-only session on `DATABASE_URL`.** No separate role; the
   export runs `set_session(readonly=True)` before its SELECTs.
+
+
+## 2026-10-22 — Listening notebook on fixture data (AAA-02) *(draft)*
+- **Data code lives in `analysis/metrics.py`, not in cells.** Each
+  metric is a pure pandas function, unit-tested in
+  `tests/test_analysis.py`; the notebook only loads, draws (Plotly) and
+  narrates, so the logic survives the Hex port (AAA-04).
+- **`SOURCE = "fixture"` is the committed default.** The fixture is
+  synthetic (`analysis/fixture.py`: seeded, made-up artists, 70 days,
+  aggregates derived from `fct_plays` the way the dbt marts do) and is
+  written through the AAA-01 parquet schema, so fixture and real runs
+  share one load path. Evan flips it to `"snapshot"` for AAA-03; fixture
+  mode prints a "not real listening" banner.
+- **Committed without outputs**, and every section carries a
+  `TODO(Evan)` narrative slot: the agent wrote no findings.
+- **`pandas` is a dev dependency** (like `pyarrow`): analysis only, not
+  in the Railway image. The test runs every code cell end to end on
+  the fixture with `fig.show()` stubbed, so no Jupyter dependency.

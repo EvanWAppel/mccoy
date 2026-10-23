@@ -872,6 +872,6 @@ tasks that don't share files.
 > Depends on WW. Branch: `listening-analysis`.
 
 - [x] **AAA-01** `scripts/export_marts.py` → small parquet snapshot (tested against fixture DB)
-- [ ] **AAA-02** `analysis/listening.ipynb` code + structure against fixture data
+- [x] **AAA-02** `analysis/listening.ipynb` code + structure against fixture data
 - [ ] **AAA-03** Evan runs on real data and writes the narrative (human inspects data)
 - [ ] **AAA-04** Evan ports to Hex and publishes; link from README + About
