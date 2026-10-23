@@ -1,6 +1,7 @@
 import json
 import os
 import uuid
+from contextlib import contextmanager
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -163,8 +164,9 @@ def recently_played():
     return json.loads(RECENTLY_PLAYED.read_text())
 
 
-@pytest.fixture(scope="session")
-def pg_dsn():
+@contextmanager
+def throwaway_db(scripts):
+    """Create a database on TEST_DATABASE_URL, run `scripts`, drop it."""
     base = os.environ.get("TEST_DATABASE_URL")
     if not base:
         if os.environ.get("REQUIRE_PG_TESTS"):
@@ -178,13 +180,21 @@ def pg_dsn():
     dsn = make_dsn(base, dbname=name)
     conn = psycopg2.connect(dsn)
     with conn, conn.cursor() as cur:
-        for path in sorted(MIGRATIONS_DIR.glob("*.sql")):
+        for path in scripts:
             cur.execute(path.read_text())
     conn.close()
-    yield dsn
-    with admin.cursor() as cur:
-        cur.execute(f'DROP DATABASE "{name}" WITH (FORCE)')
-    admin.close()
+    try:
+        yield dsn
+    finally:
+        with admin.cursor() as cur:
+            cur.execute(f'DROP DATABASE "{name}" WITH (FORCE)')
+        admin.close()
+
+
+@pytest.fixture(scope="session")
+def pg_dsn():
+    with throwaway_db(sorted(MIGRATIONS_DIR.glob("*.sql"))) as dsn:
+        yield dsn
 
 
 @pytest.fixture
@@ -232,3 +242,19 @@ def ask_conn(mock_conn, mock_cursor):
     mock_cursor.description = [("artist",), ("plays",)]
     mock_cursor.fetchmany.return_value = [("Bon Iver", 12), ("Low", 7)]
     return mock_conn
+
+
+# --- Ask Your Listening offline evals (XX-05) ----------------------------
+
+
+@pytest.fixture(scope="session")
+def eval_db_connect():
+    """Connection factory for the eval fixture marts database.
+
+    The marts live in their own throwaway database (not `pg_dsn`) so
+    they never collide with the dbt-built marts in the pipeline tests.
+    """
+    from ask.evals import FIXTURE_SQL
+
+    with throwaway_db([FIXTURE_SQL]) as dsn:
+        yield lambda: psycopg2.connect(dsn)

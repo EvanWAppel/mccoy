@@ -123,3 +123,24 @@ unexecuted claim (review finding, 2026-09-30).
   or the `model=` argument. Plain `messages.create`; no server-side
   fallbacks beta yet (a refusal raises `AskError`). Revisit with the
   live key (XX-06).
+
+
+## 2026-10-22 — Offline evals (XX-05) *(draft)*
+- **Hand-built fixture marts, not dbt.** `tests/evals/fixture_marts.sql`
+  creates `marts.*` tables directly with ten plays over three sessions,
+  in its own throwaway database (so it never collides with the
+  dbt-built marts in the pipeline tests). A test keeps its columns
+  identical to `ask.MARTS_SCHEMA`. Rejected building it via dbt: slower,
+  and the expected answers are easier to check by hand this way.
+- **Real Postgres, same gate as the pipeline tests.** End-to-end cases
+  need `TEST_DATABASE_URL` (CI sets it with `REQUIRE_PG_TESTS=1`);
+  locally they skip. The no-database checks (case file shape, guard
+  verdicts, fixture/schema drift, the runner) always run. Rejected
+  SQLite/DuckDB: the model writes Postgres SQL (`extract(isodow ...)`).
+- **"Recorded" replies are hand-authored for now.** No live call is
+  allowed until the key guardrail clears, so `cases.json` carries
+  `"recorded_with": "hand-authored"`. XX-06 re-records them from the
+  real model with the same runner (`ask.evals.run_case(client=...)`).
+- **Attacks are evals too.** Cases with `expect: {error: unsafe}`
+  (DELETE, stacked DROP, non-marts tables) and `{error: refused}` must
+  be stopped before any DB connection.
