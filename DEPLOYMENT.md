@@ -16,6 +16,10 @@ Create or confirm these services in the same Railway project:
      - `OWNER_SPOTIFY_ID` — the owner's Spotify user id; only this
        login's refresh token is stored and sees the Patterns tab
        (unset = nobody is the owner)
+     - `ASK_DATABASE_URL` — Ask Your Listening connects as the
+       read-only `mccoy_ask` role (XX-01), never `DATABASE_URL`.
+       The role comes from `migrations/manual/007_ask_readonly_role.sql`,
+       which is applied by hand, not by `init_db()` (BLOCKED.md)
 
 2. Postgres service
    - Add a Railway PostgreSQL database to the project.

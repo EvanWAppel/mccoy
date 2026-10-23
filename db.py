@@ -15,6 +15,11 @@ def get_connection():
 
 
 def init_db():
+    """Apply top-level migrations/*.sql (all idempotent).
+
+    Runs every hour from pipeline.py. migrations/manual/ is never
+    applied here: those are run by hand (e.g. 007, the XX-01 role).
+    """
     conn = get_connection()
     try:
         with conn.cursor() as cur:
