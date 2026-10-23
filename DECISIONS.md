@@ -104,3 +104,22 @@ unexecuted claim (review finding, 2026-09-30).
 - **Docs page renders the spec server-side** instead of Swagger UI or
   Redoc from a CDN: no third-party script on the site.
 
+
+## 2026-10-22 — `ask()` shape *(draft)*
+- **`ask` is a package** (`ask/__init__.py`) so XX-06's
+  `python -m ask.evals --live` can live beside it.
+- **Separate connection, no fallback.** `ask` connects with
+  `ASK_DATABASE_URL` (meant for the XX-01 read-only `marts` role) and
+  never falls back to the app's read-write `DATABASE_URL`. If XX-01
+  settles on `SET ROLE` from the app connection instead of a LOGIN
+  role, only `ask.connect_readonly` changes.
+- **Belt and braces at execution:** `SET TRANSACTION READ ONLY`,
+  `SET LOCAL statement_timeout` (5 s), `fetchmany(row cap + 1)` (500
+  rows) and an unconditional rollback, regardless of the role.
+- **Marts allow-list on top of the guard.** Every table must be a
+  known `marts.<model>` (CTE names excepted); `MARTS_SCHEMA` is tested
+  against the dbt model SQL so the prompt can't drift from the marts.
+- **Model** `claude-opus-5` by default, overridable with `ASK_MODEL`
+  or the `model=` argument. Plain `messages.create`; no server-side
+  fallbacks beta yet (a refusal raises `AskError`). Revisit with the
+  live key (XX-06).

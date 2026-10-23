@@ -196,3 +196,39 @@ def pg_db(pg_dsn, monkeypatch):
         cur.execute("TRUNCATE raw_plays, pipeline_runs RESTART IDENTITY")
     conn.close()
     return pg_dsn
+
+
+# --- Ask Your Listening (XX-03) ------------------------------------------
+# The model client is always a fake in tests: no network, no API key.
+
+
+class FakeModelClient:
+    """Stands in for `anthropic.Anthropic`; records every request.
+
+    Exposes `messages.create(**kwargs)` returning an object with
+    `.content[0].text` and `.stop_reason`, which is all `ask` uses.
+    """
+
+    def __init__(self, reply="SELECT 1", stop_reason="end_turn"):
+        self.reply = reply
+        self.stop_reason = stop_reason
+        self.calls = []
+        self.messages = self
+
+    def create(self, **kwargs):
+        self.calls.append(kwargs)
+        block = MagicMock(type="text", text=self.reply)
+        return MagicMock(content=[block], stop_reason=self.stop_reason)
+
+
+@pytest.fixture
+def fake_model():
+    return FakeModelClient()
+
+
+@pytest.fixture
+def ask_conn(mock_conn, mock_cursor):
+    """A mock DB connection whose query returns two rows."""
+    mock_cursor.description = [("artist",), ("plays",)]
+    mock_cursor.fetchmany.return_value = [("Bon Iver", 12), ("Low", 7)]
+    return mock_conn
