@@ -839,7 +839,7 @@ tasks that don't share files.
 ## Group XX — Ask Your Listening (Claude NL → SQL)
 > Depends on WW. Branch: `ask-your-listening`. Needs Evan: guardrail checklist + key (BLOCKED.md).
 
-- [ ] **XX-01** Migration: read-only role limited to `marts` schema; statement timeout + row cap
+- [x] **XX-01** Migration: read-only role limited to `marts` schema; statement timeout + row cap — `migrations/manual/007_ask_readonly_role.sql` (Evan applies by hand, BLOCKED.md)
 - [x] **XX-02** Tests: SQL guard accepts a single SELECT, rejects DML/DDL/multi-statement (parser-based) — `sql_guard.py` (sqlglot)
 - [x] **XX-03** Tests: `ask(question)` builds a schema-aware prompt, runs the SQL through the guard + read-only role; model client mocked — `tests/test_ask.py`
 - [x] **XX-04** `uv add anthropic`; implement `ask.py` with logging of prompt/SQL/row count (no secrets) — `ask/__init__.py`

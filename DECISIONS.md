@@ -209,3 +209,28 @@ Evan (BLOCKED.md, ZZ-01).
   back and forth doesn't inflate n. Metrics start from the day logging
   ships; there is no backfill. Rejected parsing Railway logs, since
   that data is short-lived and isn't queryable from the app.
+
+
+## 2026-10-23 — Read-only role for Ask (XX-01) (confirmed)
+Confirmed by Evan, blocker triage 2026-10-23 (option A).
+- **LOGIN role `mccoy_ask` via `ASK_DATABASE_URL`.** Rejected
+  `SET ROLE` from the app connection: the session could `RESET ROLE`
+  back to read-write if anything ever escaped the guard.
+- **Migration 007 is manual.** It lives in `migrations/manual/`;
+  `db.init_db()` (run hourly by `pipeline.py`) only applies top-level
+  `migrations/*.sql`, and a test pins that. Evan runs 007 by hand on
+  Railway. Rejected auto-apply: role creation needs `CREATEROLE`, and
+  a role change shouldn't ride along with an hourly cron.
+- **No secret in the migration.** 007 creates the role `NOLOGIN`;
+  Evan sets the password and `LOGIN` once in psql.
+- **Limits.** Role-level `statement_timeout = '5s'` and
+  `default_transaction_read_only`; the row cap stays app-side
+  (`fetchmany`, 500 rows): Postgres has no per-role row limit.
+- **Grants.** `USAGE` on `marts` + `SELECT` on its tables, plus
+  default privileges so the marts dbt rebuilds every hour stay
+  readable. That only holds if 007 runs as the user dbt builds with.
+
+## 2026-10-23 — Rec quality "high rating" threshold (ZZ-01) (confirmed)
+Confirmed by Evan, blocker triage 2026-10-23: a high rating is **8+ on
+the 1–10 scale** (replaces the PRD's "4+ stars"). The `rustle_events`
+migration from the ZZ-01 audit is still awaiting approval.
