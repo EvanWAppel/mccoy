@@ -864,6 +864,8 @@ tasks that don't share files.
 > Branch: `rec-quality`.
 
 - [ ] **ZZ-01** Audit: are "card shown" events stored? If not, migration + logging (confirm with Evan)
+  — audit done 2026-10-22: not stored (DECISIONS.md); migration + logging
+  wait on Evan (BLOCKED.md)
 - [ ] **ZZ-02** Tests: keep rate and high-rating (4+) rate, overall and weekly, with n
 - [ ] **ZZ-03** Implement metrics queries + a card in the owner view (public: demo data)
 - [ ] **ZZ-04** Independent review → PR → Evan merges

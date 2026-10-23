@@ -178,3 +178,34 @@ unexecuted claim (review finding, 2026-09-30).
 - **`pandas` is a dev dependency** (like `pyarrow`): analysis only, not
   in the Railway image. The test runs every code cell end to end on
   the fixture with `fig.show()` stubbed, so no Jupyter dependency.
+
+
+## 2026-10-22 — Rec quality audit: card-shown events are not stored (ZZ-01) *(draft)*
+Audit only. Nothing is built yet. The migration and logging wait on
+Evan (BLOCKED.md, ZZ-01).
+- **No "card shown" record exists.** No table in `migrations/001`–`006`
+  holds impressions. `db.py` has no insert for them. In `app.py`,
+  `render_rustle_content` draws the card from client-side `dcc.Store`
+  state (`rustle-track-queue` / `rustle-track-index`) and logs nothing.
+  So the denominator of the keep rate (Feature 5: cards shown) can't be
+  computed for any past date.
+- **"Kept" isn't stored either.** `_add_current_track` writes to the
+  Spotify playlist and calls `logger.info("Added %s to %s")`. That line
+  goes to Railway stdout, not Postgres. The playlist's `added_at` can't
+  tell Rustle adds apart from adds made in Spotify itself. So the
+  numerator needs its own event too.
+- **Ratings are stored, but on a 1–10 scale.** `song_ratings` (004)
+  keeps one row per `(user_id, track_uri)`, and the Rate tab offers
+  1–10. The PRD's "kept tracks later rated 4+ stars" assumes a 5-star
+  scale. The threshold needs Evan's call (for example 8+/10). The join
+  key would be `track_uri` per user. A re-rating overwrites `rated_at`,
+  so "later" means the latest rating, not the first.
+- **Proposed shape (not built).** One append-only table, e.g.
+  `rustle_events (id, user_id, track_uri, event, created_at)` with
+  `event IN ('shown', 'kept')`. Insert one row server-side when a track
+  card becomes the top card, and one on a successful add. Owner
+  sessions only: the public sandbox has no user id and can't save.
+  Deduplicate "shown" per `(user_id, track_uri, session)` so swiping
+  back and forth doesn't inflate n. Metrics start from the day logging
+  ships; there is no backfill. Rejected parsing Railway logs, since
+  that data is short-lived and isn't queryable from the app.
