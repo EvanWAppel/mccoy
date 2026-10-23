@@ -1,6 +1,7 @@
 import json
 import os
 import uuid
+from contextlib import contextmanager
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -163,8 +164,9 @@ def recently_played():
     return json.loads(RECENTLY_PLAYED.read_text())
 
 
-@pytest.fixture(scope="session")
-def pg_dsn():
+@contextmanager
+def throwaway_db(scripts):
+    """Create a database on TEST_DATABASE_URL, run `scripts`, drop it."""
     base = os.environ.get("TEST_DATABASE_URL")
     if not base:
         if os.environ.get("REQUIRE_PG_TESTS"):
@@ -178,13 +180,21 @@ def pg_dsn():
     dsn = make_dsn(base, dbname=name)
     conn = psycopg2.connect(dsn)
     with conn, conn.cursor() as cur:
-        for path in sorted(MIGRATIONS_DIR.glob("*.sql")):
+        for path in scripts:
             cur.execute(path.read_text())
     conn.close()
-    yield dsn
-    with admin.cursor() as cur:
-        cur.execute(f'DROP DATABASE "{name}" WITH (FORCE)')
-    admin.close()
+    try:
+        yield dsn
+    finally:
+        with admin.cursor() as cur:
+            cur.execute(f'DROP DATABASE "{name}" WITH (FORCE)')
+        admin.close()
+
+
+@pytest.fixture(scope="session")
+def pg_dsn():
+    with throwaway_db(sorted(MIGRATIONS_DIR.glob("*.sql"))) as dsn:
+        yield dsn
 
 
 @pytest.fixture
@@ -196,3 +206,158 @@ def pg_db(pg_dsn, monkeypatch):
         cur.execute("TRUNCATE raw_plays, pipeline_runs RESTART IDENTITY")
     conn.close()
     return pg_dsn
+
+
+# --- Ask Your Listening (XX-03) ------------------------------------------
+# The model client is always a fake in tests: no network, no API key.
+
+
+class FakeModelClient:
+    """Stands in for `anthropic.Anthropic`; records every request.
+
+    Exposes `messages.create(**kwargs)` returning an object with
+    `.content[0].text` and `.stop_reason`, which is all `ask` uses.
+    """
+
+    def __init__(self, reply="SELECT 1", stop_reason="end_turn"):
+        self.reply = reply
+        self.stop_reason = stop_reason
+        self.calls = []
+        self.messages = self
+
+    def create(self, **kwargs):
+        self.calls.append(kwargs)
+        block = MagicMock(type="text", text=self.reply)
+        return MagicMock(content=[block], stop_reason=self.stop_reason)
+
+
+@pytest.fixture
+def fake_model():
+    return FakeModelClient()
+
+
+@pytest.fixture
+def ask_conn(mock_conn, mock_cursor):
+    """A mock DB connection whose query returns two rows."""
+    mock_cursor.description = [("artist",), ("plays",)]
+    mock_cursor.fetchmany.return_value = [("Bon Iver", 12), ("Low", 7)]
+    return mock_conn
+
+
+# --- Ask Your Listening offline evals (XX-05) ----------------------------
+
+
+@pytest.fixture(scope="session")
+def eval_db_connect():
+    """Connection factory for the eval fixture marts database.
+
+    The marts live in their own throwaway database (not `pg_dsn`) so
+    they never collide with the dbt-built marts in the pipeline tests.
+    """
+    from ask.evals import FIXTURE_SQL
+
+    with throwaway_db([FIXTURE_SQL]) as dsn:
+        yield lambda: psycopg2.connect(dsn)
+
+
+# --- Marts parquet export (AAA-01) ---------------------------------------
+
+
+class FakeMartsConnection:
+    """A DB-API stand-in that serves fixture rows per mart.
+
+    `rows` maps a mart name to the tuples a `SELECT ... FROM marts.<name>`
+    returns. Every executed SQL string is kept in `queries`.
+    """
+
+    def __init__(self, rows):
+        self.rows = rows
+        self.queries = []
+        self.readonly = None
+        self.closed = False
+
+    def close(self):
+        self.closed = True
+
+    def set_session(self, readonly=None):
+        self.readonly = readonly
+
+    def cursor(self):
+        return _FakeMartsCursor(self)
+
+
+class _FakeMartsCursor:
+    def __init__(self, conn):
+        self.conn = conn
+        self._rows = []
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+    def execute(self, sql):
+        self.conn.queries.append(sql)
+        mart = sql.split("marts.", 1)[1].split()[0]
+        self._rows = list(self.conn.rows.get(mart, []))
+
+    def fetchall(self):
+        return self._rows
+
+
+@pytest.fixture
+def marts_rows():
+    """Two plays in one session, with the aggregates that agree."""
+    import datetime as dt
+    from decimal import Decimal
+
+    utc = dt.timezone.utc
+    return {
+        "fct_plays": [
+            (
+                "p01",
+                dt.datetime(2026, 10, 19, 4, 0, tzinfo=utc),
+                dt.datetime(2026, 10, 18, 21, 0),
+                "t01",
+                "Holocene",
+                337000,
+                "Bon Iver",
+                "a01",
+                "Bon Iver",
+                1,
+            ),
+            (
+                "p02",
+                dt.datetime(2026, 10, 19, 4, 6, tzinfo=utc),
+                dt.datetime(2026, 10, 18, 21, 6),
+                "t02",
+                "Lullaby",
+                240000,
+                None,
+                "a02",
+                "Low",
+                1,
+            ),
+        ],
+        "fct_listening_sessions": [
+            (
+                1,
+                dt.datetime(2026, 10, 19, 4, 0, tzinfo=utc),
+                dt.datetime(2026, 10, 19, 4, 10, tzinfo=utc),
+                2,
+                Decimal("9.62"),
+                2,
+            ),
+        ],
+        "mart_daily_listening": [
+            (dt.date(2026, 10, 18), 2, Decimal("9.62"), 2),
+        ],
+        "mart_hour_of_week": [(7, 21, 2, Decimal("9.62"))],
+        "mart_artist_streaks": [],
+    }
+
+
+@pytest.fixture
+def marts_conn(marts_rows):
+    return FakeMartsConnection(marts_rows)

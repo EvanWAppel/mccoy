@@ -40,3 +40,6 @@ analytics/target/
 analytics/logs/
 analytics/dbt_packages/
 analytics/.user.yml
+
+# Marts parquet snapshot (AAA-01): real listening data
+/analysis/data/

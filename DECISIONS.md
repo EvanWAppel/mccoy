@@ -104,3 +104,108 @@ unexecuted claim (review finding, 2026-09-30).
 - **Docs page renders the spec server-side** instead of Swagger UI or
   Redoc from a CDN: no third-party script on the site.
 
+
+## 2026-10-22 — `ask()` shape *(draft)*
+- **`ask` is a package** (`ask/__init__.py`) so XX-06's
+  `python -m ask.evals --live` can live beside it.
+- **Separate connection, no fallback.** `ask` connects with
+  `ASK_DATABASE_URL` (meant for the XX-01 read-only `marts` role) and
+  never falls back to the app's read-write `DATABASE_URL`. If XX-01
+  settles on `SET ROLE` from the app connection instead of a LOGIN
+  role, only `ask.connect_readonly` changes.
+- **Belt and braces at execution:** `SET TRANSACTION READ ONLY`,
+  `SET LOCAL statement_timeout` (5 s), `fetchmany(row cap + 1)` (500
+  rows) and an unconditional rollback, regardless of the role.
+- **Marts allow-list on top of the guard.** Every table must be a
+  known `marts.<model>` (CTE names excepted); `MARTS_SCHEMA` is tested
+  against the dbt model SQL so the prompt can't drift from the marts.
+- **Model** `claude-opus-5` by default, overridable with `ASK_MODEL`
+  or the `model=` argument. Plain `messages.create`; no server-side
+  fallbacks beta yet (a refusal raises `AskError`). Revisit with the
+  live key (XX-06).
+
+
+## 2026-10-22 — Offline evals (XX-05) *(draft)*
+- **Hand-built fixture marts, not dbt.** `tests/evals/fixture_marts.sql`
+  creates `marts.*` tables directly with ten plays over three sessions,
+  in its own throwaway database (so it never collides with the
+  dbt-built marts in the pipeline tests). A test keeps its columns
+  identical to `ask.MARTS_SCHEMA`. Rejected building it via dbt: slower,
+  and the expected answers are easier to check by hand this way.
+- **Real Postgres, same gate as the pipeline tests.** End-to-end cases
+  need `TEST_DATABASE_URL` (CI sets it with `REQUIRE_PG_TESTS=1`);
+  locally they skip. The no-database checks (case file shape, guard
+  verdicts, fixture/schema drift, the runner) always run. Rejected
+  SQLite/DuckDB: the model writes Postgres SQL (`extract(isodow ...)`).
+- **"Recorded" replies are hand-authored for now.** No live call is
+  allowed until the key guardrail clears, so `cases.json` carries
+  `"recorded_with": "hand-authored"`. XX-06 re-records them from the
+  real model with the same runner (`ask.evals.run_case(client=...)`).
+- **Attacks are evals too.** Cases with `expect: {error: unsafe}`
+  (DELETE, stacked DROP, non-marts tables) and `{error: refused}` must
+  be stopped before any DB connection.
+
+
+## 2026-10-22 — Marts parquet export (AAA-01) *(draft)*
+- **One zstd parquet file per mart** under `analysis/data/`, columns
+  and order taken from `ask.MARTS_SCHEMA` (one source of truth for the
+  marts' shape), rows ordered by every column so re-exports diff
+  cleanly. Arrow types come from the Postgres types named there;
+  `numeric` (minutes) becomes `float64` for pandas/Hex.
+- **`analysis/data/` is gitignored.** It is real listening data; the
+  notebook (AAA-02) is built on fixture data and Evan runs it on the
+  real snapshot (AAA-03).
+- **`pyarrow` is a dev dependency**, not a runtime one: the export is
+  an analysis tool run locally (`uv run python -m
+  scripts.export_marts`), so the Railway image doesn't carry it.
+- **Read-only session on `DATABASE_URL`.** No separate role; the
+  export runs `set_session(readonly=True)` before its SELECTs.
+
+
+## 2026-10-22 — Listening notebook on fixture data (AAA-02) *(draft)*
+- **Data code lives in `analysis/metrics.py`, not in cells.** Each
+  metric is a pure pandas function, unit-tested in
+  `tests/test_analysis.py`; the notebook only loads, draws (Plotly) and
+  narrates, so the logic survives the Hex port (AAA-04).
+- **`SOURCE = "fixture"` is the committed default.** The fixture is
+  synthetic (`analysis/fixture.py`: seeded, made-up artists, 70 days,
+  aggregates derived from `fct_plays` the way the dbt marts do) and is
+  written through the AAA-01 parquet schema, so fixture and real runs
+  share one load path. Evan flips it to `"snapshot"` for AAA-03; fixture
+  mode prints a "not real listening" banner.
+- **Committed without outputs**, and every section carries a
+  `TODO(Evan)` narrative slot: the agent wrote no findings.
+- **`pandas` is a dev dependency** (like `pyarrow`): analysis only, not
+  in the Railway image. The test runs every code cell end to end on
+  the fixture with `fig.show()` stubbed, so no Jupyter dependency.
+
+
+## 2026-10-22 — Rec quality audit: card-shown events are not stored (ZZ-01) *(draft)*
+Audit only. Nothing is built yet. The migration and logging wait on
+Evan (BLOCKED.md, ZZ-01).
+- **No "card shown" record exists.** No table in `migrations/001`–`006`
+  holds impressions. `db.py` has no insert for them. In `app.py`,
+  `render_rustle_content` draws the card from client-side `dcc.Store`
+  state (`rustle-track-queue` / `rustle-track-index`) and logs nothing.
+  So the denominator of the keep rate (Feature 5: cards shown) can't be
+  computed for any past date.
+- **"Kept" isn't stored either.** `_add_current_track` writes to the
+  Spotify playlist and calls `logger.info("Added %s to %s")`. That line
+  goes to Railway stdout, not Postgres. The playlist's `added_at` can't
+  tell Rustle adds apart from adds made in Spotify itself. So the
+  numerator needs its own event too.
+- **Ratings are stored, but on a 1–10 scale.** `song_ratings` (004)
+  keeps one row per `(user_id, track_uri)`, and the Rate tab offers
+  1–10. The PRD's "kept tracks later rated 4+ stars" assumes a 5-star
+  scale. The threshold needs Evan's call (for example 8+/10). The join
+  key would be `track_uri` per user. A re-rating overwrites `rated_at`,
+  so "later" means the latest rating, not the first.
+- **Proposed shape (not built).** One append-only table, e.g.
+  `rustle_events (id, user_id, track_uri, event, created_at)` with
+  `event IN ('shown', 'kept')`. Insert one row server-side when a track
+  card becomes the top card, and one on a successful add. Owner
+  sessions only: the public sandbox has no user id and can't save.
+  Deduplicate "shown" per `(user_id, track_uri, session)` so swiping
+  back and forth doesn't inflate n. Metrics start from the day logging
+  ships; there is no backfill. Rejected parsing Railway logs, since
+  that data is short-lived and isn't queryable from the app.

@@ -818,7 +818,7 @@ tasks that don't share files.
 - [x] **VV-08** Callback in `app.py`: compute over the full graph, render the chain text, note nodes hidden by filters, handle no-path / same-node
 - [x] **VV-09** Clientside highlight: new `path` cytoscape class, fade the rest, fit to the path
 - [x] **VV-10** Style in `assets/style.css` (editorial palette); lint + full suite green
-- [ ] **VV-11** Independent review → PR → Evan merges
+- [x] **VV-11** Independent review → PR → Evan merges (PR #48)
 
 ## Group WW — Play-History Pipeline (dbt-core + Postgres)
 > Branch: `play-history-pipeline`. Needs Evan: re-consent for new scope, Railway cron, migration (BLOCKED.md).
@@ -840,10 +840,10 @@ tasks that don't share files.
 > Depends on WW. Branch: `ask-your-listening`. Needs Evan: guardrail checklist + key (BLOCKED.md).
 
 - [ ] **XX-01** Migration: read-only role limited to `marts` schema; statement timeout + row cap
-- [ ] **XX-02** Tests: SQL guard accepts a single SELECT, rejects DML/DDL/multi-statement (parser-based)
-- [ ] **XX-03** Tests: `ask(question)` builds a schema-aware prompt, runs the SQL through the guard + read-only role; model client mocked
-- [ ] **XX-04** `uv add anthropic`; implement `ask.py` with logging of prompt/SQL/row count (no secrets)
-- [ ] **XX-05** Eval set in `tests/evals/` over a fixture DB with recorded model outputs; runs in CI offline
+- [x] **XX-02** Tests: SQL guard accepts a single SELECT, rejects DML/DDL/multi-statement (parser-based) — `sql_guard.py` (sqlglot)
+- [x] **XX-03** Tests: `ask(question)` builds a schema-aware prompt, runs the SQL through the guard + read-only role; model client mocked — `tests/test_ask.py`
+- [x] **XX-04** `uv add anthropic`; implement `ask.py` with logging of prompt/SQL/row count (no secrets) — `ask/__init__.py`
+- [x] **XX-05** Eval set in `tests/evals/` over a fixture DB with recorded model outputs; runs in CI offline — `ask/evals.py`, `tests/evals/`
 - [ ] **XX-06** Opt-in live eval command (`uv run python -m ask.evals --live`)
 - [ ] **XX-07** Owner UI: question box, answer, SQL disclosure, result table/chart
 - [ ] **XX-08** Public UI: curated cached Q&A; `scripts/refresh_ask_cache.py` (owner-run)
@@ -858,12 +858,14 @@ tasks that don't share files.
 - [x] **YY-04** Tests + impl: per-IP rate limit (429 with Retry-After) — 60/min sliding window, in memory per worker
 - [x] **YY-05** `/api/docs` page rendering the spec (server-rendered from the JSON, no third-party JS)
 - [ ] **YY-06** `examples/api_quickstart.ipynb` calling the live API — after the API is deployed (needs the live URL)
-- [ ] **YY-07** Independent review → PR → Evan merges
+- [x] **YY-07** Independent review → PR → Evan merges (PR #52)
 
 ## Group ZZ — Recommendation Quality
 > Branch: `rec-quality`.
 
 - [ ] **ZZ-01** Audit: are "card shown" events stored? If not, migration + logging (confirm with Evan)
+  — audit done 2026-10-22: not stored (DECISIONS.md); migration + logging
+  wait on Evan (BLOCKED.md)
 - [ ] **ZZ-02** Tests: keep rate and high-rating (4+) rate, overall and weekly, with n
 - [ ] **ZZ-03** Implement metrics queries + a card in the owner view (public: demo data)
 - [ ] **ZZ-04** Independent review → PR → Evan merges
@@ -871,7 +873,7 @@ tasks that don't share files.
 ## Group AAA — Published Analysis (Jupyter → Hex)
 > Depends on WW. Branch: `listening-analysis`.
 
-- [ ] **AAA-01** `scripts/export_marts.py` → small parquet snapshot (tested against fixture DB)
-- [ ] **AAA-02** `analysis/listening.ipynb` code + structure against fixture data
+- [x] **AAA-01** `scripts/export_marts.py` → small parquet snapshot (tested against fixture DB)
+- [x] **AAA-02** `analysis/listening.ipynb` code + structure against fixture data
 - [ ] **AAA-03** Evan runs on real data and writes the narrative (human inspects data)
 - [ ] **AAA-04** Evan ports to Hex and publishes; link from README + About
