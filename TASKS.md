@@ -818,7 +818,7 @@ tasks that don't share files.
 - [x] **VV-08** Callback in `app.py`: compute over the full graph, render the chain text, note nodes hidden by filters, handle no-path / same-node
 - [x] **VV-09** Clientside highlight: new `path` cytoscape class, fade the rest, fit to the path
 - [x] **VV-10** Style in `assets/style.css` (editorial palette); lint + full suite green
-- [ ] **VV-11** Independent review → PR → Evan merges
+- [x] **VV-11** Independent review → PR → Evan merges (PR #48)
 
 ## Group WW — Play-History Pipeline (dbt-core + Postgres)
 > Branch: `play-history-pipeline`. Needs Evan: re-consent for new scope, Railway cron, migration (BLOCKED.md).
@@ -858,7 +858,7 @@ tasks that don't share files.
 - [x] **YY-04** Tests + impl: per-IP rate limit (429 with Retry-After) — 60/min sliding window, in memory per worker
 - [x] **YY-05** `/api/docs` page rendering the spec (server-rendered from the JSON, no third-party JS)
 - [ ] **YY-06** `examples/api_quickstart.ipynb` calling the live API — after the API is deployed (needs the live URL)
-- [ ] **YY-07** Independent review → PR → Evan merges
+- [x] **YY-07** Independent review → PR → Evan merges (PR #52)
 
 ## Group ZZ — Recommendation Quality
 > Branch: `rec-quality`.
