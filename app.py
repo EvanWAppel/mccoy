@@ -23,6 +23,7 @@ from dash import (
 from dash.exceptions import PreventUpdate
 from spotipy import SpotifyException
 
+import ask
 import db
 import demo_data
 from auth import (
@@ -34,6 +35,18 @@ from auth import (
 )
 from components.about import about_tab
 from components.artist_grid import render_grid
+from components.ask import (
+    ASK_FAILED,
+    ASK_OFF,
+    ASK_TOO_LONG,
+    ASK_UNSAFE,
+    ASK_UNUSABLE,
+    MAX_QUESTION_CHARS,
+    ask_panel,
+    ask_private_notice,
+    render_answer,
+    render_message,
+)
 from components.editorial import (
     collection_heading,
     journal_footer,
@@ -97,8 +110,15 @@ from spotify import (
     search_playlists,
     start_playback,
 )
+from sql_guard import UnsafeSQLError
 
 logger = logging.getLogger(__name__)
+
+# XX-07: the model client the owner Ask UI uses, as a zero-argument
+# factory. Deliberately None: no live Anthropic call is wired until
+# the API-key guardrail clears (BLOCKED.md). With it unset the owner
+# sees ASK_OFF and nothing is called. Tests inject a fake client here.
+ask_client_factory = None
 
 app = Dash(
     __name__,
@@ -590,6 +610,7 @@ def render_page(pathname):
         return public_layout()
 
     profile = get_user_profile(sp)
+    owner = is_owner(flask.session.get("spotify_user_id"))
 
     return html.Div([
         render_header(profile),
@@ -598,7 +619,7 @@ def render_page(pathname):
             children=[
                 listening_intro(),
                 collection_heading(),
-                mode_switcher(),
+                mode_switcher(show_ask=owner),
                 html.Div(
                     id="stats-content",
                     children=[
@@ -734,6 +755,14 @@ def render_page(pathname):
                     children=network_page(load_graph()),
                 ),
                 dcc.Store(id="network-fit-dummy-owner"),
+                # XX-07: Ask. Always mounted so toggle_mode's outputs
+                # resolve; only the owner's tree holds the question box.
+                # run_ask re-checks the owner on every request.
+                html.Div(
+                    id="ask-wrap",
+                    style={"display": "none"},
+                    children=ask_panel() if owner else ask_private_notice(),
+                ),
             ],
         ),
     ])
@@ -1430,18 +1459,59 @@ def update_bump_chart(n):
     Output("rustle-wrap", "style"),
     Output("rate-wrap", "style"),
     Output("network-wrap", "style"),
+    Output("ask-wrap", "style"),
     Input("mode-tabs", "value"),
 )
 def toggle_mode(mode):
-    hidden = {"display": "none"}
-    shown = {"display": "block"}
-    if mode == "rustle":
-        return hidden, shown, hidden, hidden
-    if mode == "rate":
-        return hidden, hidden, shown, hidden
-    if mode == "network":
-        return hidden, hidden, hidden, shown
-    return shown, hidden, hidden, hidden
+    modes = ["stats", "rustle", "rate", "network", "ask"]
+    if mode not in modes:
+        mode = "stats"
+    return tuple(
+        {"display": "block" if m == mode else "none"} for m in modes
+    )
+
+
+@app.callback(
+    Output("ask-result", "children"),
+    Input("ask-submit", "n_clicks"),
+    Input("ask-question", "n_submit"),
+    State("ask-question", "value"),
+    prevent_initial_call=True,
+)
+def run_ask(n_clicks, n_submit, question):
+    """XX-07: answer the owner's question; refuse everyone else.
+
+    The owner gate is checked here on every request, not just by
+    hiding the tab: a forged callback POST lands here too. Errors show
+    fixed copy; the detail is logged, never rendered.
+    """
+    owner = flask.session.get("token") and is_owner(
+        flask.session.get("spotify_user_id")
+    )
+    if not owner:
+        logger.warning("Ask requested by non-owner; refused")
+        return ask_private_notice()
+    question = (question or "").strip()
+    if not question:
+        raise PreventUpdate
+    if len(question) > MAX_QUESTION_CHARS:
+        return render_message(ASK_TOO_LONG)
+    if ask_client_factory is None:
+        logger.info("Ask: no model client configured; live Ask is off")
+        return render_message(ASK_OFF)
+    try:
+        result = ask.ask(question, client=ask_client_factory())
+    except UnsafeSQLError:
+        logger.warning("Ask: model SQL rejected by the guard", exc_info=True)
+        return render_message(ASK_UNSAFE)
+    except ask.AskError:
+        logger.warning("Ask: unusable model reply", exc_info=True)
+        return render_message(ASK_UNUSABLE)
+    except Exception:
+        # Logged with the traceback for the owner; never rendered.
+        logger.exception("Ask: query failed")
+        return render_message(ASK_FAILED)
+    return render_answer(result)
 
 
 GESTURE_HINT = (

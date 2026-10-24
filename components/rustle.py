@@ -1,38 +1,50 @@
 from dash import dcc, html
 
 
-def mode_switcher():
+def mode_switcher(show_ask: bool = False):
+    """Owner mode tabs. The Ask tab (XX-07) is only for the site owner.
+
+    Hiding the tab is cosmetic; app.run_ask enforces the owner gate.
+    """
+    tabs = [
+        dcc.Tab(
+            label="Stats",
+            value="stats",
+            className="mode-tab",
+            selected_className="mode-tab--selected",
+        ),
+        dcc.Tab(
+            label="Rustle",
+            value="rustle",
+            className="mode-tab",
+            selected_className="mode-tab--selected",
+        ),
+        dcc.Tab(
+            label="Rate",
+            value="rate",
+            className="mode-tab",
+            selected_className="mode-tab--selected",
+        ),
+        dcc.Tab(
+            label="Network",
+            value="network",
+            className="mode-tab",
+            selected_className="mode-tab--selected",
+        ),
+    ]
+    if show_ask:
+        tabs.append(dcc.Tab(
+            label="Ask",
+            value="ask",
+            className="mode-tab",
+            selected_className="mode-tab--selected",
+        ))
     return dcc.Tabs(
         mobile_breakpoint=0,
         id="mode-tabs",
         value="stats",
         className="mode-tabs",
-        children=[
-            dcc.Tab(
-                label="Stats",
-                value="stats",
-                className="mode-tab",
-                selected_className="mode-tab--selected",
-            ),
-            dcc.Tab(
-                label="Rustle",
-                value="rustle",
-                className="mode-tab",
-                selected_className="mode-tab--selected",
-            ),
-            dcc.Tab(
-                label="Rate",
-                value="rate",
-                className="mode-tab",
-                selected_className="mode-tab--selected",
-            ),
-            dcc.Tab(
-                label="Network",
-                value="network",
-                className="mode-tab",
-                selected_className="mode-tab--selected",
-            ),
-        ],
+        children=tabs,
     )
 
 

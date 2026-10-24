@@ -350,14 +350,14 @@ class TestCallbackRoute:
 
 class TestOwnerModeToggle:
     def test_network_mode_shows_network_wrap(self):
-        stats, rustle, rate, network = app_module.toggle_mode("network")
+        stats, rustle, rate, network, _ = app_module.toggle_mode("network")
         assert network == {"display": "block"}
         assert stats == {"display": "none"}
         assert rustle == {"display": "none"}
         assert rate == {"display": "none"}
 
     def test_stats_mode_hides_network_wrap(self):
-        stats, rustle, rate, network = app_module.toggle_mode("stats")
+        stats, rustle, rate, network, _ = app_module.toggle_mode("stats")
         assert stats == {"display": "block"}
         assert network == {"display": "none"}
 

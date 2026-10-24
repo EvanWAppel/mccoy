@@ -234,3 +234,36 @@ Confirmed by Evan, blocker triage 2026-10-23 (option A).
 Confirmed by Evan, blocker triage 2026-10-23: a high rating is **8+ on
 the 1–10 scale** (replaces the PRD's "4+ stars"). The `rustle_events`
 migration from the ZZ-01 audit is still awaiting approval.
+
+## 2026-10-24 — Owner Ask UI (XX-07) *(draft)*
+- **No live client in this change.** `app.ask_client_factory` is
+  `None`, so the owner sees "Live answers are switched off" and no
+  model or DB call happens. Wiring it (to `ask.default_client`) is a
+  one-line change that waits on the API-key guardrail (BLOCKED.md); a
+  test pins that the UI code never builds a real client. Rejected an
+  env-var switch: it would put a live path in the code before the key
+  checklist clears.
+- **Owner gate in the callback, not just the layout.** Non-owners get
+  no Ask tab and no question box, but `run_ask` re-checks the session
+  token and `is_owner` on every request, since anyone can POST to
+  `/_dash-update-component`. Same fail-closed rule as Patterns: no
+  `OWNER_SPOTIFY_ID`, no Ask. `ask-wrap` is always mounted (empty for
+  non-owners) so `toggle_mode`'s outputs exist.
+- **The "answer" is a plain line, not a second model call.** One value
+  reads `plays: 3`; otherwise a row count (plus a truncation note).
+  Rejected asking Claude to narrate the rows: double the spend, and
+  model prose about the data is a second thing to trust.
+- **Fixed error copy; the detail goes to the log.** Guard rejections,
+  unusable replies and every other failure (DB, client, missing
+  `ASK_DATABASE_URL`) map to three fixed messages. The exception is
+  logged with its traceback (`logger.exception`), not hidden, but
+  never rendered: no SQL, table names, DSNs or class names reach the
+  page. The rejected SQL is not shown even to the owner.
+- **Results render as text.** Cells, SQL and the summary are plain
+  Dash string children (no `dcc.Markdown`, no raw HTML), so a value
+  that looks like markup stays inert.
+- **Chart only for label/number pairs.** Exactly two columns, a
+  numeric second column (bools excluded), 2-50 rows: a bar chart.
+  Everything else is table only.
+- **Question cap 500 chars, checked server-side** (the input's
+  `maxLength` is only a browser hint). Bounds prompt size and spend.
