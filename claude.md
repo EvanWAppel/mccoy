@@ -14,3 +14,5 @@ Use Ty to typecheck
 Use prek for precommits
 Use logging to help AI debug
 Do not hide or wrap errors
+Codex: allowed (self-contained tasks with a test; cross-model review
+of high-stakes changes, e.g. the XX-09 Ask security review)
