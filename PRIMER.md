@@ -7,19 +7,25 @@
 https://mccoy.evanappel.me. It is Evan's flagship recruiter-facing
 portfolio piece, and logged-out visitors get a public demo.
 
-**Current state (main @ f9e268c, 2026-10-22).**
+**Current state (main @ 4451ffd, 2026-10-23).**
 - Groups VV (Six Degrees, PR #48), WW (play-history pipeline + dbt,
-  PRs #49–#51) and YY-01..05 (public read-only API, PR #52) are merged.
+  PRs #49–#51) and YY-01..05 + YY-07 (public read-only API, PR #52)
+  are merged.
+- The weekend run merged PR #53 (TASKS hygiene, XX-02..05, AAA-01/02,
+  the ZZ-01 audit, and a SQL-guard fix for CTE-scope and function
+  bypasses) and PR #54 (XX-01, `migrations/manual/007_ask_readonly_role.sql`).
+  The Dependabot bumps #40, #41, #44, #45, #46 are merged too.
 - Still open in the Recruiter Expansion (`TASKS.md` from line 801):
-  XX (Ask Your Listening), YY-06/07, ZZ (rec quality), AAA (analysis).
-- Open PRs: only Dependabot bumps (#40, #41, #44, #45, #46). Leave them
-  alone. No feature PR is in flight.
-- Tests on main: `uv run pytest -q` gives **490 passed, 33 skipped**
-  (51s). `uv run ruff check .` is clean. The 33 skips are the Postgres
-  tests (raw_plays + dbt), which need `TEST_DATABASE_URL`. CI sets that
-  with `REQUIRE_PG_TESTS=1`. Local `postgres`/`initdb` binaries exist,
-  so you can run them against a throwaway cluster under `/tmp`. Never
-  point them at Railway.
+  XX-06..09 (live evals, owner/public UI, review), YY-06 (needs the
+  live URL), ZZ-01's migration + ZZ-02..04 (wait on Evan's
+  `rustle_events` approval), AAA-03/04 (Evan's narrative + Hex).
+- Open PRs: none.
+- Tests on main: `uv run pytest -q` gives **662 passed, 55 skipped**
+  (about 1m47s, measured 2026-10-23 on 4451ffd). `uv run ruff check .`
+  is clean. The skips are the Postgres tests (raw_plays + dbt), which
+  need `TEST_DATABASE_URL`. CI sets that with `REQUIRE_PG_TESTS=1`.
+  Local `postgres`/`initdb` binaries exist, so you can run them against
+  a throwaway cluster under `/tmp`. Never point them at Railway.
 
 ### House rules (from `claude.md` / `AGENTS.md`)
 - **Prime Directive: if anything is unclear, stop and ask Evan.**
@@ -36,48 +42,23 @@ portfolio piece, and logged-out visitors get a public demo.
   before the PR. **Evan merges.** Record design calls in
   `DECISIONS.md` and mark them *(draft)*.
 
-### Autonomous tasks, in order
-Branch from `main`. Each one finishes as an open PR, never merged. The
-done-condition for every task also includes `uv run pytest -q` green
-and `uv run ruff check .` clean.
-
-1. **TASKS hygiene.** VV-11 and YY-07 were reviewed and merged (#48,
-   #52), so tick them. Done when `TASKS.md` matches git history.
-2. **XX-02, SQL guard** (branch `ask-your-listening`). Add tests and
-   an implementation of `sql_guard`. It accepts one `SELECT` (CTEs
-   allowed) and rejects DML, DDL and multi-statement input. Use a real
-   parser (`uv add sqlglot`), not regex. Done when
-   `uv run pytest tests/test_sql_guard.py` is green.
-3. **XX-03 + XX-04 (offline only).** Build `ask(question)` with
-   schema-aware prompt construction. The SQL goes through the guard,
-   and the model client is injected and **mocked** in tests. Running
-   `uv add anthropic` is fine, but make **no live call** and read no
-   key. Log the prompt, the SQL and the row count. Done when
-   `uv run pytest tests/test_ask.py` is green.
-4. **XX-05, offline evals.** Build `tests/evals/` over a fixture DB
-   with recorded model outputs. It runs in the normal pytest run.
-5. **XX-01, migration draft.** Write `migrations/007_*.sql` for a
-   read-only role limited to `marts`, with a statement timeout and a
-   row cap. Test it against a local throwaway Postgres only. **If the
-   role or login design is unclear** (LOGIN role with its own password
-   vs `SET ROLE` from the app connection), stop and put the question
-   in BLOCKED.md. The migration is never applied to Railway.
-6. **AAA-01.** Write `scripts/export_marts.py`, which exports marts to
-   a small parquet snapshot. Test it against a fixture DB or fixture
-   frames. Done when its test is green.
-7. **AAA-02.** Write the code and section structure of
-   `analysis/listening.ipynb` against **fixture data only**. Evan
-   writes the narrative (AAA-03).
-8. **ZZ-01, audit only.** "Card shown" events are not stored today:
-   there is no table and no logging in `migrations/` or `app.py`.
-   Write that finding up in `DECISIONS.md` *(draft)*. Adding the
-   migration needs Evan's confirmation, which is in BLOCKED.md.
+### Autonomous tasks
+None queued. All eight weekend tasks are merged: TASKS hygiene,
+XX-02 (`sql_guard.py`, sqlglot), XX-03/04 (`ask/__init__.py`, mocked
+client), XX-05 (`ask/evals.py`, `tests/evals/`), AAA-01
+(`scripts/export_marts.py`), AAA-02 (`analysis/listening.ipynb`) and the
+ZZ-01 audit (`DECISIONS.md`) in PR #53; XX-01 (manual migration 007)
+in PR #54. Every remaining open task in `TASKS.md` is gated by an item
+in `BLOCKED.md` (the Anthropic key guardrail, applying 007 +
+`ASK_DATABASE_URL`, the `rustle_events` approval) or needs the live URL.
+Check `TASKS.md` and `BLOCKED.md`, and ask Evan before starting
+anything new.
 
 ### Do NOT do
 - No deploys, no Railway changes, no merges (including Dependabot), no
   pushes to `main`. Don't publish or send anything.
-- Don't run any migration against Railway Postgres (UU-04, PP-08, any
-  007). Evan does those.
+- Don't run any migration against Railway Postgres (UU-04, PP-08,
+  `migrations/manual/007_ask_readonly_role.sql`). Evan does those.
 - **No live Anthropic calls.** That means XX-06 live evals and live use
   of XX-07/08. They wait for the API-key guardrail checklist in
   BLOCKED.md.
