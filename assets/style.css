@@ -1657,3 +1657,76 @@ a { color: var(--accent); }
   margin: 0 0 6px;
 }
 .about__health-warn { color: var(--accent, #c4452b); }
+
+/* Ask Your Listening, owner UI (XX-07) */
+.ask-form {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+.ask-input {
+  flex: 1 1 280px;
+  min-width: 0;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid var(--rule, #d2cec3);
+  background: var(--bg-surface, #eeeadf);
+  color: var(--text-primary, #25251f);
+  font-size: 1rem;
+}
+.ask-input:focus-visible {
+  outline: 2px solid var(--accent, #c4452b);
+  outline-offset: 2px;
+}
+.ask-btn {
+  height: 44px;
+  padding: 0 22px;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent, #c4452b);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ask-summary {
+  font: 18px var(--serif, Georgia, serif);
+  color: var(--text-primary, #25251f);
+  margin: 12px 0 8px;
+}
+.ask-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 0.9rem;
+  display: block;
+  overflow-x: auto;
+}
+.ask-table th {
+  text-align: left;
+  padding: 6px 10px;
+  color: var(--text-secondary, #6e6b63);
+  border-bottom: 1px solid var(--rule, #d2cec3);
+}
+.ask-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--rule, #d2cec3);
+  color: var(--text-primary, #25251f);
+}
+.ask-sql {
+  margin-top: 12px;
+}
+.ask-sql summary {
+  cursor: pointer;
+  color: var(--text-secondary, #6e6b63);
+  font-size: 0.85rem;
+}
+.ask-sql pre {
+  white-space: pre-wrap;
+  overflow-x: auto;
+  background: var(--bg-surface, #eeeadf);
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+}

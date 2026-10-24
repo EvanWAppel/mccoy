@@ -845,7 +845,7 @@ tasks that don't share files.
 - [x] **XX-04** `uv add anthropic`; implement `ask.py` with logging of prompt/SQL/row count (no secrets) — `ask/__init__.py`
 - [x] **XX-05** Eval set in `tests/evals/` over a fixture DB with recorded model outputs; runs in CI offline — `ask/evals.py`, `tests/evals/`
 - [ ] **XX-06** Opt-in live eval command (`uv run python -m ask.evals --live`)
-- [ ] **XX-07** Owner UI: question box, answer, SQL disclosure, result table/chart
+- [x] **XX-07** Owner UI: question box, answer, SQL disclosure, result table/chart — `components/ask.py`, `app.run_ask`, `tests/test_ask_ui.py`; mocked client only, live wiring (`app.ask_client_factory`) waits on the key guardrail (BLOCKED.md)
 - [ ] **XX-08** Public UI: curated cached Q&A; `scripts/refresh_ask_cache.py` (owner-run)
 - [ ] **XX-09** Independent review (security-focused, cross-model) → PR → Evan merges
 
