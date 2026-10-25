@@ -20,6 +20,16 @@ def owner_env(monkeypatch):
 
 
 @pytest.fixture
+def spotify_env(monkeypatch):
+    """Spotify OAuth settings, so `auth._oauth_manager()` can build."""
+    monkeypatch.setenv("SPOTIPY_CLIENT_ID", "test_client_id")
+    monkeypatch.setenv("SPOTIPY_CLIENT_SECRET", "test_client_secret")
+    monkeypatch.setenv(
+        "SPOTIPY_REDIRECT_URI", "http://localhost:8050/callback"
+    )
+
+
+@pytest.fixture
 def listening_artists():
     return [
         {"name": "Radiohead", "rank": 1, "genres": ["rock", "art rock"]},
