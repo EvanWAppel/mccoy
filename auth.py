@@ -1,5 +1,6 @@
 import logging
 import os
+from collections.abc import MutableMapping
 
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
@@ -80,7 +81,7 @@ def handle_callback(code: str) -> tuple[dict, str]:
     return token, user_id
 
 
-def get_sp_from_session(session: dict):
+def get_sp_from_session(session: MutableMapping):
     token = session.get("token")
     if not token:
         return None

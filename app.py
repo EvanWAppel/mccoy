@@ -93,6 +93,7 @@ from components.rustle import (
     track_card,
 )
 from components.trends import render_bump_chart
+from log_redact import format_exception
 from netviz.paths import random_interesting_pair
 from public_api import api_bp
 from spotify import (
@@ -1483,12 +1484,17 @@ def run_ask(n_clicks, n_submit, question):
 
     The owner gate is checked here on every request, not just by
     hiding the tab: a forged callback POST lands here too. Errors show
-    fixed copy; the detail is logged, never rendered.
+    fixed copy; the detail is logged (secrets redacted), never
+    rendered.
+
+    XX-09: the session is validated by `get_sp_from_session` first, as
+    in every other callback, so a replayed cookie whose token is
+    expired with a dead refresh token, or lacks scopes, is refused.
     """
-    owner = flask.session.get("token") and is_owner(
-        flask.session.get("spotify_user_id")
-    )
-    if not owner:
+    if get_sp_from_session(flask.session) is None:
+        logger.warning("Ask: no valid Spotify session; refused")
+        return ask_private_notice()
+    if not is_owner(flask.session.get("spotify_user_id")):
         logger.warning("Ask requested by non-owner; refused")
         return ask_private_notice()
     question = (question or "").strip()
@@ -1501,15 +1507,18 @@ def run_ask(n_clicks, n_submit, question):
         return render_message(ASK_OFF)
     try:
         result = ask.ask(question, client=ask_client_factory())
-    except UnsafeSQLError:
-        logger.warning("Ask: model SQL rejected by the guard", exc_info=True)
+    except UnsafeSQLError as e:
+        logger.warning(
+            "Ask: model SQL rejected by the guard\n%s", format_exception(e)
+        )
         return render_message(ASK_UNSAFE)
-    except ask.AskError:
-        logger.warning("Ask: unusable model reply", exc_info=True)
+    except ask.AskError as e:
+        logger.warning("Ask: unusable model reply\n%s", format_exception(e))
         return render_message(ASK_UNUSABLE)
-    except Exception:
-        # Logged with the traceback for the owner; never rendered.
-        logger.exception("Ask: query failed")
+    except Exception as e:
+        # Logged with the traceback for the owner, secrets redacted
+        # (XX-09: libpq quotes the DSN); never rendered.
+        logger.error("Ask: query failed\n%s", format_exception(e))
         return render_message(ASK_FAILED)
     return render_answer(result)
 

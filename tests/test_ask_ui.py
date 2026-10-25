@@ -23,15 +23,31 @@ from unittest.mock import MagicMock
 
 import pytest
 from dash import dcc, html
+from spotipy.oauth2 import SpotifyOauthError
 
 os.environ.setdefault("FLASK_SECRET_KEY", "test_secret")
 
 import app as app_module  # noqa: E402
 import ask  # noqa: E402
+import auth  # noqa: E402
 from components import ask as ask_ui  # noqa: E402
 from components.rustle import mode_switcher  # noqa: E402
 
-TOKEN = {"access_token": "x"}
+# A live-looking session token: full scope and unexpired, so the real
+# `get_sp_from_session` accepts it without a refresh (no network).
+TOKEN = {
+    "access_token": "x",
+    "refresh_token": "r",
+    "expires_at": 9999999999,
+    "scope": auth.SCOPE,
+}
+# The same token, expired: `get_sp_from_session` must refresh it.
+EXPIRED = {**TOKEN, "expires_at": 1}
+
+
+@pytest.fixture(autouse=True)
+def _spotify(spotify_env):
+    """Run the real session check (XX-09) against test OAuth settings."""
 
 
 def _result(columns, rows, *, truncated=False, sql="SELECT 1"):
@@ -259,6 +275,14 @@ def wired(mocker, fake_model, ask_conn):
     return fake_model, readonly
 
 
+@pytest.fixture
+def wired_readonly(mocker, ask_conn):
+    """Only the read-only connection, patched; the model is left alone."""
+    return mocker.patch.object(
+        ask, "connect_readonly", return_value=ask_conn
+    )
+
+
 def _no_db(mocker):
     """Fail the test if anything opens any database connection."""
     for target in (ask, app_module.db):
@@ -378,6 +402,84 @@ class TestRunAskNonOwner:
         assert model.calls == []
 
 
+class TestRunAskStaleSession:
+    """XX-09 [P2]: a replayed owner cookie must pass the session check.
+
+    `run_ask` validates the session through `get_sp_from_session`, like
+    every other callback: an expired token whose refresh fails, or a
+    token missing scopes, clears the session and gets the private
+    notice. The model client factory is never called.
+    """
+
+    @pytest.fixture
+    def dead_refresh(self, mocker):
+        oauth = mocker.patch.object(auth, "_oauth_manager").return_value
+        oauth.is_token_expired.return_value = True
+        oauth.refresh_access_token.side_effect = (
+            SpotifyOauthError("invalid_grant")
+        )
+        return oauth
+
+    @pytest.fixture
+    def factory(self, mocker):
+        factory = MagicMock(side_effect=AssertionError("model"))
+        mocker.patch.object(app_module, "ask_client_factory", factory)
+        return factory
+
+    def test_expired_token_with_dead_refresh_is_refused(
+        self, owner_env, dead_refresh, factory, mocker, component_text
+    ):
+        session = {"token": EXPIRED, "spotify_user_id": owner_env}
+        mocker.patch.object(app_module.flask, "session", session)
+        spy = mocker.patch.object(ask, "ask")
+        tree = app_module.run_ask(1, None, "Who did I play most?")
+        assert ask_ui.ASK_PRIVATE in component_text(tree)
+        dead_refresh.refresh_access_token.assert_called_once_with("r")
+        factory.assert_not_called()
+        spy.assert_not_called()
+        assert session == {}  # cleared, as every other callback does
+
+    def test_token_missing_scopes_is_refused(
+        self, owner_env, factory, mocker, component_text
+    ):
+        stale = {**TOKEN, "scope": "user-top-read"}
+        session = {"token": stale, "spotify_user_id": owner_env}
+        mocker.patch.object(app_module.flask, "session", session)
+        tree = app_module.run_ask(1, None, "q")
+        assert ask_ui.ASK_PRIVATE in component_text(tree)
+        factory.assert_not_called()
+
+    def test_replayed_cookie_over_http_is_refused(
+        self, owner_env, dead_refresh, factory, wired_readonly
+    ):
+        client = app_module.server.test_client()
+        with client.session_transaction() as sess:
+            sess.update({"token": EXPIRED, "spotify_user_id": owner_env})
+        resp = client.post(
+            "/_dash-update-component",
+            data=json.dumps(_ask_payload("Who did I play most?")),
+            content_type="application/json",
+        )
+        assert resp.status_code == 200
+        body = resp.get_data(as_text=True)
+        assert ask_ui.ASK_PRIVATE in body
+        assert "ask-table" not in body
+        factory.assert_not_called()
+        wired_readonly.assert_not_called()
+
+    def test_expired_token_that_refreshes_still_answers(
+        self, owner_env, mocker, wired, component_ids
+    ):
+        oauth = mocker.patch.object(auth, "_oauth_manager").return_value
+        oauth.is_token_expired.return_value = True
+        oauth.refresh_access_token.return_value = TOKEN
+        session = {"token": EXPIRED, "spotify_user_id": owner_env}
+        mocker.patch.object(app_module.flask, "session", session)
+        tree = app_module.run_ask(1, None, "q")
+        assert "ask-table" in component_ids(tree)
+        assert session["token"] == TOKEN
+
+
 class TestRunAskUnsafeSQL:
     @pytest.mark.parametrize(
         "reply",
@@ -446,6 +548,7 @@ class TestRunAskErrorsDoNotLeak:
             assert leak not in repr(tree)
         # the detail goes to the server log for the owner to debug
         assert "permission denied" in caplog.text
+        assert "hunter2" not in caplog.text  # XX-09: redacted
         ask_conn.rollback.assert_called_once()
 
     def test_missing_ask_database_url(
@@ -472,6 +575,102 @@ class TestRunAskErrorsDoNotLeak:
         text = component_text(app_module.run_ask(1, None, "q"))
         assert ask_ui.ASK_FAILED in text
         assert "sk-ant-secret" not in text
+
+
+class TestRunAskLogsAreRedacted:
+    """XX-09 [P2]: logged failures never carry the DSN password.
+
+    The log keeps the exception type, traceback and message; only the
+    secrets in the text are replaced.
+    """
+
+    MALFORMED_DSN = "postgresql:/user:hunter2@localhost/db"
+
+    @pytest.fixture
+    def model(self, mocker, fake_model):
+        mocker.patch.object(
+            app_module, "ask_client_factory", lambda: fake_model
+        )
+        return fake_model
+
+    def test_malformed_dsn_password_is_not_logged(
+        self, owner_session, model, monkeypatch, caplog, component_text
+    ):
+        """Codex's reproduction: libpq quotes the whole DSN."""
+        monkeypatch.setenv("ASK_DATABASE_URL", self.MALFORMED_DSN)
+        caplog.set_level(logging.INFO)
+        text = component_text(app_module.run_ask(1, None, "q"))
+        assert ask_ui.ASK_FAILED in text
+        assert "hunter2" not in caplog.text
+        assert "ProgrammingError" in caplog.text  # type still logged
+        assert "invalid dsn" in caplog.text  # message still logged
+        assert "Traceback" in caplog.text  # frames still logged
+
+    @pytest.mark.parametrize(
+        "message, secret",
+        [
+            (
+                "could not connect: "
+                "postgresql://mccoy_ask:hunter2@db.internal:5432/x",
+                "hunter2",
+            ),
+            ("connection failed: host=db password=hunter2", "hunter2"),
+            ("bad key sk-ant-api03-SECRETVALUE", "SECRETVALUE"),
+        ],
+    )
+    def test_query_failure_is_redacted(
+        self, owner_session, model, mocker, caplog, message, secret
+    ):
+        mocker.patch.object(
+            ask, "connect_readonly", side_effect=RuntimeError(message)
+        )
+        caplog.set_level(logging.INFO)
+        app_module.run_ask(1, None, "q")
+        assert secret not in caplog.text
+        assert "RuntimeError" in caplog.text
+        assert "Ask: query failed" in caplog.text
+
+    def test_chained_cause_is_redacted(
+        self, owner_session, model, mocker, caplog
+    ):
+        def connect():
+            try:
+                raise ValueError("password=hunter2")
+            except ValueError as e:
+                raise RuntimeError("wrapped") from e
+
+        mocker.patch.object(ask, "connect_readonly", side_effect=connect)
+        caplog.set_level(logging.INFO)
+        app_module.run_ask(1, None, "q")
+        assert "hunter2" not in caplog.text
+        assert "ValueError" in caplog.text
+        assert "RuntimeError: wrapped" in caplog.text
+
+    def test_unusable_reply_warning_is_redacted(
+        self, owner_session, model, mocker, caplog
+    ):
+        mocker.patch.object(
+            ask,
+            "ask",
+            side_effect=ask.AskError("reply quoted password=hunter2"),
+        )
+        caplog.set_level(logging.INFO)
+        app_module.run_ask(1, None, "q")
+        assert "hunter2" not in caplog.text
+        assert "AskError" in caplog.text
+
+    def test_unsafe_sql_warning_is_redacted(
+        self, owner_session, model, mocker, caplog
+    ):
+        mocker.patch.object(
+            ask,
+            "ask",
+            side_effect=app_module.UnsafeSQLError("sk-ant-api03-LEAKED"),
+        )
+        caplog.set_level(logging.INFO)
+        app_module.run_ask(1, None, "q")
+        assert "LEAKED" not in caplog.text
+        assert "UnsafeSQLError" in caplog.text
 
 
 # --- over HTTP: Dash's callback endpoint ------------------------------

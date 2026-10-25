@@ -848,6 +848,9 @@ tasks that don't share files.
 - [x] **XX-07** Owner UI: question box, answer, SQL disclosure, result table/chart — `components/ask.py`, `app.run_ask`, `tests/test_ask_ui.py`; mocked client only, live wiring (`app.ask_client_factory`) waits on the key guardrail (BLOCKED.md)
 - [ ] **XX-08** Public UI: curated cached Q&A; `scripts/refresh_ask_cache.py` (owner-run)
 - [ ] **XX-09** Independent review (security-focused, cross-model) → PR → Evan merges
+  — Codex review of the owner Ask UI (PR #57) done 2026-10-24: two
+  [P2] findings fixed in the follow-up PR (stale-session gate in
+  `run_ask`; secrets redacted from Ask logs via `log_redact.py`)
 
 ## Group YY — Public Read-Only API
 > Depends on VV (path endpoint) and WW (listening endpoint). Branch: `public-api`.
