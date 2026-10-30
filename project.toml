@@ -40,3 +40,13 @@ spend_cap = "n/a"
 
 [platform]
 done = []
+
+[commands]
+dev = "uv run python app.py"
+test = "uv run pytest"
+lint = "uv run ruff check . && uv run ty check"
+
+[meta]
+description = "Spotify listening dashboard"
+language = "python"
+tags = ["portfolio", "demo-mode"]
