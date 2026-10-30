@@ -15,7 +15,7 @@ dependencies = [
     "musicbrainzngs>=0.7.1",
     "psycopg2-binary>=2.9.12",
     "python-dotenv>=1.2.3",
-    "python3-discogs-client>=2.9",
+    "python3-discogs-client>=2.10",
     "spotipy>=2.26.0",
     "sqlglot>=30.21.0",
 ]
