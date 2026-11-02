@@ -43,10 +43,18 @@ done = []
 
 [commands]
 dev = "uv run python app.py"
-test = "uv run pytest"
+test = "uv run pytest -q"
 lint = "uv run ruff check . && uv run ty check"
+setup = "uv sync"
 
 [meta]
 description = "Spotify listening dashboard"
 language = "python"
 tags = ["portfolio", "demo-mode"]
+
+[fleet]                     # joined 2026-11-01 (_system D-051); also has the `fleet` topic
+component = "mccoy"
+agents = ["claude", "codex"]
+default_model = "sonnet"
+default_branch = "main"
+max_minutes = 45
