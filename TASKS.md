@@ -857,7 +857,7 @@ tasks that don't share files.
 - [x] **YY-03** Implement `/api/v1/*` Flask routes on the Dash server; GET-only, JSON, CORS for GET, cache headers (`public_api.py` blueprint)
 - [x] **YY-04** Tests + impl: per-IP rate limit (429 with Retry-After) — 60/min sliding window, in memory per worker
 - [x] **YY-05** `/api/docs` page rendering the spec (server-rendered from the JSON, no third-party JS)
-- [ ] **YY-06** `examples/api_quickstart.ipynb` calling the live API — after the API is deployed (needs the live URL)
+- [x] **YY-06** `examples/api_quickstart.ipynb` calling the live API — committed without outputs; tested against the blueprint with demo data
 - [x] **YY-07** Independent review → PR → Evan merges (PR #52)
 
 ## Group ZZ — Recommendation Quality
