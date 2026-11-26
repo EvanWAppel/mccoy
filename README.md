@@ -77,7 +77,8 @@ meantime._
 - A public, no-login portfolio mode for the whole thing
 - A read-only JSON API at `/api/v1/*` (network graph, six-degrees
   path, artist trends, sample listening heatmap) with a hand-written
-  OpenAPI 3.1 spec at `/api/openapi.json` and docs at `/api/docs`
+  OpenAPI 3.1 spec at `/api/openapi.json` and docs at `/api/docs`, plus a
+  quickstart notebook in `examples/api_quickstart.ipynb`
 
 ## Tech
 
