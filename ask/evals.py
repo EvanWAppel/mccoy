@@ -223,20 +223,25 @@ def record_replies(
 ) -> list[str]:
     """Write the replies of passing answerable cases back to `path`.
 
+    The live column names become the expectation too: a live pass
+    ignores aliases, but the offline replay compares them strictly.
     Attack and refusal cases keep their hand-authored replies: they
     exist to exercise the guard, whatever a live model says. Returns
     the ids written; the file is untouched if there are none.
     """
     data = json.loads(path.read_text())
     passing = {
-        r.case_id: r.reply
+        r.case_id: r
         for r in results
         if r.passed and r.error is None and r.reply is not None
     }
     written = []
     for raw in data["cases"]:
         if raw["id"] in passing and "error" not in raw["expect"]:
-            raw["reply"] = passing[raw["id"]]
+            result = passing[raw["id"]]
+            raw["reply"] = result.reply
+            if result.columns:
+                raw["expect"]["columns"] = result.columns
             written.append(raw["id"])
     if written:
         data["recorded_with"] = model
@@ -258,8 +263,12 @@ def fixture_database() -> Iterator[Callable[[], Any]]:
     name = f"mccoy_evals_{uuid.uuid4().hex[:8]}"
     admin = psycopg2.connect(base)
     admin.autocommit = True
-    with admin.cursor() as cur:
-        cur.execute(f'CREATE DATABASE "{name}"')
+    try:
+        with admin.cursor() as cur:
+            cur.execute(f'CREATE DATABASE "{name}"')
+    except Exception:
+        admin.close()
+        raise
     dsn = make_dsn(base, dbname=name)
     log.info("evals: fixture database %s", name)
     try:

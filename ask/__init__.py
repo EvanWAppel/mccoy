@@ -22,6 +22,7 @@ import datetime as dt
 import logging
 import os
 import re
+import uuid
 from collections.abc import Callable
 from dataclasses import dataclass
 from decimal import Decimal
@@ -101,12 +102,16 @@ class AskResult:
 
 
 def normalize(value: Any) -> Any:
-    """Make a DB value JSON-friendly: numerics -> float, dates and
-    timestamps -> ISO strings."""
+    """Make a DB value JSON-friendly: numerics -> float, dates, times
+    and timestamps -> ISO strings, intervals -> seconds, UUIDs -> str."""
     if isinstance(value, Decimal):
         return float(value)
-    if isinstance(value, (dt.date, dt.datetime)):
+    if isinstance(value, (dt.date, dt.datetime, dt.time)):
         return value.isoformat()
+    if isinstance(value, dt.timedelta):
+        return value.total_seconds()
+    if isinstance(value, uuid.UUID):
+        return str(value)
     return value
 
 

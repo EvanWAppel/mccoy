@@ -1368,8 +1368,12 @@ def _ask_private():
 )
 def run_ask(n_clicks, n_submit, question):
     """XX-07: owner-only live question. Live model calls happen only
-    here, behind the owner identity gate."""
-    if not is_owner(flask.session.get("spotify_user_id")):
+    here, behind the owner identity gate. A live Spotify session is
+    required too, so a stale cookie with the owner id isn't enough."""
+    if (
+        not is_owner(flask.session.get("spotify_user_id"))
+        or get_sp_from_session(flask.session) is None
+    ):
         logger.info("Ask submitted by non-owner; refused")
         return _ask_private()
     question = (question or "").strip()

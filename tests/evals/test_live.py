@@ -231,3 +231,14 @@ def test_fixture_database_loads_and_drops(monkeypatch):
         cur.execute("SELECT 1 FROM pg_database WHERE datname = %s", (name,))
         assert cur.fetchone() is None
     admin.close()
+
+
+def test_record_also_writes_live_columns(cases_file):
+    """Offline replay is strict on columns, so recorded aliases must
+    become the expectation or the next pytest run fails."""
+    results = [evals.EvalResult("a", True, "ok", reply="new a",
+                                columns=["who", "n"])]
+    evals.record_replies(results, "m", path=cases_file)
+    data = json.loads(cases_file.read_text())
+    assert data["cases"][0]["expect"]["columns"] == ["who", "n"]
+    assert data["cases"][0]["expect"]["rows"] == ROWS["rows"]

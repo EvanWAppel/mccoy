@@ -355,3 +355,60 @@ class TestNonOwnerAsk:
         tree = app_module.run_ask(1, None, "Who?")
         assert self.PRIVATE in repr(tree)
         spy.assert_not_called()
+
+
+# --- review follow-ups (XX-09) -------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "value, expected",
+    [
+        (dt.timedelta(minutes=90, seconds=30), 5430.0),
+        (dt.time(21, 30), "21:30:00"),
+    ],
+)
+def test_normalize_handles_intervals_and_times(value, expected):
+    assert ask.normalize(value) == expected
+
+
+def test_normalize_handles_uuid():
+    import uuid
+
+    u = uuid.UUID(int=1)
+    assert ask.normalize(u) == str(u)
+
+
+def test_chart_labels_are_escaped():
+    tree = render_answer(answer(
+        ["<b>x</b>", "n"],
+        [['<a href="https://e.vil">A</a>', 1], ["B", 2]],
+    ))
+    graph = next(c for c in _walk(tree) if getattr(c, "id", "") == "ask-chart")
+    fig = graph.figure
+    assert all("<" not in str(x) for x in fig.data[0].x)
+    assert "<" not in fig.layout.yaxis.title.text
+
+
+def test_committed_public_cache_renders_if_present():
+    entries = public.load_cache()
+    if entries is None:
+        pytest.skip("ask/public_cache.json not generated yet")
+    for entry in entries:
+        assert {"question", "sql", "columns", "rows"} <= entry.keys()
+    ask_public_panel(entries)
+
+
+class TestStaleOwnerSession:
+    def test_owner_id_without_live_spotify_session_is_refused(
+        self, owner_env, mocker
+    ):
+        mocker.patch.object(
+            app_module, "get_sp_from_session", return_value=None
+        )
+        mocker.patch.object(
+            app_module.flask, "session", {"spotify_user_id": owner_env}
+        )
+        spy = mocker.patch.object(app_module.ask, "ask")
+        tree = app_module.run_ask(1, None, "Who?")
+        assert TestNonOwnerAsk.PRIVATE in repr(tree)
+        spy.assert_not_called()

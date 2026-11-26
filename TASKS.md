@@ -847,7 +847,7 @@ tasks that don't share files.
 - [x] **XX-06** Opt-in live eval command (`uv run python -m ask.evals --live [--record]`) — built + tested offline; first real run waits on the key (BLOCKED.md)
 - [x] **XX-07** Owner UI: question box, answer, SQL disclosure, result table/chart — `components/ask.py`, "Ask" sub-tab; live use waits on the key + `ASK_DATABASE_URL` (BLOCKED.md)
 - [x] **XX-08** Public UI: curated cached Q&A over the fixture marts (sample data, like Patterns); `scripts/refresh_ask_cache.py` (owner-run); tab appears once `ask/public_cache.json` is committed (BLOCKED.md)
-- [ ] **XX-09** Independent review (security-focused, cross-model) → PR → Evan merges
+- [ ] **XX-09** Independent review (security-focused, cross-model) → PR → Evan merges — same-model review done 2026-11-25 (no highs; fixes in branch); cross-model pass needs "Codex: allowed" (BLOCKED.md)
 
 ## Group YY — Public Read-Only API
 > Depends on VV (path endpoint) and WW (listening endpoint). Branch: `public-api`.

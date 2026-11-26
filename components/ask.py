@@ -6,6 +6,7 @@ table, plus a bar chart when the result is label + number, and the SQL
 in a disclosure.
 """
 
+import html as html_lib
 import logging
 from typing import Any
 
@@ -33,14 +34,16 @@ def _chart(result: dict[str, Any]) -> dcc.Graph | None:
     if not all(_is_number(r[1]) for r in rows):
         return None
     shown = rows[:SHOWN_ROWS]
+    # Plotly renders labels as a subset of HTML (links included); the
+    # labels and alias come from the model and from Spotify names.
     fig = go.Figure(go.Bar(
-        x=[str(r[0]) for r in shown],
+        x=[html_lib.escape(str(r[0])) for r in shown],
         y=[r[1] for r in shown],
         marker_color="#c4452b",
         hovertemplate="%{x}: %{y}<extra></extra>",
     ))
     fig.update_layout(**CHART_LAYOUT, height=240)
-    fig.update_yaxes(title_text=columns[1])
+    fig.update_yaxes(title_text=html_lib.escape(columns[1]))
     return dcc.Graph(id="ask-chart", figure=fig,
                      config={"displayModeBar": False})
 
