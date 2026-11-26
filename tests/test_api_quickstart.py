@@ -135,3 +135,25 @@ def test_runs_end_to_end(routed, monkeypatch):
     assert namespace["trends"]["source"] == "demo"
     assert namespace["route"]["path"]
     assert len(shown) >= 2
+
+
+def test_path_demo_skips_unreachable_musicians(routed, monkeypatch):
+    """The least-connected musician may sit outside the main component;
+    the notebook keeps trying until a path exists."""
+    import plotly.basedatatypes
+
+    monkeypatch.setattr(
+        plotly.basedatatypes.BaseFigure, "show", lambda self, *a, **k: None
+    )
+    disconnected = {
+        "nodes": GRAPH["nodes"] + [
+            {"id": "x9", "name": "Loner", "genre": None, "era": None,
+             "degree": 0},
+        ],
+        "edges": GRAPH["edges"],
+    }
+    namespace = {"display": print}
+    with patch.object(public_api, "load_graph", return_value=disconnected):
+        for src in _code():
+            exec(compile(src, str(NOTEBOOK), "exec"), namespace)
+    assert namespace["route"]["path"]
