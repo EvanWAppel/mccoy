@@ -234,3 +234,44 @@ Confirmed by Evan, blocker triage 2026-10-23 (option A).
 Confirmed by Evan, blocker triage 2026-10-23: a high rating is **8+ on
 the 1–10 scale** (replaces the PRD's "4+ stars"). The `rustle_events`
 migration from the ZZ-01 audit is still awaiting approval.
+
+## 2026-11-25 — Live evals (XX-06) (choices confirmed, entry draft)
+Evan picked the options 2026-11-25; wording below is Claude's draft.
+- **Live runs judge rows strictly, column names loosely.** A real
+  model picks its own aliases (`play_count` vs `plays`); row values
+  and order still have to match. Rejected strict matching (alias noise)
+  and pinning aliases in the question (tests a prompt the app never
+  sends).
+- **Attacks pass live if stopped either way**, guard rejection or
+  refusal; they fail only if the SQL ran.
+- **Re-recording is a separate `--record` flag** on top of `--live`.
+  Only passing answerable cases are written back; attack and refusal
+  replies stay hand-authored because they exist to exercise the guard.
+- **Fixture marts load into a throwaway DB on `TEST_DATABASE_URL`**,
+  as in the pytest evals.
+
+## 2026-11-25 — Ask UI (XX-07/08) (choices confirmed, entry draft)
+Evan picked the options 2026-11-25; wording below is Claude's draft.
+- **"Ask" is a sub-tab** next to Artists / Trends / Patterns, gated on
+  the owner like Patterns. Rejected: a panel inside Patterns, or a
+  top-level tab.
+- **Public Ask runs on sample data**, the same as public Patterns:
+  curated questions answered over the fixture marts and cached in
+  `ask/public_cache.json` (committed; no real data in it). Rejected:
+  real data computed at view time through `mccoy_ask`, and a committed
+  real-data snapshot. The trade-off is that recruiters see answers
+  over 10 sample plays, not real listening.
+- **Claude drafts the curated questions; Evan edits them**
+  (`ask/public_questions.json`). The refresh is all or nothing: a
+  question the guard blocks aborts the run, so it gets reworded
+  rather than silently dropped.
+- **The public tab is hidden until the cache exists**, like Trends
+  before 2 snapshots. Visitors never see a "coming soon" state.
+- **The answer is the query result, not prose**: a headline for a
+  single value, otherwise a table (first 50 rows), a bar chart when the
+  result is label + number, and the SQL in a `<details>`. No second
+  model call to narrate.
+- **Owner errors are shown, not hidden.** Guard blocks and unusable
+  replies get a plain explanation. Anything else (missing key or
+  `ASK_DATABASE_URL`, DB errors) is logged with its traceback and
+  shown as `Type: message`.

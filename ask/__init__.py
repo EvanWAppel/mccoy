@@ -18,11 +18,13 @@ run offline with fakes. Logs carry the prompt, SQL and row count,
 never keys or connection strings.
 """
 
+import datetime as dt
 import logging
 import os
 import re
 from collections.abc import Callable
 from dataclasses import dataclass
+from decimal import Decimal
 from typing import Any
 
 import psycopg2
@@ -96,6 +98,28 @@ class AskResult:
     rows: list[tuple]
     row_count: int
     truncated: bool
+
+
+def normalize(value: Any) -> Any:
+    """Make a DB value JSON-friendly: numerics -> float, dates and
+    timestamps -> ISO strings."""
+    if isinstance(value, Decimal):
+        return float(value)
+    if isinstance(value, (dt.date, dt.datetime)):
+        return value.isoformat()
+    return value
+
+
+def result_dict(result: AskResult) -> dict[str, Any]:
+    """An AskResult as plain JSON data, the shape the UI renders and
+    the public cache stores."""
+    return {
+        "question": result.question,
+        "sql": result.sql,
+        "columns": list(result.columns),
+        "rows": [[normalize(v) for v in row] for row in result.rows],
+        "truncated": result.truncated,
+    }
 
 
 def build_system_prompt() -> str:

@@ -23,8 +23,10 @@ from dash import (
 from dash.exceptions import PreventUpdate
 from spotipy import SpotifyException
 
+import ask
 import db
 import demo_data
+from ask import public as ask_public
 from auth import (
     get_app_token_client,
     get_auth_url,
@@ -34,6 +36,12 @@ from auth import (
 )
 from components.about import about_tab
 from components.artist_grid import render_grid
+from components.ask import (
+    ask_owner_panel,
+    ask_public_panel,
+    render_answer,
+    render_ask_message,
+)
 from components.editorial import (
     collection_heading,
     journal_footer,
@@ -97,6 +105,7 @@ from spotify import (
     search_playlists,
     start_playback,
 )
+from sql_guard import UnsafeSQLError
 
 logger = logging.getLogger(__name__)
 
@@ -385,7 +394,7 @@ def _safe_snapshot_count(time_range="short_term"):
         return 0
 
 
-def _public_stats_tabs(snapshot_count):
+def _public_stats_tabs(snapshot_count, ask_cache=None):
     # LL: gate the Trends sub-tab on having enough history.
     tabs = [
         dcc.Tab(
@@ -406,10 +415,19 @@ def _public_stats_tabs(snapshot_count):
             style=TAB_STYLE, selected_style=TAB_SELECTED_STYLE,
         )
     )
+    # XX-08: Ask only appears once the curated cache has been generated.
+    if ask_cache:
+        tabs.append(
+            dcc.Tab(
+                label="Ask", value="ask",
+                style=TAB_STYLE, selected_style=TAB_SELECTED_STYLE,
+            )
+        )
     return tabs
 
 
 def _public_demo():
+    ask_cache = ask_public.load_cache()
     return html.Div([
         dcc.Tabs(
             mobile_breakpoint=0,
@@ -435,7 +453,9 @@ def _public_demo():
                     mobile_breakpoint=0,
                     id="public-content-tabs",
                     value="artists",
-                    children=_public_stats_tabs(_safe_snapshot_count()),
+                    children=_public_stats_tabs(
+                        _safe_snapshot_count(), ask_cache
+                    ),
                     style={"marginTop": "4px"},
                 ),
                 html.Div(
@@ -492,6 +512,13 @@ def _public_demo():
                     children=render_patterns(
                         demo_data.demo_patterns(), is_demo=True
                     ),
+                ),
+                # XX-08: curated answers over the fixture marts (sample
+                # data, like Patterns); never a model call.
+                html.Div(
+                    id="public-stats-ask",
+                    style={"display": "none", "marginTop": "12px"},
+                    children=ask_public_panel(ask_cache) if ask_cache else [],
                 ),
             ],
         ),
@@ -636,6 +663,12 @@ def render_page(pathname):
                                 dcc.Tab(
                                     label="Patterns",
                                     value="patterns",
+                                    style=TAB_STYLE,
+                                    selected_style=TAB_SELECTED_STYLE,
+                                ),
+                                dcc.Tab(
+                                    label="Ask",
+                                    value="ask",
                                     style=TAB_STYLE,
                                     selected_style=TAB_SELECTED_STYLE,
                                 ),
@@ -1054,13 +1087,14 @@ def toggle_public_mode(mode):
     Output("public-stats-artists", "style"),
     Output("public-stats-trends", "style"),
     Output("public-stats-patterns", "style"),
+    Output("public-stats-ask", "style"),
     Input("public-content-tabs", "value"),
 )
 def toggle_public_content(tab):
-    shown = tab if tab in ("trends", "patterns") else "artists"
+    shown = tab if tab in ("trends", "patterns", "ask") else "artists"
     return tuple(
         {"display": "block" if name == shown else "none"}
-        for name in ("artists", "trends", "patterns")
+        for name in ("artists", "trends", "patterns", "ask")
     )
 
 
@@ -1314,6 +1348,53 @@ def handle_public_gesture(
     return ret()
 
 
+ASK_PRIVATE = "Ask Your Listening is private to the site owner."
+
+
+def _ask_private():
+    return html.P(
+        ASK_PRIVATE,
+        style={"color": "#6e6b63", "padding": "48px 0",
+               "textAlign": "center"},
+    )
+
+
+@app.callback(
+    Output("ask-result", "children"),
+    Input("ask-submit", "n_clicks"),
+    Input("ask-question", "n_submit"),
+    State("ask-question", "value"),
+    prevent_initial_call=True,
+)
+def run_ask(n_clicks, n_submit, question):
+    """XX-07: owner-only live question. Live model calls happen only
+    here, behind the owner identity gate."""
+    if not is_owner(flask.session.get("spotify_user_id")):
+        logger.info("Ask submitted by non-owner; refused")
+        return _ask_private()
+    question = (question or "").strip()
+    if not question:
+        raise PreventUpdate
+    try:
+        result = ask.ask(question)
+    except UnsafeSQLError as e:
+        logger.info("ask: guard blocked the model's SQL: %s", e)
+        return render_ask_message(
+            "The SQL guard blocked that query.", str(e)
+        )
+    except ask.AskError as e:
+        logger.info("ask: unusable reply: %s", e)
+        return render_ask_message("No usable SQL came back.", str(e))
+    except Exception as e:
+        # Config gaps (no key, no ASK_DATABASE_URL) and DB errors: log
+        # the traceback and show the owner exactly what broke.
+        logger.exception("ask failed")
+        return render_ask_message(
+            "Ask failed.", f"{type(e).__name__}: {e}"
+        )
+    return render_answer(ask.result_dict(result))
+
+
 @app.callback(
     Output("tab-content", "children"),
     Input("time-window-tabs", "value"),
@@ -1324,6 +1405,12 @@ def update_content(time_range, content_tab):
     sp = get_sp_from_session(flask.session)
     if sp is None:
         return html.P("Not authenticated.", style={"color": "#6e6b63"})
+
+    if content_tab == "ask":
+        if not is_owner(flask.session.get("spotify_user_id")):
+            logger.info("Ask tab requested by non-owner; hidden")
+            return _ask_private()
+        return ask_owner_panel()
 
     if content_tab == "patterns":
         # Owner identity gate: play history is the owner's alone.

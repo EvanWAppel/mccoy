@@ -240,25 +240,25 @@ class TestPublicTrendsGating:
         assert values == ["artists", "trends", "patterns"]
 
     def test_content_toggle_shows_trends(self):
-        artists, trends, patterns = app_module.toggle_public_content(
+        artists, trends, patterns, ask = app_module.toggle_public_content(
             "trends"
         )
         assert trends == {"display": "block"}
-        assert artists == patterns == {"display": "none"}
+        assert artists == patterns == ask == {"display": "none"}
 
     def test_content_toggle_shows_patterns(self):
-        artists, trends, patterns = app_module.toggle_public_content(
+        artists, trends, patterns, ask = app_module.toggle_public_content(
             "patterns"
         )
         assert patterns == {"display": "block"}
-        assert artists == trends == {"display": "none"}
+        assert artists == trends == ask == {"display": "none"}
 
     def test_content_toggle_defaults_to_artists(self):
-        artists, trends, patterns = app_module.toggle_public_content(
+        artists, trends, patterns, ask = app_module.toggle_public_content(
             "artists"
         )
         assert artists == {"display": "block"}
-        assert trends == patterns == {"display": "none"}
+        assert trends == patterns == ask == {"display": "none"}
 
     def test_public_patterns_never_reads_marts(self, mocker):
         # Evan's choice: logged-out visitors only ever see demo data.

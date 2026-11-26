@@ -1,0 +1,11 @@
+{
+  "about": "Curated questions for the public Ask tab (XX-08), answered over the fixture marts (tests/evals/fixture_marts.sql), never real listening data. Drafted by Claude for Evan to edit; scripts/refresh_ask_cache.py turns them into ask/public_cache.json with the live model.",
+  "questions": [
+    "Who are my top 3 artists by plays?",
+    "What hour of the week do I listen most?",
+    "Which artist have I played the most days in a row?",
+    "How many minutes did I listen each day?",
+    "How long was my longest listening session, and when did it start?",
+    "Which tracks have I played more than once?"
+  ]
+}

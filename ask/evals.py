@@ -22,7 +22,6 @@ replies of passing answerable cases back into cases.json.
 """
 
 import argparse
-import datetime as dt
 import json
 import logging
 import os
@@ -31,7 +30,6 @@ import uuid
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
-from decimal import Decimal
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -150,14 +148,8 @@ class RecordingClient:
         return response
 
 
-def normalize(value: Any) -> Any:
-    """Make a DB value comparable with JSON: numerics -> float, dates
-    and timestamps -> ISO strings."""
-    if isinstance(value, Decimal):
-        return float(value)
-    if isinstance(value, (dt.date, dt.datetime)):
-        return value.isoformat()
-    return value
+# Shared with the UI and the public cache.
+normalize = ask.normalize
 
 
 def run_case(
